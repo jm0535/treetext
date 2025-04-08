@@ -2,6 +2,10 @@
 import React from 'react';
 import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Search, Book, FileText, HelpCircle, MessageCircle, Video, Lightbulb } from 'lucide-react';
 
 const HelpCenterPage: React.FC = () => {
   return (
@@ -10,62 +14,138 @@ const HelpCenterPage: React.FC = () => {
       
       <main className="flex-grow treeText-container py-12">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-6">Help Center</h1>
+          <h1 className="text-3xl font-bold mb-2">How can we help you?</h1>
+          <p className="text-muted-foreground mb-8">Search our knowledge base or browse categories below</p>
           
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">Frequently Asked Questions</h2>
-            <div className="space-y-6">
-              <div className="border-b pb-4">
-                <h3 className="text-xl font-medium mb-2">How does the plagiarism checker work?</h3>
-                <p className="text-muted-foreground">
-                  Our plagiarism checker compares your text against millions of sources online to identify any matching content. 
-                  When matches are found, we provide detailed source information to help you properly cite your sources.
-                </p>
-              </div>
-              
-              <div className="border-b pb-4">
-                <h3 className="text-xl font-medium mb-2">Is treeText free to use?</h3>
-                <p className="text-muted-foreground">
-                  Yes! treeText is completely free and open-source. We believe educational tools should be accessible to everyone.
-                  Our service is maintained by a community of volunteers and supported by optional donations.
-                </p>
-              </div>
-              
-              <div className="border-b pb-4">
-                <h3 className="text-xl font-medium mb-2">How accurate is the grammar checker?</h3>
-                <p className="text-muted-foreground">
-                  Our grammar checker uses advanced algorithms to detect common grammatical errors, spelling mistakes, 
-                  punctuation issues, and style inconsistencies. While it's highly accurate, we always recommend a final human review.
-                </p>
-              </div>
+          <div className="relative mb-12">
+            <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
+            <Input
+              className="pl-10 py-6"
+              placeholder="Search for help articles..."
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            <Card className="hover:shadow-md transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <Book className="h-5 w-5 text-kopitree-blue" />
+                  <CardTitle className="text-lg">Getting Started</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li>• Quick start guide</li>
+                  <li>• Basic features overview</li>
+                  <li>• Account setup</li>
+                </ul>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-md transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <FileText className="h-5 w-5 text-kopitree-blue" />
+                  <CardTitle className="text-lg">Text Analysis</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li>• Plagiarism checking</li>
+                  <li>• Grammar correction</li>
+                  <li>• Citation generation</li>
+                </ul>
+              </CardContent>
+            </Card>
+            <Card className="hover:shadow-md transition-all">
+              <CardHeader>
+                <div className="flex items-center gap-2 mb-2">
+                  <Video className="h-5 w-5 text-kopitree-blue" />
+                  <CardTitle className="text-lg">Tutorials</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-muted-foreground">
+                  <li>• Video guides</li>
+                  <li>• Step-by-step tutorials</li>
+                  <li>• Best practices</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+          <section className="mb-12">
+            <h2 className="text-2xl font-semibold mb-6">Popular Articles</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <Lightbulb className="h-5 w-5 text-kopitree-blue" />
+                    <CardTitle className="text-lg">Getting Started</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-medium mb-2">How to Check for Plagiarism</h3>
+                    <p className="text-muted-foreground text-sm">Learn how to use our plagiarism checker effectively</p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Understanding Your Results</h3>
+                    <p className="text-muted-foreground text-sm">A guide to interpreting plagiarism and grammar reports</p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Citation Basics</h3>
+                    <p className="text-muted-foreground text-sm">Learn how to properly cite sources in different formats</p>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="h-5 w-5 text-kopitree-blue" />
+                    <CardTitle className="text-lg">Common Questions</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <h3 className="font-medium mb-2">Is treeText Free?</h3>
+                    <p className="text-muted-foreground text-sm">Yes! treeText is completely free and open-source.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2">How Accurate is the Grammar Checker?</h3>
+                    <p className="text-muted-foreground text-sm">Our AI-powered grammar checker has high accuracy but we recommend final human review.</p>
+                  </div>
+                  <div>
+                    <h3 className="font-medium mb-2">Can I Use treeText Offline?</h3>
+                    <p className="text-muted-foreground text-sm">Internet connection is required for full functionality.</p>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
           </section>
           
-          <section className="mb-10">
-            <h2 className="text-2xl font-semibold mb-4">Getting Started</h2>
-            <p className="text-muted-foreground mb-4">
-              New to treeText? Follow these simple steps to get started:
-            </p>
-            <ol className="list-decimal list-inside space-y-2 text-muted-foreground ml-4">
-              <li>Simply paste your text into the editor on our home page</li>
-              <li>Choose which checks you want to run (plagiarism, grammar, or both)</li>
-              <li>Click "Analyze" and wait for the results</li>
-              <li>Review the suggestions and make corrections as needed</li>
-            </ol>
-          </section>
-          
-          <section>
-            <h2 className="text-2xl font-semibold mb-4">Contact Support</h2>
-            <p className="text-muted-foreground mb-4">
-              Still have questions? Our support team is here to help.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <a href="mailto:support@treetext.app" className="inline-block px-4 py-2 border rounded text-center">
-                Email Support
-              </a>
-              <a href="#" className="inline-block px-4 py-2 border rounded text-center">
-                Submit Ticket
-              </a>
+          <section className="bg-muted p-8 rounded-lg mb-12">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="flex-1">
+                <h2 className="text-2xl font-semibold mb-2">Need More Help?</h2>
+                <p className="text-muted-foreground mb-4">
+                  Our support team is available 24/7 to assist you with any questions or issues.
+                </p>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Button className="bg-kopitree-blue hover:bg-kopitree-blue/90">
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    Live Chat
+                  </Button>
+                  <Button variant="outline">
+                    Submit Ticket
+                  </Button>
+                </div>
+              </div>
+              <div className="flex-shrink-0">
+                <img
+                  src="/support-team.svg"
+                  alt="Support Team"
+                  className="w-48 h-48"
+                />
+              </div>
             </div>
           </section>
         </div>
