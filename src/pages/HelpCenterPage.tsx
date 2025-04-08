@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Book, FileText, HelpCircle, MessageCircle, Video, Lightbulb } from 'lucide-react';
+import { Search, Book, FileText, HelpCircle, Video, Lightbulb, MailIcon } from 'lucide-react';
 
 const HelpCenterPage: React.FC = () => {
   return (
@@ -129,21 +129,16 @@ const HelpCenterPage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Our support team is available 24/7 to assist you with any questions or issues.
                 </p>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button className="bg-kopitree-blue hover:bg-kopitree-blue/90">
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Live Chat
-                  </Button>
-                  <Button variant="outline">
-                    Submit Ticket
-                  </Button>
-                </div>
+                <Button variant="outline" className="w-fit">
+                  <MailIcon className="h-4 w-4 mr-2" />
+                  Submit Support Ticket
+                </Button>
               </div>
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 bg-muted-foreground/5 rounded-lg p-4">
                 <img
-                  src="/support-team.svg"
+                  src="/images/support.png"
                   alt="Support Team"
-                  className="w-48 h-48"
+                  className="w-48 h-48 object-contain"
                 />
               </div>
             </div>
