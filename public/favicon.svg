@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .emoji {
+      font-family: Apple Color Emoji, Segoe UI Emoji, Noto Color Emoji, Android Emoji, EmojiSymbols, EmojiOne Mozilla, Twemoji Mozilla, Segoe UI Symbol, Noto Color Emoji Compat, emoji;
+      font-size: 50px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+    }
+    .bracket {
+      font-family: monospace;
+      font-size: 70px;
+      font-weight: bold;
+      fill: #2E7D32;
+    }
+  </style>
+  <rect width="100%" height="100%" fill="transparent" />
+  <text x="30" y="55" class="bracket">{</text>
+  <text x="50" y="50" class="emoji">🌿</text>
+  <text x="70" y="55" class="bracket">}</text>
+</svg>
