@@ -12,52 +12,31 @@ export default defineConfig(({ mode }) => {
       host: "::",
       port: 8080,
       cors: true,
+      // Ensure proper MIME types are set
+      fs: {
+        strict: true,
+      },
+    },
+    preview: {
+      port: 4173,
+      open: true,
+      // Ensure proper MIME types are set
+      fs: {
+        strict: true,
+      },
     },
     build: {
       // Improve build performance and output
       minify: isProduction,
       sourcemap: !isProduction,
-      // Increase the warning limit for chunk size
-      chunkSizeWarningLimit: 1000,
       // Handle WASM imports
       assetsInlineLimit: 0,
+      // Disable code splitting entirely
       rollupOptions: {
         output: {
-          manualChunks: (id) => {
-            // React and related libraries
-            if (id.includes('node_modules/react') || 
-                id.includes('node_modules/react-dom') || 
-                id.includes('node_modules/react-router-dom')) {
-              return 'vendor-react';
-            }
-            
-            // UI component libraries
-            if (id.includes('node_modules/@radix-ui') || 
-                id.includes('node_modules/@floating-ui') || 
-                id.includes('node_modules/framer-motion')) {
-              return 'vendor-ui';
-            }
-            
-            // Utility libraries
-            if (id.includes('node_modules/date-fns') || 
-                id.includes('node_modules/class-variance-authority') || 
-                id.includes('node_modules/clsx') || 
-                id.includes('node_modules/tailwind-merge')) {
-              return 'vendor-utils';
-            }
-            
-            // Lucide icons
-            if (id.includes('node_modules/lucide-react')) {
-              return 'vendor-icons';
-            }
-            
-            // Other third-party libraries
-            if (id.includes('node_modules/')) {
-              return 'vendor-others';
-            }
-          },
-        },
-      },
+          inlineDynamicImports: true
+        }
+      }
     },
     plugins: [
       react(),
@@ -69,10 +48,7 @@ export default defineConfig(({ mode }) => {
       },
     },
 
-    preview: {
-      port: 4173,
-      open: true,
-    },
+
     test: {
       globals: true,
       environment: 'jsdom',
