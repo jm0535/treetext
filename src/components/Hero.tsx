@@ -1,37 +1,29 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { FileCheck, BookOpen, Upload, Type } from "lucide-react";
+import { BookOpen, Upload, Type } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { useTextAnalysis } from '@/hooks/useTextAnalysis';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import FileUploader from './FileUploader';
 
-const Hero: React.FC = () => {
+interface HeroProps {
+  onInputMethodChange: (method: string) => void;
+}
+
+const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
   const { setText } = useTextAnalysis();
-  const [activeTab, setActiveTab] = useState<string>("text");
   
   const handleCheckText = () => {
-    // Scroll to text editor if text tab is active, otherwise switch to text tab
-    if (activeTab === "text") {
+    onInputMethodChange('text');
+    setTimeout(() => {
       const textEditor = document.querySelector('#text-editor');
       if (textEditor) {
         textEditor.scrollIntoView({ behavior: 'smooth' });
       }
-    } else {
-      setActiveTab("text");
-      setTimeout(() => {
-        const textEditor = document.querySelector('#text-editor');
-        if (textEditor) {
-          textEditor.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
+    }, 100);
   };
   
   const handleUploadDocument = () => {
-    // Switch to file upload tab
-    setActiveTab("file");
+    onInputMethodChange('file');
     setTimeout(() => {
       const fileUploader = document.querySelector('#file-uploader');
       if (fileUploader) {
