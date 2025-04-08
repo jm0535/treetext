@@ -139,15 +139,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                   <span className="font-bold">3</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-md">
-                      <Star className="h-4 w-4 text-primary" />
-                    </div>
-                    <span className="text-sm font-medium">Saved Templates</span>
-                  </div>
-                  <span className="font-bold">1</span>
-                </div>
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="bg-primary/10 p-2 rounded-md">
@@ -170,10 +162,9 @@ const DashboardPage: React.FC = () => {
         {/* Quick Actions */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[
               { title: 'New Analysis', icon: <FileText className="h-5 w-5" />, path: '/' },
-              { title: 'Templates', icon: <Star className="h-5 w-5" />, path: '/templates' },
               { title: 'History', icon: <Clock className="h-5 w-5" />, path: '/history' },
               { title: 'Analytics', icon: <BarChart2 className="h-5 w-5" />, path: '/analytics' }
             ].map((action, i) => (

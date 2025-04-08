@@ -1,6 +1,4 @@
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Github, Code, Users, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -13,10 +11,7 @@ const OpenSourcePage: React.FC = () => {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow treeText-container py-12">
+    <div className="treeText-container py-12">
         <div className="max-w-4xl mx-auto">
           <div className="mb-12 text-center">
             <h1 className="text-3xl font-bold mb-6">treeText: Open Source</h1>
@@ -215,9 +210,6 @@ const OpenSourcePage: React.FC = () => {
             </div>
           </section>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

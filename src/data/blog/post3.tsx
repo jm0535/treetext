@@ -5,7 +5,7 @@ const post3: BlogPost = {
   id: 3,
   title: 'Top 10 Common Grammar Mistakes and How to Fix Them',
   excerpt: 'A comprehensive guide to the most frequent grammar errors made by writers and simple solutions to correct them.',
-  date: 'March 10, 2023',
+  date: 'April 5, 2025',
   author: 'treeText Team',
   readTime: '10 min read',
   category: 'Grammar Tips',

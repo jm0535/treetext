@@ -5,7 +5,7 @@ const post2: BlogPost = {
   id: 2,
   title: 'The Importance of Grammar in Professional Communication',
   excerpt: 'Discover why proper grammar is essential for effective communication in the workplace and how it impacts your professional image.',
-  date: 'April 22, 2023',
+  date: 'April 6, 2025',
   author: 'treeText Team',
   readTime: '6 min read',
   category: 'Professional Development',

@@ -5,7 +5,7 @@ const post1: BlogPost = {
   id: 1,
   title: 'How to Avoid Plagiarism in Academic Writing',
   excerpt: 'Learn the best practices for citing sources and avoiding unintentional plagiarism in your research papers.',
-  date: 'May 15, 2023',
+  date: 'April 7, 2025',
   author: 'treeText Team',
   readTime: '8 min read',
   category: 'Academic Writing',

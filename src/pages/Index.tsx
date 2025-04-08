@@ -1,12 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import Navigation from '@/components/Navigation';
 import Hero from '@/components/Hero';
 import EnhancedTextEditor from '@/components/EnhancedTextEditor';
 import ResultsContainer from '@/components/ResultsContainer';
 import AnalysisHistory from '@/components/AnalysisHistory';
 import FileUploader from '@/components/FileUploader';
-import Footer from '@/components/Footer';
 import { useTextAnalysis } from '@/hooks/useTextAnalysis';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalysisResult } from '@/types';
@@ -31,12 +29,10 @@ const Index = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      <main className="flex-1">
-        <Hero onInputMethodChange={setInputMethod} />
-        
-        <div className="container mx-auto px-4 py-8">
+    <>
+      <Hero onInputMethodChange={setInputMethod} />
+      
+      <div className="container mx-auto px-4 py-8">
           <div className="flex justify-between items-center mb-6">
             <div className="flex items-center space-x-4">
               <button
@@ -91,9 +87,7 @@ const Index = () => {
             <AnalysisHistory onSelectAnalysis={handleSelectAnalysis} />
           )}
         </div>
-      </main>
-      <Footer />
-    </div>
+    </>
   );
 };
 

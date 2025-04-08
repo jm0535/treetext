@@ -1,21 +1,31 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Book, FileText, HelpCircle, Video, Lightbulb, MailIcon, HeadphonesIcon } from 'lucide-react';
+import { Search, Book, FileText, HelpCircle, Video, Lightbulb, MailIcon, HeadphonesIcon, BookOpen } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const HelpCenterPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow treeText-container py-12">
+    <div className="treeText-container py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-2">How can we help you?</h1>
-          <p className="text-muted-foreground mb-8">Search our knowledge base or browse categories below</p>
+          <p className="text-muted-foreground mb-4">Search our knowledge base or browse categories below</p>
+          <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mb-8 flex items-start gap-4">
+            <BookOpen className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+            <div>
+              <h2 className="font-medium text-lg mb-1">New User Guide Available!</h2>
+              <p className="text-muted-foreground mb-2">
+                We've created a comprehensive user guide to help you get the most out of treeText. It includes detailed instructions, tips, and best practices.
+              </p>
+              <Button asChild variant="outline" className="bg-primary/10 hover:bg-primary/20 border-primary/20">
+                <Link to="/user-guide">
+                  View User Guide
+                </Link>
+              </Button>
+            </div>
+          </div>
           
           <div className="relative mb-12">
             <Search className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
@@ -142,9 +152,6 @@ const HelpCenterPage: React.FC = () => {
             </div>
           </section>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

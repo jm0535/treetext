@@ -1,16 +1,11 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 
 const ApiDocumentationPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow treeText-container py-12">
+    <div className="treeText-container py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">API Documentation</h1>
           
@@ -94,7 +89,7 @@ const ApiDocumentationPage: React.FC = () => {
                         {`{
   "title": "Article Title",
   "authors": ["Author Name"],
-  "date": "2023-04-15",
+  "date": "2025-04-03",
   "url": "https://example.com/article",
   "format": "apa" // Supported: apa, mla, chicago, harvard
 }`}
@@ -157,9 +152,6 @@ print(data)`}
             </TabsContent>
           </Tabs>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

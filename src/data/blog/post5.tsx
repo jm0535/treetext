@@ -5,7 +5,7 @@ const post5: BlogPost = {
   id: 5,
   title: 'The Evolution of Plagiarism Detection Technology',
   excerpt: 'From manual checking to AI-powered tools: How technology has transformed the way we detect and prevent plagiarism.',
-  date: 'January 15, 2023',
+  date: 'April 3, 2025',
   author: 'treeText Team',
   readTime: '7 min read',
   category: 'Technology',

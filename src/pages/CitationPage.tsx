@@ -1,7 +1,5 @@
 
 import React, { useState } from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -37,10 +35,7 @@ const CitationPage: React.FC = () => {
   };
   
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow kopitree-container py-12">
+    <div className="kopitree-container py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6 kopitree-text-gradient">How to Cite treeText</h1>
           
@@ -110,9 +105,6 @@ const CitationPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };
