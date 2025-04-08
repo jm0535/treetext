@@ -1,7 +1,5 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Github, Heart, Coffee, Globe, BookOpen, Code, Users, Building2 } from 'lucide-react';
@@ -9,15 +7,12 @@ import { Separator } from '@/components/ui/separator';
 
 const AboutPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow py-12">
+    <div className="py-12">
         <div className="kopitree-container">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4 kopitree-text-gradient">About treeText</h1>
             <p className="text-xl text-muted-foreground mb-12">
-              A free, open-source text analysis tool created for students, by students
+              A free, open-source text analysis tool created for students, academics, researchers and professionals.
             </p>
             
             <div className="mb-12">
@@ -182,9 +177,6 @@ const AboutPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

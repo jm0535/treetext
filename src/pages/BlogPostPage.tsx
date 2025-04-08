@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { ArrowLeft, Calendar, Clock, Share2, Bookmark, ThumbsUp, ChevronRight, Tag, BookOpen, ChevronUp } from 'lucide-react';
@@ -35,10 +33,9 @@ const BlogPostPage: React.FC = () => {
 
   if (!post) {
     return (
-      <div className="min-h-screen flex flex-col bg-background">
+      <div className="bg-background">
         <div className="bg-gradient-to-b from-primary/5 to-transparent h-64 absolute top-0 left-0 right-0 z-0"></div>
-        <Navigation />
-        <main className="flex-grow py-16 px-4 relative z-10">
+        <main className="py-16 px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center bg-card p-10 rounded-xl shadow-lg border border-border/30">
             <Badge variant="outline" className="mb-6 px-3 py-1 bg-primary/5 text-primary border-primary/20 mx-auto">
               <BookOpen className="h-3.5 w-3.5 mr-1.5" />
@@ -53,17 +50,15 @@ const BlogPostPage: React.FC = () => {
             </Button>
           </div>
         </main>
-        <Footer />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="bg-background">
       <div className="bg-gradient-to-b from-primary/5 to-transparent h-64 absolute top-0 left-0 right-0 z-0"></div>
-      <Navigation />
 
-      <main className="flex-grow py-16 px-4 sm:px-6 relative z-10">
+      <main className="py-16 px-4 sm:px-6 relative z-10">
           <div className="max-w-7xl mx-auto">
           {/* Back button */}
           <Link to="/blog" className="inline-flex items-center text-primary hover:text-primary/80 mb-10 font-medium transition-colors group">
@@ -253,66 +248,7 @@ const BlogPostPage: React.FC = () => {
             <div className="lg:col-span-4">
               <div className="lg:sticky lg:top-20 space-y-8">
                 {/* Table of contents */}
-                <div className="bg-card rounded-xl shadow-md overflow-hidden border border-border/30">
-                  <div className="p-6 border-b border-border bg-muted/30">
-                    <h3 className="text-lg font-bold text-foreground flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-primary">
-                        <line x1="21" x2="3" y1="6" y2="6"></line>
-                        <line x1="15" x2="3" y1="12" y2="12"></line>
-                        <line x1="17" x2="3" y1="18" y2="18"></line>
-                      </svg>
-                      Table of Contents
-                    </h3>
-                  </div>
-                  <div className="p-6">
-                    <nav className="space-y-3">
-                      {Array.from(post.content.props.children)
-                        .filter(child => child.type === 'h2')
-                        .map((heading, index) => (
-                          <a
-                            key={index}
-                            href={`#${heading.props.children.toString().toLowerCase().replace(/\s+/g, '-')}`}
-                            className={cn(
-                              "py-3 px-4 text-sm rounded-md transition-colors flex items-center",
-                              "text-foreground/80 hover:text-primary hover:bg-primary/5 border border-transparent hover:border-primary/10"
-                            )}
-                          >
-                            <span className="w-7 h-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold mr-3">
-                              {index + 1}
-                            </span>
-                            <span className="font-medium">{heading.props.children}</span>
-                          </a>
-                        ))
-                      }
-                    </nav>
-                  </div>
-                </div>
 
-                {/* Author info */}
-                <div className="bg-gradient-to-br from-card to-muted/20 rounded-xl border border-border/30 p-6 shadow-sm">
-                  <h3 className="text-lg font-bold mb-4 flex items-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 text-primary">
-                      <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                    About the Author
-                  </h3>
-                  <div className="flex items-center mb-6">
-                    <Avatar className="h-14 w-14 border-2 border-primary/20 mr-4">
-                      <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">TT</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-bold text-foreground">{post.author}</div>
-                      <div className="text-sm text-primary/80 bg-primary/5 px-2 py-0.5 rounded-md inline-block mt-1">Content Writer</div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-foreground/80 mb-6 leading-relaxed">
-                    Expert in academic writing and plagiarism prevention with over 5 years of experience in educational content creation.
-                  </p>
-                  <Button variant="outline" className="w-full rounded-lg bg-card hover:bg-primary/5 border-primary/20">
-                    View Full Profile
-                  </Button>
-                </div>
               </div>
             </div>
           </div>
@@ -329,8 +265,6 @@ const BlogPostPage: React.FC = () => {
           <ChevronUp className="h-5 w-5" />
         </button>
       )}
-
-      <Footer />
     </div>
   );
 };

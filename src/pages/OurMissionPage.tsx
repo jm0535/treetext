@@ -1,15 +1,10 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { FileText, Users, Lock, Globe } from 'lucide-react';
 
 const OurMissionPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow treeText-container py-12">
+    <div className="treeText-container py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Our Mission</h1>
           
@@ -135,9 +130,6 @@ const OurMissionPage: React.FC = () => {
             </div>
           </section>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

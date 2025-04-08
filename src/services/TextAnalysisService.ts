@@ -414,7 +414,7 @@ class TextAnalysisService {
       },
       {
         text: "it can be concluded that",
-        source: "Journal of Academic Writing, 2022",
+        source: "Journal of Academic Writing, 2025",
         match: 78,
         url: "https://example.com/journal-academic-writing"
       },

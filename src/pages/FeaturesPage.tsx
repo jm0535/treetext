@@ -1,7 +1,5 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Lock, BookOpen, Zap, Github, FileText, BarChart2, RefreshCcw } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
@@ -27,10 +25,7 @@ const FeatureCard: React.FC<{
 
 const FeaturesPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow py-12">
+    <div className="py-12">
         <div className="kopitree-container">
           <h1 className="text-4xl font-bold mb-2 kopitree-text-gradient text-center">treeText Features</h1>
           <p className="text-center text-lg text-muted-foreground mb-12">
@@ -157,9 +152,6 @@ const FeaturesPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

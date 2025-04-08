@@ -39,7 +39,7 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
           <div className="flex-1 space-y-6">
             <div className="space-y-2">
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-                The Free Plagiarism, Grammar & Readability Checker
+                The Free PlagiarismGrammar & Readability Checker
               </h1>
               <p className="text-xl text-muted-foreground">
                 Improve your writing with treeText's open-source alternative to Turnitin and Grammarly.

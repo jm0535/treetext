@@ -8,13 +8,15 @@ import {
   Linkedin, 
   Mail, 
   ArrowRight, 
-  ExternalLink
+  ExternalLink,
+  History
 } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 const Footer: React.FC = () => {
 
@@ -39,10 +41,13 @@ const Footer: React.FC = () => {
             >
               <div className="absolute -inset-1 rounded-full bg-primary/10 scale-0 group-hover:scale-100 transition-transform duration-300" />
               <FileText className="h-6 w-6 text-primary relative" />
-              <span className="font-bold text-xl relative">
-                <span className="text-primary">tree</span>
-                <span className="text-secondary">Text</span>
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="font-bold text-xl relative">
+                  <span className="text-primary">tree</span>
+                  <span className="text-secondary">Text</span>
+                </span>
+                <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800 text-[10px] font-semibold py-0 h-4">BETA</Badge>
+              </div>
             </Link>
             <p className="text-muted-foreground text-sm mb-6 max-w-md">
               TreeText is a free, open-source platform that helps students and professionals check their writing for plagiarism, 
@@ -123,9 +128,10 @@ const Footer: React.FC = () => {
                 {[
                   { label: "Help Center", path: "/help-center" },
                   { label: "API Documentation", path: "/api-documentation", external: true },
+                  { label: "Changelog", path: "/changelog" },
                   { label: "Blog", path: "/blog" },
                   { label: "Academic Resources", path: "/academic-resources" },
-                  { label: "User Guides", path: "/user-guides" },
+                  { label: "User Guide", path: "/user-guide" },
                 ].map((item, index) => (
                   <li key={index}>
                     {item.external ? (
@@ -153,7 +159,7 @@ const Footer: React.FC = () => {
             </div>
             
             <div>
-              <h3 className="font-medium text-base mb-4 text-foreground border-b border-border/50 pb-2">Company</h3>
+              <h3 className="font-medium text-base mb-4 text-foreground border-b border-border/50 pb-2">Dev Team</h3>
               <ul className="space-y-3">
                 {[
                   { label: "About Us", path: "/about" },
@@ -186,7 +192,7 @@ const Footer: React.FC = () => {
           className="mt-16 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center text-sm text-muted-foreground"
         >
           <p className="flex items-center">
-            © {new Date().getFullYear()} TreeText. All rights reserved. 
+            © {new Date().getFullYear()} treeText. Powered by in4metrix. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0 flex items-center gap-6">
             <Link to="/privacy-policy" className="text-muted-foreground transition-all duration-300 hover:text-primary">Privacy Policy</Link>

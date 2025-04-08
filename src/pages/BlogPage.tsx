@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
 import { blogPosts } from '@/data/blog';
@@ -23,12 +21,10 @@ const BlogPage: React.FC = () => {
     : blogPosts;
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
+    <div className="bg-background relative">
       {/* Background gradient header */}
       <div className="bg-gradient-to-b from-primary/5 to-transparent h-64 absolute top-0 left-0 right-0 z-0"></div>
-      <Navigation />
-
-      <main className="flex-grow py-16 px-4 sm:px-6 relative z-10">
+      <div className="py-16 px-4 sm:px-6 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header section */}
           <div className="text-center max-w-3xl mx-auto mb-16">
@@ -248,9 +244,7 @@ const BlogPage: React.FC = () => {
             </div>
           </div>
         </div>
-      </main>
-
-      <Footer />
+      </div>
     </div>
   );
 };

@@ -1,7 +1,5 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +8,7 @@ import { MailIcon, MessageSquare, Phone, Users } from 'lucide-react';
 
 const ContactUsPage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow treeText-container py-12">
+    <div className="treeText-container py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Contact Us</h1>
           
@@ -168,9 +163,6 @@ const ContactUsPage: React.FC = () => {
             </div>
           </section>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

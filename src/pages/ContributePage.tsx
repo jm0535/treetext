@@ -1,17 +1,12 @@
 
 import React from 'react';
-import Navigation from '@/components/Navigation';
-import Footer from '@/components/Footer';
 import { Github, Code, MessageSquare, BookOpen, Globe, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const ContributePage: React.FC = () => {
   return (
-    <div className="min-h-screen flex flex-col">
-      <Navigation />
-      
-      <main className="flex-grow treeText-container py-12">
+    <div className="treeText-container py-12">
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Contribute to treeText</h1>
           
@@ -246,7 +241,7 @@ const ContributePage: React.FC = () => {
                     cover server expenses, development tools, and other operational costs.
                   </p>
                   
-                  <div className="border p-6 rounded mb-8">
+                  <div className="border p-6 rounded mb-8 bg-muted/30">
                     <h3 className="text-xl font-medium mb-4">Why Donate?</h3>
                     <ul className="list-disc list-inside space-y-2 text-muted-foreground ml-4 mb-6">
                       <li>Keep treeText free for everyone</li>
@@ -255,30 +250,46 @@ const ContributePage: React.FC = () => {
                       <li>Enable us to add more powerful analysis capabilities</li>
                     </ul>
                     
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-4 rounded-md mb-4">
+                      <h4 className="font-medium text-yellow-800 dark:text-yellow-200 flex items-center gap-2 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                          <line x1="12" y1="9" x2="12" y2="13"/>
+                          <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        Donations Temporarily Unavailable
+                      </h4>
+                      <p className="text-yellow-700 dark:text-yellow-300 text-sm">
+                        We're currently setting up our payment processing system. Direct donations will be available soon after we complete our banking integration. Thank you for your patience and support!
+                      </p>
+                    </div>
                     <div className="flex flex-wrap gap-4">
-                      <Button>Make a One-time Donation</Button>
-                      <Button variant="outline">Become a Monthly Supporter</Button>
+                      <Button disabled title="Temporarily unavailable">Make a One-time Donation</Button>
+                      <Button variant="outline" disabled title="Temporarily unavailable">Become a Monthly Supporter</Button>
                     </div>
                   </div>
                   
                   <h3 className="text-xl font-medium mb-4">Other Ways to Support</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="border p-6 rounded">
-                      <h4 className="text-lg font-medium mb-2">Corporate Sponsorship</h4>
+                      <h4 className="text-lg font-medium mb-2">Contribute Code</h4>
                       <p className="text-muted-foreground mb-4">
-                        If your organization uses treeText or values our mission, consider becoming a corporate sponsor.
-                      </p>
-                      <Button variant="outline" size="sm">Learn About Sponsorship</Button>
-                    </div>
-                    
-                    <div className="border p-6 rounded">
-                      <h4 className="text-lg font-medium mb-2">GitHub Sponsors</h4>
-                      <p className="text-muted-foreground mb-4">
-                        Support us through GitHub Sponsors, which matches your contribution for the first year.
+                        Help improve treeText by contributing code, fixing bugs, or adding new features to the project.
                       </p>
                       <Button variant="outline" size="sm" asChild>
-                        <a href="https://github.com/sponsors/jm0535" target="_blank" rel="noopener noreferrer">
-                          Sponsor on GitHub
+                        <a href="https://github.com/jm0535/treetext" target="_blank" rel="noopener noreferrer">
+                          View on GitHub
+                        </a>
+                      </Button>
+                    </div>
+                    <div className="border p-6 rounded">
+                      <h4 className="text-lg font-medium mb-2">Spread the Word</h4>
+                      <p className="text-muted-foreground mb-4">
+                        Share treeText with friends, colleagues, and on social media to help more people discover our tools.
+                      </p>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="https://twitter.com/intent/tweet?text=Check%20out%20treeText%20-%20a%20free%2C%20open-source%20plagiarism%20and%20grammar%20checker!%20https%3A//treetext.in4metrix.dev" target="_blank" rel="noopener noreferrer">
+                          Share on Twitter
                         </a>
                       </Button>
                     </div>
@@ -288,9 +299,6 @@ const ContributePage: React.FC = () => {
             </TabsContent>
           </Tabs>
         </div>
-      </main>
-      
-      <Footer />
     </div>
   );
 };

@@ -5,7 +5,7 @@ const post4: BlogPost = {
   id: 4,
   title: 'How to Properly Cite Sources in Different Citation Styles',
   excerpt: 'A detailed comparison of APA, MLA, Chicago, and Harvard citation styles with examples for various source types.',
-  date: 'February 28, 2023',
+  date: 'April 4, 2025',
   author: 'treeText Team',
   readTime: '12 min read',
   category: 'Citation Guides',
@@ -38,7 +38,7 @@ const post4: BlogPost = {
         <strong>In-text citation format:</strong> (Author, Year, p. X)
       </p>
       <p>
-        <strong>Example:</strong> Research indicates that regular exercise improves cognitive function (Johnson, 2020, p. 45).
+        <strong>Example:</strong> Research indicates that regular exercise improves cognitive function (Johnson, 2024, p. 45).
       </p>
       <p>
         <strong>Reference list entry for a book:</strong><br />
@@ -46,7 +46,7 @@ const post4: BlogPost = {
       </p>
       <p>
         <strong>Example:</strong><br />
-        Johnson, M. (2020). <em>The cognitive benefits of physical activity</em>. Academic Press.
+        Johnson, M. (2024). <em>The cognitive benefits of physical activity</em>. Academic Press.
       </p>
       
       <h3>MLA Style (Modern Language Association)</h3>
@@ -97,7 +97,7 @@ const post4: BlogPost = {
         <strong>In-text citation format:</strong> (Author, Year, p. X)
       </p>
       <p>
-        <strong>Example:</strong> Recent studies show significant climate changes in polar regions (Thompson, 2021, p. 78).
+        <strong>Example:</strong> Recent studies show significant climate changes in polar regions (Thompson, 2025, p. 78).
       </p>
       <p>
         <strong>Reference list entry for a book:</strong><br />
@@ -105,7 +105,7 @@ const post4: BlogPost = {
       </p>
       <p>
         <strong>Example:</strong><br />
-        Thompson, J. (2021) <em>Climate Change in the 21st Century</em>. Cambridge: Science Press.
+        Thompson, J. (2025) <em>Climate Change in the 21st Century</em>. Cambridge: Science Press.
       </p>
       
       <h2>Citing Different Source Types</h2>

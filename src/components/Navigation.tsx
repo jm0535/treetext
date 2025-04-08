@@ -17,7 +17,9 @@ import {
   ExternalLink,
   LogOut,
   User,
-  Settings
+  Settings,
+  Heart,
+  History
 } from "lucide-react";
 import { useTheme } from './ThemeProvider';
 import { Toggle } from "@/components/ui/toggle";
@@ -25,6 +27,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { cn } from "@/lib/utils";
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -125,10 +128,13 @@ const Navigation: React.FC = () => {
         >
           <div className="absolute -inset-1 rounded-full bg-primary/10 scale-0 group-hover:scale-100 transition-transform duration-300" />
           <FileText className="h-6 w-6 text-primary relative transition-transform group-hover:scale-110 duration-300" />
-          <span className="font-bold text-xl relative">
-            <span className="text-primary group-hover:text-primary/90 transition-colors duration-300">tree</span>
-            <span className="text-secondary group-hover:text-secondary/90 transition-colors duration-300">Text</span>
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="font-bold text-xl relative">
+              <span className="text-primary group-hover:text-primary/90 transition-colors duration-300">tree</span>
+              <span className="text-secondary group-hover:text-secondary/90 transition-colors duration-300">Text</span>
+            </span>
+            <Badge variant="outline" className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 border-blue-200 dark:border-blue-800 text-[10px] font-semibold py-0 h-4">BETA</Badge>
+          </div>
         </Link>
 
         {/* Desktop Navigation */}
@@ -216,9 +222,21 @@ const Navigation: React.FC = () => {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <Link to="/user-guide" className="flex items-center">
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  User Guide
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to="/help-center" className="flex items-center">
                   <HelpCircle className="h-4 w-4 mr-2" />
                   Help Center
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/changelog" className="flex items-center">
+                  <History className="h-4 w-4 mr-2" />
+                  Changelog
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -227,6 +245,15 @@ const Navigation: React.FC = () => {
                   Blog
                 </Link>
               </DropdownMenuItem>
+              {/* Sponsor link temporarily disabled
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/sponsor" className="flex items-center">
+                  <Heart className="h-4 w-4 mr-2 text-red-500" />
+                  Sponsor
+                </Link>
+              </DropdownMenuItem>
+              */}
             </DropdownMenuContent>
           </DropdownMenu>
         </nav>
