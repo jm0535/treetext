@@ -12,12 +12,12 @@ const post1: BlogPost = {
   content: (
     <>
       <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2">
-        Plagiarism is a serious academic offense that can have severe consequences for students and researchers. 
-        Understanding how to properly attribute sources and incorporate others' ideas into your work is essential 
+        <strong>Plagiarism is a serious academic offense</strong> that can have severe consequences for students and researchers.
+        Understanding how to properly attribute sources and incorporate others' ideas into your work is essential
         for maintaining academic integrity.
       </p>
       
-      <h2>What is Plagiarism?</h2>
+      <h2 id="what-is-plagiarism">What is Plagiarism?</h2>
       <p>
         Plagiarism is the act of using someone else's words, ideas, or work without proper attribution. It can be 
         intentional or unintentional, but both forms are considered academic dishonesty. Types of plagiarism include:
@@ -30,9 +30,9 @@ const post1: BlogPost = {
         <li><strong>Accidental plagiarism:</strong> Forgetting to cite sources or incorrectly citing them</li>
       </ul>
       
-      <h2>Best Practices for Avoiding Plagiarism</h2>
+      <h2 id="best-practices-for-avoiding-plagiarism">Best Practices for Avoiding Plagiarism</h2>
       
-      <h3>1. Understand When to Cite</h3>
+      <h3><span>1</span>Understand When to Cite</h3>
       <p>
         You should cite sources whenever you:
       </p>
@@ -43,7 +43,7 @@ const post1: BlogPost = {
         <li>Present information that isn't common knowledge</li>
       </ul>
       
-      <h3>2. Take Effective Notes</h3>
+      <h3><span>2</span>Take Effective Notes</h3>
       <p>
         When researching, clearly distinguish between your own ideas and those from sources:
       </p>
@@ -54,7 +54,7 @@ const post1: BlogPost = {
         <li>Summarize in your own words, but still note the source</li>
       </ul>
       
-      <h3>3. Learn to Paraphrase Properly</h3>
+      <h3><span>3</span>Learn to Paraphrase Properly</h3>
       <p>
         Paraphrasing means restating information in your own words while preserving the original meaning. 
         To paraphrase effectively:
@@ -67,7 +67,7 @@ const post1: BlogPost = {
         <li>Always cite the source even when paraphrasing</li>
       </ul>
       
-      <h3>4. Use Plagiarism Detection Tools</h3>
+      <h3><span>4</span>Use Plagiarism Detection Tools</h3>
       <p>
         Before submitting your work, run it through a plagiarism checker like treeText. These tools can help identify:
       </p>
@@ -77,7 +77,7 @@ const post1: BlogPost = {
         <li>Passages that need better paraphrasing</li>
       </ul>
       
-      <h2>The Importance of Proper Citation</h2>
+      <h2 id="the-importance-of-proper-citation">The Importance of Proper Citation</h2>
       <p>
         Citations serve multiple important purposes in academic writing:
       </p>
@@ -88,7 +88,7 @@ const post1: BlogPost = {
         <li>They place your ideas within the broader academic conversation</li>
       </ul>
       
-      <h2>Common Citation Styles</h2>
+      <h2 id="common-citation-styles">Common Citation Styles</h2>
       <p>
         Different disciplines use different citation styles. The most common include:
       </p>
@@ -99,7 +99,7 @@ const post1: BlogPost = {
         <li><strong>Harvard:</strong> Used in universities across various disciplines</li>
       </ul>
       
-      <h2>Conclusion</h2>
+      <h2 id="conclusion">Conclusion</h2>
       <p>
         Avoiding plagiarism is not just about following rules—it's about respecting intellectual property and 
         contributing meaningfully to academic discourse. By developing good research habits, learning proper 

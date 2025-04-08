@@ -11,12 +11,12 @@ const post3: BlogPost = {
   category: 'Grammar Tips',
   content: (
     <>
-      <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2">
-        Even experienced writers make grammar mistakes. Identifying and correcting these common errors can 
+      <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2 bg-primary/5 rounded-r-md">
+        Even experienced writers make grammar mistakes. Identifying and correcting these common errors can
         significantly improve your writing quality and help you communicate more effectively.
       </p>
       
-      <h2>1. Comma Splices</h2>
+      <h2 id="comma-splices" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">1. Comma Splices</h2>
       <p>
         A comma splice occurs when you join two independent clauses with only a comma.
       </p>
@@ -27,7 +27,7 @@ const post3: BlogPost = {
         <strong>Also correct:</strong> She finished her assignment; she submitted it early.
       </p>
       
-      <h2>2. Run-on Sentences</h2>
+      <h2 id="run-on-sentences" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">2. Run-on Sentences</h2>
       <p>
         Run-on sentences occur when independent clauses are joined without proper punctuation or conjunctions.
       </p>
@@ -37,7 +37,7 @@ const post3: BlogPost = {
         <strong>Also correct:</strong> The meeting ran late. Everyone missed their train.
       </p>
       
-      <h2>3. Subject-Verb Agreement</h2>
+      <h2 id="subject-verb-agreement" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">3. Subject-Verb Agreement</h2>
       <p>
         The subject and verb in a sentence must agree in number (singular or plural).
       </p>
@@ -50,7 +50,7 @@ const post3: BlogPost = {
         <strong>Correct:</strong> Each of the participants has submitted their forms.
       </p>
       
-      <h2>4. Misplaced Modifiers</h2>
+      <h2 id="misplaced-modifiers" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">4. Misplaced Modifiers</h2>
       <p>
         Modifiers should be placed close to the words they're modifying to avoid confusion.
       </p>
@@ -59,7 +59,7 @@ const post3: BlogPost = {
         <strong>Correct:</strong> Walking through the forest, I thought the trees looked beautiful.
       </p>
       
-      <h2>5. Apostrophe Misuse</h2>
+      <h2 id="apostrophe-misuse" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">5. Apostrophe Misuse</h2>
       <p>
         Apostrophes indicate possession or contraction, but they're often used incorrectly.
       </p>
@@ -72,7 +72,7 @@ const post3: BlogPost = {
         <strong>Correct:</strong> The students' grades have improved.
       </p>
       
-      <h2>6. Pronoun-Antecedent Agreement</h2>
+      <h2 id="pronoun-antecedent-agreement" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">6. Pronoun-Antecedent Agreement</h2>
       <p>
         Pronouns must agree with their antecedents in number, gender, and person.
       </p>
@@ -82,7 +82,7 @@ const post3: BlogPost = {
         <strong>Modern acceptable:</strong> Each student must bring their own materials. (Singular "they" is increasingly accepted)
       </p>
       
-      <h2>7. Dangling Participles</h2>
+      <h2 id="dangling-participles" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">7. Dangling Participles</h2>
       <p>
         A participle should clearly refer to the subject of the sentence.
       </p>
@@ -91,7 +91,7 @@ const post3: BlogPost = {
         <strong>Correct:</strong> Having finished the experiment, the researcher recorded the results.
       </p>
       
-      <h2>8. Incorrect Word Usage</h2>
+      <h2 id="incorrect-word-usage" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">8. Incorrect Word Usage</h2>
       <p>
         Many words are commonly confused with others that sound or look similar.
       </p>
@@ -104,7 +104,7 @@ const post3: BlogPost = {
         <strong>Correct:</strong> The new policy will affect everyone.
       </p>
       
-      <h2>9. Sentence Fragments</h2>
+      <h2 id="sentence-fragments" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">9. Sentence Fragments</h2>
       <p>
         A complete sentence must contain a subject and a verb and express a complete thought.
       </p>
@@ -113,7 +113,7 @@ const post3: BlogPost = {
         <strong>Correct:</strong> Because it was raining heavily, we canceled the outdoor event.
       </p>
       
-      <h2>10. Inconsistent Verb Tense</h2>
+      <h2 id="inconsistent-verb-tense" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">10. Inconsistent Verb Tense</h2>
       <p>
         Maintain consistent verb tenses unless there's a logical reason to switch.
       </p>
@@ -123,22 +123,22 @@ const post3: BlogPost = {
         <strong>Also correct:</strong> She enters the room and takes a seat.
       </p>
       
-      <h2>Tools to Help You Avoid Grammar Mistakes</h2>
+      <h2 id="tools-to-help" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">Tools to Help You Avoid Grammar Mistakes</h2>
       <p>
         Several resources can help you identify and correct grammar errors:
       </p>
-      <ul>
-        <li><strong>Grammar checkers:</strong> Tools like treeText can automatically identify many common errors</li>
-        <li><strong>Style guides:</strong> References like The Elements of Style provide clear grammar rules</li>
-        <li><strong>Proofreading:</strong> Reading your work aloud can help you catch errors your eyes might miss</li>
-        <li><strong>Peer review:</strong> Having someone else read your work can identify issues you've overlooked</li>
+      <ul className="space-y-3 list-disc pl-6 mb-6">
+        <li className="pl-2 text-foreground/90"><strong className="text-foreground font-bold">Grammar checkers:</strong> Tools like treeText can automatically identify many common errors</li>
+        <li className="pl-2 text-foreground/90"><strong className="text-foreground font-bold">Style guides:</strong> References like The Elements of Style provide clear grammar rules</li>
+        <li className="pl-2 text-foreground/90"><strong className="text-foreground font-bold">Proofreading:</strong> Reading your work aloud can help you catch errors your eyes might miss</li>
+        <li className="pl-2 text-foreground/90"><strong className="text-foreground font-bold">Peer review:</strong> Having someone else read your work can identify issues you've overlooked</li>
       </ul>
       
-      <h2>Conclusion</h2>
-      <p>
-        Improving your grammar doesn't happen overnight, but being aware of these common mistakes is the first step. 
-        Regular practice, careful proofreading, and using tools like treeText can help you develop stronger writing 
-        skills over time. Remember that even professional writers make mistakes—the key is learning to identify and 
+      <h2 id="conclusion" className="text-2xl font-bold mt-12 mb-6 pb-2 border-b border-border/50">Conclusion</h2>
+      <p className="text-foreground/90 leading-relaxed mb-6">
+        Improving your grammar doesn't happen overnight, but being aware of these common mistakes is the first step.
+        Regular practice, careful proofreading, and using tools like treeText can help you develop stronger writing
+        skills over time. Remember that even professional writers make mistakes—the key is learning to identify and
         correct them.
       </p>
     </>
