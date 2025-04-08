@@ -14,6 +14,21 @@ const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
       date: 'April 8, 2025',
+      version: '0.4.0',
+      title: 'Deployment Fixes and Performance Improvements',
+      description: 'Fixed deployment issues and improved application performance',
+      changes: [
+        'Fixed Supabase authentication integration',
+        'Removed Stripe integration to resolve deployment issues',
+        'Optimized bundle size with improved build configuration',
+        'Added Academic Resources page with categorized learning materials',
+        'Fixed routing issues for better compatibility with static hosting',
+        'Updated branding with "Powered by in4metrix" in footer'
+      ],
+      commitId: '45012e4'
+    },
+    {
+      date: 'April 8, 2025',
       version: '0.3.0',
       title: 'User Guide and UI Improvements',
       description: 'Added comprehensive user documentation and fixed UI issues',
