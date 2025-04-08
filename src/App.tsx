@@ -18,6 +18,7 @@ const AboutPage = lazy(() => import("./pages/AboutPage"));
 const HelpCenterPage = lazy(() => import("./pages/HelpCenterPage"));
 const ApiDocumentationPage = lazy(() => import("./pages/ApiDocumentationPage"));
 const BlogPage = lazy(() => import("./pages/BlogPage"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
 const TermsOfServicePage = lazy(() => import("./pages/TermsOfServicePage"));
 const OurMissionPage = lazy(() => import("./pages/OurMissionPage"));
 const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage"));
@@ -84,6 +85,7 @@ const App = () => (
                   <Route path="/help-center" element={<HelpCenterPage />} />
                   <Route path="/api-documentation" element={<ApiDocumentationPage />} />
                   <Route path="/blog" element={<BlogPage />} />
+                  <Route path="/blog/:id" element={<BlogPostPage />} />
                   <Route path="/terms-of-service" element={<TermsOfServicePage />} />
                   <Route path="/our-mission" element={<OurMissionPage />} />
                   <Route path="/open-source" element={<OpenSourcePage />} />

@@ -4,55 +4,9 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
+import { blogPosts } from '@/data/blog';
 
 const BlogPage: React.FC = () => {
-  const blogPosts = [
-    {
-      id: 1,
-      title: 'How to Avoid Plagiarism in Academic Writing',
-      excerpt: 'Learn the best practices for citing sources and avoiding unintentional plagiarism in your research papers.',
-      date: 'May 15, 2023',
-      author: 'Dr. Sarah Johnson',
-      readTime: '8 min read',
-      category: 'Academic Writing'
-    },
-    {
-      id: 2,
-      title: 'The Importance of Grammar in Professional Communication',
-      excerpt: 'Discover why proper grammar is essential for effective communication in the workplace and how it impacts your professional image.',
-      date: 'April 22, 2023',
-      author: 'Michael Chen',
-      readTime: '6 min read',
-      category: 'Professional Development'
-    },
-    {
-      id: 3,
-      title: 'Top 10 Common Grammar Mistakes and How to Fix Them',
-      excerpt: 'A comprehensive guide to the most frequent grammar errors made by writers and simple solutions to correct them.',
-      date: 'March 10, 2023',
-      author: 'Emily Rodriguez',
-      readTime: '10 min read',
-      category: 'Grammar Tips'
-    },
-    {
-      id: 4,
-      title: 'How to Properly Cite Sources in Different Citation Styles',
-      excerpt: 'A detailed comparison of APA, MLA, Chicago, and Harvard citation styles with examples for various source types.',
-      date: 'February 28, 2023',
-      author: 'Prof. David Wilson',
-      readTime: '12 min read',
-      category: 'Citation Guides'
-    },
-    {
-      id: 5,
-      title: 'The Evolution of Plagiarism Detection Technology',
-      excerpt: 'From manual checking to AI-powered tools: How technology has transformed the way we detect and prevent plagiarism.',
-      date: 'January 15, 2023',
-      author: 'Alex Thompson',
-      readTime: '7 min read',
-      category: 'Technology'
-    }
-  ];
 
   return (
     <div className="min-h-screen flex flex-col">
