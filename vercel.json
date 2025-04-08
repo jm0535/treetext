@@ -7,7 +7,5 @@
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
-  "env": {
-    "REACT_APP_STRIPE_PUBLISHABLE_KEY": "@stripe_publishable_key"
-  }
+  "env": {}
 }
