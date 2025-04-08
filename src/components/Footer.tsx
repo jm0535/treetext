@@ -109,7 +109,7 @@ const Footer: React.FC = () => {
                 {[
                   { label: "Plagiarism Checker", path: "/" },
                   { label: "Grammar Checker", path: "/" },
-                  { label: "Citation Generator", path: "/cite" },
+                  { label: "Citation Generator", path: "/dashboard" },
                   { label: "Writing Resources", path: "/features" },
                   { label: "PDF Processing", path: "/features" },
                 ].map((item, index) => (
@@ -131,7 +131,7 @@ const Footer: React.FC = () => {
               <ul className="space-y-3">
                 {[
                   { label: "Help Center", path: "/help-center" },
-                  { label: "API Documentation", path: "/api-documentation", external: true },
+                  { label: "API Documentation", path: "/api-documentation" },
                   { label: "Changelog", path: "/changelog" },
                   { label: "Blog", path: "/blog" },
                   { label: "Academic Resources", path: "/academic-resources" },
@@ -199,10 +199,10 @@ const Footer: React.FC = () => {
             © {new Date().getFullYear()} treeText. Powered by in4metrix. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0 flex items-center gap-6">
-            <Link to="/privacy-policy" className="text-muted-foreground transition-all duration-300 hover:text-primary">Privacy Policy</Link>
+            <Link to="/terms-of-service" className="text-muted-foreground transition-all duration-300 hover:text-primary">Privacy Policy</Link>
             <Link to="/terms-of-service" className="text-muted-foreground transition-all duration-300 hover:text-primary">Terms of Service</Link>
-            <Link to="/cookies" className="text-muted-foreground transition-all duration-300 hover:text-primary">Cookie Policy</Link>
-            <Link to="/sitemap" className="text-muted-foreground transition-all duration-300 hover:text-primary">Sitemap</Link>
+            <Link to="/terms-of-service" className="text-muted-foreground transition-all duration-300 hover:text-primary">Cookie Policy</Link>
+            <Link to="/help-center" className="text-muted-foreground transition-all duration-300 hover:text-primary">Help Center</Link>
           </div>
         </motion.div>
       </div>
