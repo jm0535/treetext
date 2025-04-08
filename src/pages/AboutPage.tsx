@@ -132,7 +132,11 @@ const AboutPage: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Help us improve treeText by contributing to our GitHub repository
                   </p>
-                  <Button variant="outline" size="sm">Join on GitHub</Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://github.com/jm0535/treetext" target="_blank" rel="noopener noreferrer">
+                      Join on GitHub
+                    </a>
+                  </Button>
                 </div>
                 
                 <div className="flex flex-col items-center text-center">

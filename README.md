@@ -1,80 +1,84 @@
-# TreeText - Advanced Text Analysis Tool
+# TreeText - Free & Open Source Text Analysis Tool
 
-## Project info
+<p align="center">
+  <a href="https://github.com/jm0535/treetext">
+    <img src="public/logo.png" height="128">
+  </a>
+</p>
 
-**URL**: https://lovable.dev/projects/8534b5fd-95d8-4a00-9613-1af4011e3d08
+<p align="center">
+TreeText is a powerful, free, and open-source text analysis tool designed to help students and academics improve their writing.
+</p>
 
-## How can I edit this code?
+<p align="center">
+  <a href="https://github.com/jm0535/treetext/stargazers"><img src="https://img.shields.io/github/stars/jm0535/treetext" alt="Stars Badge"/></a>
+  <a href="https://github.com/jm0535/treetext/network/members"><img src="https://img.shields.io/github/forks/jm0535/treetext" alt="Forks Badge"/></a>
+  <a href="https://github.com/jm0535/treetext/pulls"><img src="https://img.shields.io/github/issues-pr/jm0535/treetext" alt="Pull Requests Badge"/></a>
+  <a href="https://github.com/jm0535/treetext/issues"><img src="https://img.shields.io/github/issues/jm0535/treetext" alt="Issues Badge"/></a>
+  <a href="https://github.com/jm0535/treetext/graphs/contributors"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/jm0535/treetext?color=2b9348"></a>
+  <a href="https://github.com/jm0535/treetext/blob/master/LICENSE"><img src="https://img.shields.io/github/license/jm0535/treetext?color=2b9348" alt="License Badge"/></a>
+</p>
 
-There are several ways of editing your application.
+## 🌟 Features
 
-**Use Lovable**
+- **Plagiarism Detection**: Identify potentially plagiarized content with detailed source matching
+- **Grammar Checking**: Get intelligent suggestions for grammar, style, and clarity improvements
+- **Readability Analysis**: Understand how accessible your writing is with comprehensive metrics
+- **Citation Generation**: Automatically format citations in APA, MLA, Chicago, and other styles
+- **100% Free & Private**: No paywalls, no ads, and your data stays private
+- **Open Source**: Transparent codebase that anyone can inspect or contribute to
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8534b5fd-95d8-4a00-9613-1af4011e3d08) and start prompting.
+## 🚀 Getting Started
 
-Changes made via Lovable will be committed automatically to this repo.
+### Prerequisites
 
-**Use your preferred IDE**
+- Node.js 18+ - [Install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+- npm 9+ (comes with Node.js)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Installation
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```bash
+# Clone the repository
+git clone https://github.com/jm0535/treetext.git
 
-Follow these steps:
+# Navigate to project directory
+cd treetext
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+# Install dependencies
+npm install
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:5173` to see the application running.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 🛠️ Built With
 
-**Use GitHub Codespaces**
+- [Vite](https://vitejs.dev/) - Next Generation Frontend Tooling
+- [React](https://reactjs.org/) - A JavaScript library for building user interfaces
+- [TypeScript](https://www.typescriptlang.org/) - JavaScript with syntax for types
+- [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework
+- [shadcn/ui](https://ui.shadcn.com/) - Re-usable components built with Radix UI and Tailwind
+- [React Query](https://tanstack.com/query/latest) - Powerful data synchronization for React
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🤝 Contributing
 
-## What technologies are used for this project?
+Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
 
-TreeText is an advanced text analysis tool that helps users improve their writing by providing comprehensive analysis in three key areas:
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-- **Plagiarism Detection**: Identifies potentially plagiarized content and provides originality scores
-- **Grammar Checking**: Detects grammar and style issues with suggestions for improvement
-- **Readability Analysis**: Evaluates text readability with metrics and recommendations
+See our [Contributing Guide](CONTRIBUTING.md) for more information.
 
-This project is built with:
+## 📝 License
 
-- Vite - Fast build tool and development server
-- TypeScript - Type-safe JavaScript for better code quality
-- React - UI component library for building interactive interfaces
-- shadcn-ui - Component library built on Radix UI and Tailwind CSS
-- Tailwind CSS - Utility-first CSS framework
-- React Query - Data fetching and state management library
+Distributed under the MIT License. See `LICENSE` for more information.
 
-## How can I deploy this project?
+## 🙏 Acknowledgments
 
-Simply open [Lovable](https://lovable.dev/projects/8534b5fd-95d8-4a00-9613-1af4011e3d08) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- Thanks to all our contributors who help make TreeText better
+- Special thanks to the open-source community for the amazing tools that make this possible

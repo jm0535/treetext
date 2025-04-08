@@ -97,8 +97,10 @@ const CitationPage: React.FC = () => {
               please visit our GitHub repository or consider supporting the project through donations.
             </p>
             <div className="flex flex-wrap gap-4 mt-6">
-              <Button className="bg-kopitree-blue hover:bg-kopitree-blue/90 dark:bg-kopitree-teal dark:hover:bg-kopitree-teal/90">
-                GitHub Repository
+              <Button asChild className="bg-kopitree-blue hover:bg-kopitree-blue/90 dark:bg-kopitree-teal dark:hover:bg-kopitree-teal/90">
+                <a href="https://github.com/jm0535/treetext" target="_blank" rel="noopener noreferrer">
+                  GitHub Repository
+                </a>
               </Button>
               <Button variant="outline">
                 Support the Project

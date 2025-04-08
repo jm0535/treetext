@@ -226,7 +226,11 @@ const ContributePage: React.FC = () => {
                   <div className="flex flex-wrap gap-4">
                     <Button variant="outline" size="sm">Discord Server</Button>
                     <Button variant="outline" size="sm">Twitter</Button>
-                    <Button variant="outline" size="sm">GitHub Discussions</Button>
+                    <Button variant="outline" size="sm" asChild>
+                      <a href="https://github.com/jm0535/treetext/discussions" target="_blank" rel="noopener noreferrer">
+                        GitHub Discussions
+                      </a>
+                    </Button>
                     <Button variant="outline" size="sm">Mailing List</Button>
                   </div>
                 </section>
@@ -272,7 +276,11 @@ const ContributePage: React.FC = () => {
                       <p className="text-muted-foreground mb-4">
                         Support us through GitHub Sponsors, which matches your contribution for the first year.
                       </p>
-                      <Button variant="outline" size="sm">Sponsor on GitHub</Button>
+                      <Button variant="outline" size="sm" asChild>
+                        <a href="https://github.com/sponsors/jm0535" target="_blank" rel="noopener noreferrer">
+                          Sponsor on GitHub
+                        </a>
+                      </Button>
                     </div>
                   </div>
                 </section>

@@ -24,13 +24,17 @@ const OpenSourcePage: React.FC = () => {
               treeText is proudly open source. We believe in transparency, collaboration, and community-driven development.
             </p>
             <div className="flex justify-center gap-4">
-              <Button className="gap-2">
-                <Github className="h-5 w-5" />
-                Star on GitHub
+              <Button className="gap-2" asChild>
+                <a href="https://github.com/jm0535/treetext" target="_blank" rel="noopener noreferrer">
+                  <Github className="h-5 w-5" />
+                  Star on GitHub
+                </a>
               </Button>
-              <Button variant="outline" className="gap-2">
-                <Code className="h-5 w-5" />
-                View Source Code
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="https://github.com/jm0535/treetext" target="_blank" rel="noopener noreferrer">
+                  <Code className="h-5 w-5" />
+                  View Source Code
+                </a>
               </Button>
             </div>
           </div>
@@ -143,9 +147,11 @@ const OpenSourcePage: React.FC = () => {
               <p className="text-muted-foreground mb-4">
                 Plus many more amazing contributors who help make treeText better every day!
               </p>
-              <Button variant="outline" className="gap-2">
-                <Star className="h-5 w-5" />
-                View All Contributors
+              <Button variant="outline" className="gap-2" asChild>
+                <a href="https://github.com/jm0535/treetext/graphs/contributors" target="_blank" rel="noopener noreferrer">
+                  <Star className="h-5 w-5" />
+                  View All Contributors
+                </a>
               </Button>
             </div>
           </section>
@@ -164,7 +170,11 @@ const OpenSourcePage: React.FC = () => {
                   Help us improve treeText by fixing bugs, adding features, or optimizing performance. Our GitHub
                   repository has a list of issues labeled "good first issue" for newcomers.
                 </p>
-                <Button variant="outline">Visit GitHub Repository</Button>
+                <Button variant="outline" asChild>
+                  <a href="https://github.com/jm0535/treetext" target="_blank" rel="noopener noreferrer">
+                    Visit GitHub Repository
+                  </a>
+                </Button>
               </div>
               
               <div className="border p-6 rounded">
@@ -172,7 +182,11 @@ const OpenSourcePage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Help us improve our documentation to make treeText more accessible to users and new contributors.
                 </p>
-                <Button variant="outline">View Documentation</Button>
+                <Button variant="outline" asChild>
+                  <a href="https://github.com/jm0535/treetext/wiki" target="_blank" rel="noopener noreferrer">
+                    View Documentation
+                  </a>
+                </Button>
               </div>
               
               <div className="border p-6 rounded">
@@ -180,7 +194,11 @@ const OpenSourcePage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Use treeText and report any issues you find. Detailed bug reports are invaluable for improving our platform.
                 </p>
-                <Button variant="outline">Submit a Bug Report</Button>
+                <Button variant="outline" asChild>
+                  <a href="https://github.com/jm0535/treetext/issues/new" target="_blank" rel="noopener noreferrer">
+                    Submit a Bug Report
+                  </a>
+                </Button>
               </div>
               
               <div className="border p-6 rounded">
@@ -188,7 +206,11 @@ const OpenSourcePage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Help make treeText available in more languages by contributing translations.
                 </p>
-                <Button variant="outline">Contribute Translations</Button>
+                <Button variant="outline" asChild>
+                  <a href="https://github.com/jm0535/treetext/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener noreferrer">
+                    Contribute Translations
+                  </a>
+                </Button>
               </div>
             </div>
           </section>

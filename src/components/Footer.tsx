@@ -50,7 +50,7 @@ const Footer: React.FC = () => {
             </p>
             <div className="flex items-center gap-4 mb-6">
               <a 
-                href="https://github.com" 
+                href="https://github.com/jm0535/treetext" 
                 target="_blank" 
                 rel="noopener noreferrer" 
                 className="text-muted-foreground hover:text-foreground transition-colors hover:scale-110 duration-200"
