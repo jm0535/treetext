@@ -47,11 +47,23 @@ export interface GrammarIssue {
  * Readability metrics for text analysis
  */
 export interface ReadabilityMetrics {
+  // Primary readability scores
   fleschKincaidScore: number;
+  fleschKincaidGradeLevel?: number;
+  gunningFogIndex?: number;
+  colemanLiauIndex?: number;
+  smogIndex?: number;
+  automatedReadabilityIndex?: number;
+  overallReadabilityScore?: number;
+  
+  // Text statistics
   avgSentenceLength: number;
   avgWordLength: number;
+  syllablesPerWord?: number;
+  complexWordPercentage?: number;
   totalWords: number;
   totalSentences: number;
+  totalSyllables?: number;
   totalParagraphs: number;
   readingTime: number; // in minutes
 }

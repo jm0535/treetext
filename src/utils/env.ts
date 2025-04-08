@@ -14,6 +14,14 @@ export const ENV = {
     BASE_URL: import.meta.env.VITE_API_BASE_URL || '',
     TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
     RETRY_ATTEMPTS: Number(import.meta.env.VITE_API_RETRY_ATTEMPTS) || 3,
+    
+    // External API keys
+    OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
+    COPYLEAKS_API_KEY: import.meta.env.VITE_COPYLEAKS_API_KEY || '',
+    COPYLEAKS_EMAIL: import.meta.env.VITE_COPYLEAKS_EMAIL || '',
+    LANGUAGETOOL_API_KEY: import.meta.env.VITE_LANGUAGETOOL_API_KEY || '',
+    LANGUAGETOOL_URL: import.meta.env.VITE_LANGUAGETOOL_URL || 'https://api.languagetoolplus.com/v2',
+    TEXTGEARS_API_KEY: import.meta.env.VITE_TEXTGEARS_API_KEY || '',
   },
   
   // Feature flags
