@@ -129,9 +129,11 @@ const HelpCenterPage: React.FC = () => {
                 <p className="text-muted-foreground mb-4">
                   Our support team is available 24/7 to assist you with any questions or issues.
                 </p>
-                <Button variant="outline" className="w-fit">
-                  <MailIcon className="h-4 w-4 mr-2" />
-                  Submit Support Ticket
+                <Button variant="outline" className="w-fit" asChild>
+                  <a href="/contact-us">
+                    <MailIcon className="h-4 w-4 mr-2" />
+                    Submit Support Ticket
+                  </a>
                 </Button>
               </div>
               <div className="flex-shrink-0 bg-muted-foreground/5 rounded-lg p-8">

@@ -102,8 +102,10 @@ const CitationPage: React.FC = () => {
                   GitHub Repository
                 </a>
               </Button>
-              <Button variant="outline">
-                Support the Project
+              <Button variant="outline" asChild>
+                <a href="https://github.com/sponsors/jm0535" target="_blank" rel="noopener noreferrer">
+                  Support the Project
+                </a>
               </Button>
             </div>
           </div>

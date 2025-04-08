@@ -82,7 +82,7 @@ const BlogPage: React.FC = () => {
                   <div className="text-sm text-muted-foreground">
                     By {post.author} · {post.readTime}
                   </div>
-                  <Link to={`#`} className="text-primary font-medium">
+                  <Link to={`/blog/${post.id}`} className="text-primary font-medium hover:underline">
                     Read more →
                   </Link>
                 </CardFooter>
@@ -92,10 +92,15 @@ const BlogPage: React.FC = () => {
           
           <div className="flex justify-center">
             <div className="flex gap-2">
-              <Link to="#" className="px-4 py-2 border rounded hover:bg-muted">1</Link>
-              <Link to="#" className="px-4 py-2 border rounded hover:bg-muted">2</Link>
+              <Link to="/blog?page=1" className="px-4 py-2 border rounded bg-primary/10 hover:bg-primary/20 text-primary font-medium">1</Link>
+              <Link to="/blog?page=2" className="px-4 py-2 border rounded hover:bg-muted">2</Link>
               <span className="px-4 py-2">...</span>
-              <Link to="#" className="px-4 py-2 border rounded hover:bg-muted">Next →</Link>
+              <Link to="/blog?page=2" className="px-4 py-2 border rounded hover:bg-muted flex items-center gap-1">
+                <span>Next</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-right">
+                  <path d="m9 18 6-6-6-6"/>
+                </svg>
+              </Link>
             </div>
           </div>
         </div>

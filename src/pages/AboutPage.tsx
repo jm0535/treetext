@@ -145,7 +145,11 @@ const AboutPage: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Tell other students and academics about this free alternative
                   </p>
-                  <Button variant="outline" size="sm">Share treeText</Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://twitter.com/intent/tweet?text=Check%20out%20treeText%2C%20a%20free%20and%20open-source%20text%20analysis%20tool%20for%20students%20and%20academics!%20https%3A%2F%2Fgithub.com%2Fjm0535%2Ftreetext" target="_blank" rel="noopener noreferrer">
+                      Share treeText
+                    </a>
+                  </Button>
                 </div>
                 
                 <div className="flex flex-col items-center text-center">
@@ -156,7 +160,11 @@ const AboutPage: React.FC = () => {
                   <p className="text-sm text-muted-foreground mb-4">
                     Support server costs and development with a small donation
                   </p>
-                  <Button variant="outline" size="sm">Donate</Button>
+                  <Button variant="outline" size="sm" asChild>
+                    <a href="https://github.com/sponsors/jm0535" target="_blank" rel="noopener noreferrer">
+                      Donate
+                    </a>
+                  </Button>
                 </div>
               </div>
             </div>
@@ -166,8 +174,10 @@ const AboutPage: React.FC = () => {
               <p className="mb-4">
                 Have questions, suggestions, or want to report a bug? We'd love to hear from you!
               </p>
-              <Button className="bg-kopitree-blue hover:bg-kopitree-blue/90 dark:bg-kopitree-teal dark:hover:bg-kopitree-teal/90">
-                Contact Us
+              <Button className="bg-kopitree-blue hover:bg-kopitree-blue/90 dark:bg-kopitree-teal dark:hover:bg-kopitree-teal/90" asChild>
+                <a href="/contact-us">
+                  Contact Us
+                </a>
               </Button>
             </div>
           </div>
