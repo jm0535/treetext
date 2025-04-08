@@ -5,7 +5,7 @@ import Footer from '@/components/Footer';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Search, Book, FileText, HelpCircle, Video, Lightbulb, MailIcon } from 'lucide-react';
+import { Search, Book, FileText, HelpCircle, Video, Lightbulb, MailIcon, HeadphonesIcon } from 'lucide-react';
 
 const HelpCenterPage: React.FC = () => {
   return (
@@ -134,12 +134,8 @@ const HelpCenterPage: React.FC = () => {
                   Submit Support Ticket
                 </Button>
               </div>
-              <div className="flex-shrink-0 bg-muted-foreground/5 rounded-lg p-4">
-                <img
-                  src="/images/support.png"
-                  alt="Support Team"
-                  className="w-48 h-48 object-contain"
-                />
+              <div className="flex-shrink-0 bg-muted-foreground/5 rounded-lg p-8">
+                <HeadphonesIcon className="w-32 h-32 text-kopitree-blue" />
               </div>
             </div>
           </section>
