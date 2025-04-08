@@ -128,7 +128,11 @@ const Navigation: React.FC = () => {
           aria-label="TreeText Home"
         >
           <div className="absolute -inset-1 rounded-full bg-primary/10 scale-0 group-hover:scale-100 transition-transform duration-300" />
-          <TreeTextLogo className="h-6 w-6 text-primary relative transition-transform group-hover:scale-110 duration-300" />
+          <img 
+            src="/treetext_logo_large.svg" 
+            alt="TreeText Logo" 
+            className="h-8 w-auto relative transition-transform group-hover:scale-110 duration-300" 
+          />
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-xl relative">
               <span className="text-primary group-hover:text-primary/90 transition-colors duration-300">tree</span>
