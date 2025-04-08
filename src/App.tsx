@@ -3,11 +3,13 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Suspense, lazy } from "react";
 import { ErrorBoundary as ReactErrorBoundary } from "react-error-boundary";
 import { ThemeProvider } from "./components/ThemeProvider";
 import { TextAnalysisProvider } from "./contexts/TextAnalysisContext.tsx";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Lazy-loaded components for better performance
 const Index = lazy(() => import("./pages/Index"));
@@ -24,6 +26,14 @@ const OurMissionPage = lazy(() => import("./pages/OurMissionPage"));
 const OpenSourcePage = lazy(() => import("./pages/OpenSourcePage"));
 const ContributePage = lazy(() => import("./pages/ContributePage"));
 const ContactUsPage = lazy(() => import("./pages/ContactUsPage"));
+
+// Auth pages
+const SignInPage = lazy(() => import("./pages/SignInPage"));
+const SignUpPage = lazy(() => import("./pages/SignUpPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 
 // Error Boundary component
 const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
@@ -71,33 +81,50 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ErrorBoundary>
       <ThemeProvider>
-        <TextAnalysisProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <Suspense fallback={<Loading />}>
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/cite" element={<CitationPage />} />
-                  <Route path="/features" element={<FeaturesPage />} />
-                  <Route path="/about" element={<AboutPage />} />
-                  <Route path="/help-center" element={<HelpCenterPage />} />
-                  <Route path="/api-documentation" element={<ApiDocumentationPage />} />
-                  <Route path="/blog" element={<BlogPage />} />
-                  <Route path="/blog/:id" element={<BlogPostPage />} />
-                  <Route path="/terms-of-service" element={<TermsOfServicePage />} />
-                  <Route path="/our-mission" element={<OurMissionPage />} />
-                  <Route path="/open-source" element={<OpenSourcePage />} />
-                  <Route path="/contribute" element={<ContributePage />} />
-                  <Route path="/contact-us" element={<ContactUsPage />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </BrowserRouter>
-          </TooltipProvider>
-        </TextAnalysisProvider>
+        <AuthProvider>
+          <TextAnalysisProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <BrowserRouter>
+                <Suspense fallback={<Loading />}>
+                  <Routes>
+                    {/* Public routes */}
+                    <Route path="/" element={<Index />} />
+                    <Route path="/features" element={<FeaturesPage />} />
+                    <Route path="/about" element={<AboutPage />} />
+                    <Route path="/help-center" element={<HelpCenterPage />} />
+                    <Route path="/api-documentation" element={<ApiDocumentationPage />} />
+                    <Route path="/blog" element={<BlogPage />} />
+                    <Route path="/blog/:id" element={<BlogPostPage />} />
+                    <Route path="/terms-of-service" element={<TermsOfServicePage />} />
+                    <Route path="/our-mission" element={<OurMissionPage />} />
+                    <Route path="/open-source" element={<OpenSourcePage />} />
+                    <Route path="/contact-us" element={<ContactUsPage />} />
+
+                    {/* Authentication routes */}
+                    <Route path="/signin" element={<SignInPage />} />
+                    <Route path="/signup" element={<SignUpPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+
+                    {/* Protected routes */}
+                    <Route element={<ProtectedRoute />}>
+                      <Route path="/dashboard" element={<DashboardPage />} />
+                      <Route path="/profile" element={<ProfilePage />} />
+                      <Route path="/settings" element={<SettingsPage />} />
+                      <Route path="/cite" element={<CitationPage />} />
+                      <Route path="/contribute" element={<ContributePage />} />
+                      {/* Add more protected routes here */}
+                    </Route>
+
+                    {/* Catch-all route */}
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </Suspense>
+              </BrowserRouter>
+            </TooltipProvider>
+          </TextAnalysisProvider>
+        </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
   </QueryClientProvider>
