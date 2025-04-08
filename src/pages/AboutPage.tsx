@@ -4,7 +4,7 @@ import Navigation from '@/components/Navigation';
 import Footer from '@/components/Footer';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Github, Heart, Coffee, Globe, BookOpen, Code } from 'lucide-react';
+import { Github, Heart, Coffee, Globe, BookOpen, Code, Users, Building2 } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 const AboutPage: React.FC = () => {
@@ -99,11 +99,9 @@ const AboutPage: React.FC = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row gap-8 justify-center items-center mb-8">
-                <img 
-                  src="/placeholder.svg" 
-                  alt="Team Placeholder" 
-                  className="w-64 h-64 rounded-md object-cover"
-                />
+                <div className="w-64 h-64 rounded-md bg-muted-foreground/5 flex items-center justify-center">
+                  <Building2 className="w-32 h-32 text-kopitree-blue dark:text-kopitree-teal" />
+                </div>
                 <div>
                   <h3 className="text-xl font-bold mb-2">A Community Effort</h3>
                   <p className="mb-4">
