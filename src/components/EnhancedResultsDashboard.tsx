@@ -564,18 +564,6 @@ const EnhancedResultsDashboard: React.FC = () => {
             </div>
             
             <div className="flex flex-wrap gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefreshAnalysis}
-                disabled={isAnalyzing}
-                aria-label="Refresh analysis"
-                className="bg-background hover:bg-background/80 transition-all duration-300"
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
-                {isAnalyzing ? 'Analyzing...' : 'Refresh'}
-              </Button>
-              
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
@@ -583,11 +571,15 @@ const EnhancedResultsDashboard: React.FC = () => {
                     size="sm"
                     className="bg-background hover:bg-background/80 transition-all duration-300"
                   >
-                    <Share2 className="h-4 w-4 mr-2" />
-                    Share
+                    <FileCheck className="h-4 w-4 mr-2" />
+                    Actions
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuItem onClick={handleRefreshAnalysis} disabled={isAnalyzing}>
+                    <RefreshCw className={`h-4 w-4 mr-2 ${isAnalyzing ? 'animate-spin' : ''}`} />
+                    {isAnalyzing ? 'Analyzing...' : 'Refresh'}
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigator.clipboard.writeText(window.location.href)}>
                     <Link2 className="h-4 w-4 mr-2" />
                     Copy Link
@@ -596,40 +588,25 @@ const EnhancedResultsDashboard: React.FC = () => {
                     <Mail className="h-4 w-4 mr-2" />
                     Email
                   </DropdownMenuItem>
+                  {FEATURES.EXPORT_RESULTS && (
+                    <>
+                      <DropdownMenuItem onClick={exportResults} disabled={isExporting}>
+                        <Download className={`h-4 w-4 mr-2 ${isExporting ? 'animate-bounce' : ''}`} />
+                        Export as Text
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => window.print()}>
+                        <Printer className="h-4 w-4 mr-2" />
+                        Print / PDF
+                      </DropdownMenuItem>
+                    </>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
-              
-              {FEATURES.EXPORT_RESULTS && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isExporting}
-                      className="bg-background hover:bg-background/80 transition-all duration-300"
-                    >
-                      <Download className={`h-4 w-4 mr-2 ${isExporting ? 'animate-bounce' : ''}`} />
-                      {isExporting ? 'Exporting...' : 'Export'}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={exportResults}>
-                      <FileText className="h-4 w-4 mr-2" />
-                      Text File (.txt)
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => window.print()}>
-                      <Printer className="h-4 w-4 mr-2" />
-                      Print / PDF
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
               
               <Button
                 size="sm"
                 className="bg-indigo-600 hover:bg-indigo-700 text-white transition-all duration-300 shadow-md"
                 onClick={() => {
-                  // Scroll to text editor
                   const textEditor = document.querySelector('#text-editor');
                   if (textEditor) {
                     textEditor.scrollIntoView({ behavior: 'smooth' });
