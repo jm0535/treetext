@@ -11,7 +11,7 @@ const post5: BlogPost = {
   category: 'Technology',
   content: (
     <>
-      <p className="lead">
+      <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2">
         Plagiarism detection has evolved dramatically over the past few decades, from manual comparison 
         to sophisticated AI-powered systems. This article explores this technological evolution and its 
         impact on academic integrity.

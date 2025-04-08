@@ -11,7 +11,7 @@ const post2: BlogPost = {
   category: 'Professional Development',
   content: (
     <>
-      <p className="lead">
+      <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2">
         In the professional world, how you communicate can be just as important as what you communicate. 
         Proper grammar serves as the foundation for clear, effective workplace communication and can significantly 
         impact how you're perceived by colleagues, clients, and supervisors.

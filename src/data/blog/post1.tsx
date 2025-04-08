@@ -11,7 +11,7 @@ const post1: BlogPost = {
   category: 'Academic Writing',
   content: (
     <>
-      <p className="lead">
+      <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2">
         Plagiarism is a serious academic offense that can have severe consequences for students and researchers. 
         Understanding how to properly attribute sources and incorporate others' ideas into your work is essential 
         for maintaining academic integrity.

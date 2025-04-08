@@ -11,7 +11,7 @@ const post3: BlogPost = {
   category: 'Grammar Tips',
   content: (
     <>
-      <p className="lead">
+      <p className="lead text-xl text-foreground/90 mb-8 font-medium border-l-4 border-primary/70 pl-4 py-2">
         Even experienced writers make grammar mistakes. Identifying and correcting these common errors can 
         significantly improve your writing quality and help you communicate more effectively.
       </p>
