@@ -13,21 +13,14 @@ export default defineConfig(({ mode }) => {
       port: 8080,
       cors: true,
     },
-    plugins: [
-      react(),
-      mode === 'development' && componentTagger(),
-    ].filter(Boolean),
-    resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "./src"),
-      },
-    },
     build: {
       // Improve build performance and output
       minify: isProduction,
       sourcemap: !isProduction,
       // Increase the warning limit for chunk size
       chunkSizeWarningLimit: 1000,
+      // Handle WASM imports
+      assetsInlineLimit: 0,
       rollupOptions: {
         output: {
           manualChunks: (id) => {
@@ -66,6 +59,16 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    plugins: [
+      react(),
+      mode === 'development' && componentTagger(),
+    ].filter(Boolean),
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
+
     preview: {
       port: 4173,
       open: true,
