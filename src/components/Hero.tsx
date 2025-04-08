@@ -74,7 +74,7 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
                   ))}
                 </div>
                 <span>
-                  <strong>10,000+</strong> students already trust treeText 
+                  <strong>40+</strong> students already trust treeText
                 </span>
               </div>
             </div>
