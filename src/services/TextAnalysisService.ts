@@ -640,7 +640,7 @@ class TextAnalysisService {
           "hypothesis", "methodology", "statistical significance", "p-value", 
           "experimental results", "control group", "empirical evidence"
         ];
-      } else if (languageModel === 'legal') {
+      } else if (modelType === 'legal') {
         commonPhrases = [...commonPhrases, 
           "pursuant to", "hereinafter", "aforementioned", "jurisprudence", 
           "legal precedent", "statutory interpretation", "case law"
