@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 const SignUpForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -14,6 +15,7 @@ const SignUpForm: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { signUp } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,9 +43,27 @@ const SignUpForm: React.FC = () => {
       // Check if email confirmation is required
       if (data?.user && !data.user.confirmed_at) {
         setSuccessMessage('Registration successful! Please check your email to confirm your account.');
+
+        // Show success toast
+        toast({
+          title: "Account created",
+          description: "Please check your email to confirm your account.",
+          variant: "default"
+        });
+      } else if (data?.user) {
+        // Account was created and auto-confirmed
+        toast({
+          title: "Account created successfully",
+          description: "Welcome to TreeText!",
+          variant: "default"
+        });
+
+        // Redirect to dashboard
+        navigate('/dashboard');
       }
-    } catch (error: any) {
-      setError(error.message || 'Failed to sign up');
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }

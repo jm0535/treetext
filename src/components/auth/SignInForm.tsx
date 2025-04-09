@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from '@/hooks/use-toast';
 
 const SignInForm: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -12,6 +13,7 @@ const SignInForm: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
+  const navigate = useNavigate();
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,8 +23,19 @@ const SignInForm: React.FC = () => {
     try {
       const { error } = await signIn(email, password);
       if (error) throw error;
-    } catch (error: any) {
-      setError(error.message || 'Failed to sign in');
+
+      // Show success toast
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back to TreeText!",
+        variant: "default"
+      });
+
+      // Redirect to dashboard
+      navigate('/dashboard');
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
