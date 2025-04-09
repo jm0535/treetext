@@ -86,17 +86,17 @@ const EnhancedResultsDashboard: React.FC = () => {
     }
   }, [currentText, analyzeText]);
   
-  // Helper function to get color based on similarity score (lower is better)
-  const getSimilarityScoreColor = (similarityScore: number) => {
-    if (similarityScore <= 10) return "text-emerald-500";
-    if (similarityScore <= 30) return "text-amber-500";
+  // Helper function to get color based on originality score (higher is better)
+  const getSimilarityScoreColor = (originalityScore: number) => {
+    if (originalityScore >= 90) return "text-emerald-500";
+    if (originalityScore >= 70) return "text-amber-500";
     return "text-rose-600";
   };
   
-  // Helper function to get progress color based on similarity score (lower is better)
-  const getSimilarityProgressColor = (similarityScore: number) => {
-    if (similarityScore <= 10) return "bg-emerald-500";
-    if (similarityScore <= 30) return "bg-amber-500";
+  // Helper function to get progress color based on originality score (higher is better)
+  const getSimilarityProgressColor = (originalityScore: number) => {
+    if (originalityScore >= 90) return "bg-emerald-500";
+    if (originalityScore >= 70) return "bg-amber-500";
     return "bg-rose-600";
   };
   
@@ -200,27 +200,27 @@ const EnhancedResultsDashboard: React.FC = () => {
   const renderPlagiarismTab = () => {
     const { plagiarismInstances, plagiarismScore } = currentAnalysis;
 
-    // Calculate similarity score (inverse of originality score)
-    const similarityScore = 100 - plagiarismScore;
+    // Use the originality score directly
+    const originalityScore = plagiarismScore;
     return (
       <div>
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 className="text-xl font-bold mb-1 text-blue-700 dark:text-blue-400">Similarity Index</h3>
+            <h3 className="text-xl font-bold mb-1 text-blue-700 dark:text-blue-400">Originality Score</h3>
             <p className="text-muted-foreground text-sm">
-              Lower score indicates more original content
+              Higher score indicates more original content
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-center">
-            <span className={`text-4xl font-bold ${getSimilarityScoreColor(similarityScore)}`}>
-              {Math.round(similarityScore)}%
+            <span className={`text-4xl font-bold ${getSimilarityScoreColor(originalityScore)}`}>
+              {Math.round(originalityScore)}%
             </span>
           </div>
         </div>
         <Progress
-          value={similarityScore}
+          value={originalityScore}
           max={100}
-          className={`h-2 mb-8 ${getSimilarityProgressColor(similarityScore)}`}
+          className={`h-2 mb-8 ${getSimilarityProgressColor(originalityScore)}`}
         />
 
         <div className="mb-6">
@@ -502,10 +502,10 @@ const EnhancedResultsDashboard: React.FC = () => {
               </div>
               <div className="flex gap-6 bg-indigo-50 dark:bg-indigo-950/30 p-3 rounded-lg shadow-inner">
                 <div className="text-center">
-                  <div className={`text-xl font-bold ${getSimilarityScoreColor(100 - currentAnalysis.plagiarismScore)}`}>
-                    {Math.round(100 - currentAnalysis.plagiarismScore)}%
+                  <div className={`text-xl font-bold ${getSimilarityScoreColor(currentAnalysis.plagiarismScore)}`}>
+                    {Math.round(currentAnalysis.plagiarismScore)}%
                   </div>
-                  <div className="text-xs text-muted-foreground">Similarity</div>
+                  <div className="text-xs text-muted-foreground">Originality</div>
                 </div>
                 <Separator orientation="vertical" className="h-12" />
                 <div className="text-center">

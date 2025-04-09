@@ -6,10 +6,10 @@ import { STORAGE_KEYS, API_CONFIG, DEFAULT_ANALYSIS_SETTINGS } from "@/utils/con
 import { ENV } from "@/utils/env";
 import axios from "axios";
 import { supabase } from "@/lib/supabase";
-import { 
-  AnalysisResult, 
-  PlagiarismInstance, 
-  GrammarIssue, 
+import {
+  AnalysisResult,
+  PlagiarismInstance,
+  GrammarIssue,
   ReadabilityMetrics,
   AnalysisSettings,
   ApiError
@@ -22,11 +22,11 @@ class TextAnalysisService {
   private static instance: TextAnalysisService;
   private analysisResults: AnalysisResult[] = [];
   private settings: AnalysisSettings;
-  
+
   private constructor() {
     // Load cached results from local storage
     this.loadFromLocalStorage();
-    
+
     // Initialize with default settings
     this.settings = {
       checkPlagiarism: DEFAULT_ANALYSIS_SETTINGS.checkPlagiarism,
@@ -35,7 +35,7 @@ class TextAnalysisService {
       languageModel: DEFAULT_ANALYSIS_SETTINGS.languageModel as "standard" | "academic" | "creative"
     };
   }
-  
+
   /**
    * Get singleton instance
    */
@@ -45,7 +45,7 @@ class TextAnalysisService {
     }
     return TextAnalysisService.instance;
   }
-  
+
   /**
    * Load cached analysis results from local storage
    */
@@ -66,28 +66,28 @@ class TextAnalysisService {
       this.analysisResults = [];
     }
   }
-  
+
   /**
    * Save analysis results to local storage
    */
   private saveToLocalStorage(): void {
     try {
       localStorage.setItem(
-        STORAGE_KEYS.RECENT_ANALYSES, 
+        STORAGE_KEYS.RECENT_ANALYSES,
         JSON.stringify(this.analysisResults)
       );
     } catch (error) {
       console.error('Failed to save analysis results to local storage:', error);
     }
   }
-  
+
   /**
    * Update analysis settings
    */
   public updateSettings(newSettings: Partial<AnalysisSettings>): void {
     this.settings = { ...this.settings, ...newSettings };
   }
-  
+
   /**
    * Get current analysis settings
    */
@@ -102,26 +102,26 @@ class TextAnalysisService {
     if (!text.trim()) {
       throw new Error('Text is empty');
     }
-    
+
     // Check usage limits before proceeding
     if (!UsageService.canPerformAnalysis(text.length)) {
       throw new Error('Usage limit exceeded. Please try again later.');
     }
-    
+
     try {
       // Try to use the API for analysis if enabled in settings
       if (API_CONFIG.USE_API && API_CONFIG.BASE_URL) {
         try {
           const result = await this.analyzeTextWithApi(text);
-          
+
           // Record successful API usage
           UsageService.recordUsage(text.length);
-          
+
           return result;
         } catch (apiError) {
           // Log the API error
           console.error('API analysis failed:', apiError);
-          
+
           // Always fall back to local analysis for any API error
           toast({
             title: 'Using Offline Mode',
@@ -130,18 +130,18 @@ class TextAnalysisService {
           });
         }
       }
-      
+
       // If API is disabled or API call failed, use local analysis
       const result = await this.analyzeTextLocally(text);
-      
+
       // Record usage for local analysis (at reduced rate since it doesn't use external APIs)
       UsageService.recordUsage(text.length, Math.ceil(text.length * 0.1 / 5));
-      
+
       return result;
     } catch (error) {
       // Handle any errors from local analysis
       console.error('Analysis failed:', error);
-      
+
       // Show error message and rethrow
       toast({
         title: 'Analysis Error',
@@ -151,7 +151,7 @@ class TextAnalysisService {
       throw error;
     }
   }
-  
+
   /**
    * Analyze text using the API
    */
@@ -164,18 +164,18 @@ class TextAnalysisService {
           settings: this.settings
         }
       );
-      
+
       // Save the result to history
       this.analysisResults.push(result);
       this.saveToLocalStorage();
-      
+
       return result;
     } catch (error) {
       console.error('API analysis error:', error);
       throw error;
     }
   }
-  
+
   /**
    * Analyze text locally (fallback when API is unavailable)
    */
@@ -186,13 +186,13 @@ class TextAnalysisService {
       const grammarScore = this.calculateGrammarScore(text);
       const readabilityScore = this.calculateReadabilityScore(text);
       const readabilityMetrics = this.calculateReadabilityMetrics(text);
-      
+
       // Detect issues (now async methods)
       const [plagiarismInstances, grammarIssues] = await Promise.all([
         this.detectPlagiarism(text),
         this.detectGrammarIssues(text)
       ]);
-      
+
       // Create result object
       const result: AnalysisResult = {
         id: this.generateId(),
@@ -205,18 +205,18 @@ class TextAnalysisService {
         readabilityMetrics,
         date: new Date()
       };
-      
+
       // Save to local storage
       this.analysisResults.unshift(result);
       this.saveToLocalStorage();
-      
+
       return result;
     } catch (error) {
       console.error('Local analysis failed:', error);
       throw new Error('Failed to analyze text locally: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }
-  
+
   /**
    * Get recent analysis results
    */
@@ -225,29 +225,29 @@ class TextAnalysisService {
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, limit);
   }
-  
+
   /**
    * Get a specific analysis result by ID
    */
   public getResultById(id: string): AnalysisResult | undefined {
     return this.analysisResults.find(result => result.id === id);
   }
-  
+
   /**
    * Delete a specific analysis result
    */
   public deleteResult(id: string): boolean {
     const initialLength = this.analysisResults.length;
     this.analysisResults = this.analysisResults.filter(result => result.id !== id);
-    
+
     if (this.analysisResults.length !== initialLength) {
       this.saveToLocalStorage();
       return true;
     }
-    
+
     return false;
   }
-  
+
   /**
    * Clear all analysis results
    */
@@ -255,32 +255,32 @@ class TextAnalysisService {
     this.analysisResults = [];
     this.saveToLocalStorage();
   }
-  
+
   /**
    * Generate a unique ID
    */
   private generateId(): string {
     return Date.now().toString(36) + Math.random().toString(36).substring(2, 9);
   }
-  
+
   /**
    * Calculate plagiarism score based on text content
    * @param text Text to analyze
-   * @returns Similarity score from 0-100 (lower is more original, higher means more matching content)
+   * @returns Originality score from 0-100 (higher is more original, lower means more matching content)
    */
   private calculatePlagiarismScore(text: string): number {
     // This is a simplified algorithm for local analysis
     // In production, this would use a proper plagiarism detection service
-    
+
     const words = text.toLowerCase().split(/\s+/);
-    
+
     // Common academic phrases that might indicate plagiarism
     const commonPhrases = [
       "in this paper", "according to research", "it can be concluded that",
       "the results indicate", "based on the findings", "previous studies have shown",
       "the data suggests", "as mentioned earlier", "in conclusion", "the analysis shows"
     ];
-    
+
     // Calculate matches
     let matches = 0;
     for (const phrase of commonPhrases) {
@@ -288,19 +288,32 @@ class TextAnalysisService {
         matches++;
       }
     }
-    
+
     // Check for repeated sentences (potential self-plagiarism)
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
     const uniqueSentences = new Set(sentences.map(s => s.trim().toLowerCase()));
     const repetitionFactor = 1 - (uniqueSentences.size / sentences.length);
-    
-    // Calculate similarity score (higher = more matching content, industry standard)
-    const similarityScore = (matches * 3) + (repetitionFactor * 20);
-    
+
+    // Calculate similarity score (higher = more matching content)
+    // Base score on text length, common phrases, and repetition
+    // For longer texts, we need more evidence to claim similarity
+    const textLengthFactor = Math.max(0.5, Math.min(1, words.length / 1000));
+    const baseScore = (matches * 3) + (repetitionFactor * 20);
+    // Apply a more conservative scoring approach
+    // For simulation purposes, we'll use a more aggressive threshold
+    // In a real implementation, this would use more sophisticated algorithms
+    const similarityScore = baseScore * textLengthFactor;
+
+    // For texts with no common phrases and no repetition, ensure originality score is very high
+    if (matches === 0 && repetitionFactor < 0.1) {
+      return Math.max(90, 100 - similarityScore); // Minimum 90% originality for likely original content
+    }
+
+    // Convert similarity score to originality score (inverse)
     // Ensure score is within valid range
-    return Math.max(0, Math.min(100, similarityScore));
+    return Math.max(0, Math.min(100, 100 - similarityScore));
   }
-  
+
   /**
    * Calculate grammar score based on text content
    * @param text Text to analyze
@@ -309,12 +322,12 @@ class TextAnalysisService {
   private calculateGrammarScore(text: string): number {
     // This is a simplified algorithm for local analysis
     // In production, this would use a proper grammar checking service
-    
+
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    
+
     // Start with a baseline score
     let score = 95;
-    
+
     // Grammar and style checks
     const commonErrors = [
       // Commonly confused words
@@ -323,20 +336,20 @@ class TextAnalysisService {
       { pattern: /\b(your|you're)\b/g, penalty: 2 },
       { pattern: /\b(to|too|two)\b/g, penalty: 2 },
       { pattern: /\b(affect|effect)\b/g, penalty: 2 },
-      
+
       // Formatting issues
       { pattern: /\s\s+/g, penalty: 1 },  // Double spaces
       { pattern: /[,.!?][A-Za-z]/g, penalty: 2 }, // Missing space after punctuation
       { pattern: /\s+[,.!?]/g, penalty: 1 }, // Space before punctuation
-      
+
       // Sentence structure issues
       { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 3 }, // Double conjunctions
       { pattern: /\b(very|really|extremely|quite|actually) (very|really|extremely|quite|actually)\b/gi, penalty: 2 }, // Double intensifiers
-      
+
       // Passive voice (simplified detection)
       { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 1 }
     ];
-    
+
     // Apply penalties for detected errors
     commonErrors.forEach(error => {
       const matches = text.match(error.pattern);
@@ -344,7 +357,7 @@ class TextAnalysisService {
         score -= matches.length * error.penalty;
       }
     });
-    
+
     // Penalize very short or very long sentences
     const avgWordsPerSentence = text.split(/\s+/).length / Math.max(1, sentences.length);
     if (avgWordsPerSentence > 30) {
@@ -352,11 +365,11 @@ class TextAnalysisService {
     } else if (avgWordsPerSentence < 5 && sentences.length > 3) {
       score -= Math.min(10, (5 - avgWordsPerSentence) * 2);
     }
-    
+
     // Ensure score is within valid range
     return Math.max(0, Math.min(100, score));
   }
-  
+
   /**
    * Calculate readability score based on text metrics
    * @param text Text to analyze
@@ -364,28 +377,28 @@ class TextAnalysisService {
    */
   private calculateReadabilityScore(text: string): number {
     const metrics = this.calculateReadabilityMetrics(text);
-    
+
     // Implement a simplified Flesch-Kincaid reading ease score
     // Original formula: 206.835 - 1.015 * (words/sentences) - 84.6 * (syllables/words)
     // We'll approximate syllables using average word length
-    
+
     // Adjust the formula to produce a score between 0-100
     // Higher score = easier to read
     let readabilityScore = 206.835 - (1.015 * metrics.avgSentenceLength) - (84.6 * (metrics.avgWordLength / 3));
-    
+
     // Scale to 0-100 range
     readabilityScore = (readabilityScore / 120) * 100;
-    
+
     // Apply penalties for very long paragraphs
     const avgSentencesPerParagraph = metrics.totalSentences / Math.max(1, metrics.totalParagraphs);
     if (avgSentencesPerParagraph > 7) {
       readabilityScore -= Math.min(15, (avgSentencesPerParagraph - 7) * 2);
     }
-    
+
     // Ensure score is within valid range
     return Math.max(0, Math.min(100, readabilityScore));
   }
-  
+
   /**
    * Calculate comprehensive readability metrics for text using industry-standard algorithms
    * @param text Text to analyze
@@ -398,29 +411,29 @@ class TextAnalysisService {
     // 3. SMOG Index (Simple Measure of Gobbledygook)
     // 4. Coleman-Liau Index
     // 5. Automated Readability Index (ARI)
-    
+
     // Advanced text preprocessing for accurate analysis
     const cleanText = text.trim()
       .replace(/\s+/g, ' ') // Normalize whitespace
       .replace(/[\u2018\u2019]/g, "'") // Normalize smart quotes
       .replace(/[\u201C\u201D]/g, '"'); // Normalize smart double quotes
-    
+
     // Tokenization with advanced handling of contractions and hyphenated words
     const words = cleanText.split(/\s+/)
       .filter(w => /[a-zA-Z0-9]/.test(w)) // Only count words with alphanumeric characters
       .map(w => w.replace(/[^a-zA-Z0-9'-]/g, '')); // Clean punctuation except apostrophes and hyphens
-    
+
     // Advanced sentence detection with handling of abbreviations and edge cases
     const sentenceEndPattern = /[.!?](?:\s|$)/g;
     const sentenceMatches = [...cleanText.matchAll(sentenceEndPattern)];
     const sentenceCount = sentenceMatches.length || 1; // Ensure at least 1 sentence
-    
+
     // Paragraph detection
     const paragraphs = cleanText.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-    
+
     // Calculate character count (excluding spaces)
     const charCount = cleanText.replace(/\s/g, '').length;
-    
+
     // Calculate syllable count using advanced algorithm
     const countSyllables = (word: string): number => {
       word = word.toLowerCase().replace(/(?:[^laeiouy]|ed|[^laeiouy]e)$/, '');
@@ -428,43 +441,43 @@ class TextAnalysisService {
       const syllableMatches = word.match(/[aeiouy]{1,2}/g);
       return syllableMatches ? syllableMatches.length : 1;
     };
-    
+
     const totalSyllables = words.reduce((count, word) => count + countSyllables(word), 0);
     const syllablesPerWord = words.length > 0 ? totalSyllables / words.length : 0;
-    
+
     // Calculate complex words (words with 3+ syllables, excluding proper nouns)
     const complexWords = words.filter(word => {
       // Skip proper nouns (approximated as capitalized words not at sentence start)
       if (/^[A-Z][a-z]+$/.test(word) && words.indexOf(word) > 0) return false;
       return countSyllables(word) >= 3;
     });
-    
+
     const complexWordCount = complexWords.length;
     const complexWordPercentage = words.length > 0 ? (complexWordCount / words.length) * 100 : 0;
-    
+
     // Calculate average word and sentence lengths
     const avgWordLength = words.length > 0 ? charCount / words.length : 0;
     const avgSentenceLength = sentenceCount > 0 ? words.length / sentenceCount : 0;
     const avgSentenceLengthChars = sentenceCount > 0 ? charCount / sentenceCount : 0;
-    
+
     // 1. Flesch-Kincaid metrics
     // Reading Ease: 206.835 - 1.015 × (words/sentences) - 84.6 × (syllables/words)
     // Grade Level: 0.39 × (words/sentences) + 11.8 × (syllables/words) - 15.59
     const fleschKincaidReadingEase = 206.835 - (1.015 * avgSentenceLength) - (84.6 * syllablesPerWord);
     const fleschKincaidGradeLevel = (0.39 * avgSentenceLength) + (11.8 * syllablesPerWord) - 15.59;
-    
+
     // 2. Gunning Fog Index: 0.4 × ((words/sentences) + 100 × (complex words/words))
     const gunningFogIndex = 0.4 * (avgSentenceLength + complexWordPercentage);
-    
+
     // 3. SMOG Index: 1.043 × sqrt(30 × (complex words / sentences) + 3.1291)
     const smogIndex = 1.043 * Math.sqrt(30 * (complexWordCount / sentenceCount)) + 3.1291;
-    
+
     // 4. Coleman-Liau Index: 0.0588 × (characters/words × 100) - 0.296 × (sentences/words × 100) - 15.8
     const colemanLiauIndex = 0.0588 * (charCount / words.length * 100) - 0.296 * (sentenceCount / words.length * 100) - 15.8;
-    
+
     // 5. Automated Readability Index: 4.71 × (characters/words) + 0.5 × (words/sentences) - 21.43
     const automatedReadabilityIndex = 4.71 * avgWordLength + 0.5 * avgSentenceLength - 21.43;
-    
+
     // Calculate reading time with adjustments for complexity
     // Average adult reading speed varies by complexity:
     // - Easy text: ~250 wpm
@@ -473,16 +486,16 @@ class TextAnalysisService {
     let readingSpeed = 200; // Default
     if (fleschKincaidReadingEase > 80) readingSpeed = 250; // Easy text
     else if (fleschKincaidReadingEase < 50) readingSpeed = 150; // Difficult text
-    
+
     const readingTimeMinutes = words.length / readingSpeed;
-    
+
     // Normalize Flesch-Kincaid Reading Ease to 0-100 scale
     const normalizedFleschKincaid = Math.max(0, Math.min(100, fleschKincaidReadingEase));
-    
+
     // Calculate overall readability score as weighted average of normalized metrics
     // Convert grade-level metrics to 0-100 scale (lower grade level = higher score)
     const normalizeGradeLevel = (gradeLevel: number) => Math.max(0, Math.min(100, 100 - (gradeLevel * 5)));
-    
+
     const overallReadabilityScore = (
       normalizedFleschKincaid * 0.4 +
       normalizeGradeLevel(fleschKincaidGradeLevel) * 0.15 +
@@ -491,7 +504,7 @@ class TextAnalysisService {
       normalizeGradeLevel(colemanLiauIndex) * 0.1 +
       normalizeGradeLevel(automatedReadabilityIndex) * 0.1
     );
-    
+
     // Determine audience level based on readability metrics
     let audienceLevel = "General Adult";
     if (fleschKincaidGradeLevel <= 6) {
@@ -505,26 +518,26 @@ class TextAnalysisService {
     } else if (fleschKincaidGradeLevel > 16) {
       audienceLevel = "Graduate/Professional";
     }
-    
+
     // Provide specific improvement suggestions based on metrics
     const improvementSuggestions: string[] = [];
-    
+
     if (avgSentenceLength > 25) {
       improvementSuggestions.push("Consider shortening sentences to improve readability.");
     }
-    
+
     if (complexWordPercentage > 20) {
       improvementSuggestions.push("Reduce the number of complex words (words with 3+ syllables).");
     }
-    
+
     if (avgWordLength > 6) {
       improvementSuggestions.push("Use shorter, simpler words where possible.");
     }
-    
+
     if (paragraphs.length > 0 && words.length / paragraphs.length > 100) {
       improvementSuggestions.push("Break long paragraphs into smaller ones for better readability.");
     }
-    
+
     // Determine text complexity level
     let complexityLevel = "Moderate";
     if (overallReadabilityScore >= 80) {
@@ -561,7 +574,7 @@ class TextAnalysisService {
       improvementSuggestions
     };
   }
-  
+
   /**
    * Detect potential plagiarism in text using GPT-4 and Copyleaks approaches
    * @param text Text to analyze
@@ -570,7 +583,7 @@ class TextAnalysisService {
   private async detectPlagiarism(text: string): Promise<PlagiarismInstance[]> {
     // Use real APIs when available, otherwise fall back to simulation
     const instances: PlagiarismInstance[] = [];
-    
+
     try {
       // Try to use real APIs if keys are available
       if (ENV.API.OPENAI_API_KEY || ENV.API.COPYLEAKS_API_KEY) {
@@ -587,21 +600,21 @@ class TextAnalysisService {
         variant: 'default'
       });
     }
-    
+
     // Fall back to simulation if APIs fail or are unavailable
     return this.detectPlagiarismSimulation(text);
   }
-  
+
   /**
    * Detect plagiarism using real APIs (OpenAI for embeddings, Copyleaks for content matching)
    */
   private async detectPlagiarismWithApis(text: string): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
-    
+
     // Check if user is authenticated
     const { data } = await supabase.auth.getSession();
     const isAuthenticated = !!data.session;
-    
+
     // Use OpenAI embeddings API if available AND user is authenticated
     if (ENV.API.OPENAI_API_KEY && isAuthenticated) {
       try {
@@ -633,7 +646,7 @@ class TextAnalysisService {
         console.log('OpenAI API key not available. Skipping embeddings-based plagiarism detection.');
       }
     }
-    
+
     // Try Cohere as first fallback if OpenAI failed
     if (results.length === 0 && ENV.API.COHERE_API_KEY) {
       try {
@@ -654,7 +667,7 @@ class TextAnalysisService {
         });
       }
     }
-    
+
     // Try HuggingFace as second fallback
     if (results.length === 0 && ENV.API.HUGGINGFACE_API_KEY) {
       try {
@@ -675,7 +688,7 @@ class TextAnalysisService {
         });
       }
     }
-    
+
     // Only use Copyleaks as a final fallback if all others failed AND Copyleaks is configured
     if (results.length === 0 && ENV.API.COPYLEAKS_API_KEY && ENV.API.COPYLEAKS_EMAIL) {
       try {
@@ -686,10 +699,10 @@ class TextAnalysisService {
         console.error('Copyleaks plagiarism detection failed:', error);
       }
     }
-    
+
     return results;
   }
-  
+
   /**
    * Detect plagiarism using OpenAI embeddings API
    */
@@ -700,11 +713,11 @@ class TextAnalysisService {
     try {
       // Split text into chunks for processing (using semantic chunking)
       const chunks = this.splitTextIntoSemanticChunks(text);
-      
+
       for (const chunk of chunks) {
         // Skip short chunks
         if (chunk.text.length < 100) continue;
-        
+
         // Call OpenAI API to get embeddings
         const response = await axios.post(
           'https://api.openai.com/v1/embeddings',
@@ -719,7 +732,7 @@ class TextAnalysisService {
             }
           }
         );
-        
+
         // Track token usage from API response if available
         if (response.data?.usage?.total_tokens) {
           totalTokensUsed += response.data.usage.total_tokens;
@@ -727,15 +740,15 @@ class TextAnalysisService {
           // Estimate if not provided
           totalTokensUsed += Math.ceil(chunk.text.length / 5 * 1.5);
         }
-        
+
         if (response.data?.data?.[0]?.embedding) {
           // Store the embedding vector
           const embedding = response.data.data[0].embedding;
-          
+
           // In a production system, we would now query a vector database
           // For this implementation, we'll use a simulated check against academic sources
           const similarityResults = await this.checkEmbeddingSimilarity(chunk.text, embedding);
-          
+
           if (similarityResults.length > 0) {
             for (const match of similarityResults) {
               results.push({
@@ -751,7 +764,7 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       // Update usage with actual token count from API
       if (totalTokensUsed > 0) {
         // Update the token count with actual usage
@@ -762,33 +775,33 @@ class TextAnalysisService {
       console.error('Error using OpenAI embeddings:', error);
       throw error;
     }
-    
+
     return results;
   }
-  
+
   /**
    * Split text into semantic chunks based on paragraphs and natural breaks
    */
   private splitTextIntoSemanticChunks(text: string): {text: string, startIndex: number, endIndex: number}[] {
     const chunks: {text: string, startIndex: number, endIndex: number}[] = [];
-    
+
     // Split by paragraphs first
     const paragraphs = text.split(/\n\s*\n/);
-    
+
     let currentIndex = 0;
     for (const paragraph of paragraphs) {
       if (paragraph.trim().length === 0) {
         currentIndex += paragraph.length + 2; // +2 for the newlines
         continue;
       }
-      
+
       // For longer paragraphs, split into sentences
       if (paragraph.length > 1000) {
         const sentences = paragraph.match(/[^.!?]+[.!?]+/g) || [paragraph];
-        
+
         let sentenceGroup = '';
         let groupStartIndex = currentIndex;
-        
+
         for (const sentence of sentences) {
           if ((sentenceGroup + sentence).length > 1000) {
             // Add the current group as a chunk
@@ -799,17 +812,17 @@ class TextAnalysisService {
                 endIndex: groupStartIndex + sentenceGroup.length
               });
             }
-            
+
             // Start a new group
             sentenceGroup = sentence;
             groupStartIndex = currentIndex;
           } else {
             sentenceGroup += sentence;
           }
-          
+
           currentIndex += sentence.length;
         }
-        
+
         // Add the last group if not empty
         if (sentenceGroup) {
           chunks.push({
@@ -828,10 +841,10 @@ class TextAnalysisService {
         currentIndex += paragraph.length + 2; // +2 for the newlines
       }
     }
-    
+
     return chunks;
   }
-  
+
   /**
    * Detect plagiarism using Cohere embeddings API
    */
@@ -842,7 +855,7 @@ class TextAnalysisService {
     try {
       // Split text into chunks for processing (using semantic chunking)
       const chunks = this.splitTextIntoSemanticChunks(text);
-      
+
       for (const chunk of chunks) {
         // Skip short chunks
         if (chunk.text.length < 100) continue;
@@ -862,7 +875,7 @@ class TextAnalysisService {
             }
           }
         );
-        
+
         // Track token usage (Cohere doesn't provide token count, so we estimate)
         const estimatedTokens = Math.ceil(chunk.text.length / 4);
         totalTokensUsed += estimatedTokens;
@@ -873,7 +886,7 @@ class TextAnalysisService {
 
           // Check similarity against known sources
           const similarityResults = await this.checkEmbeddingSimilarity(chunk.text, embedding);
-          
+
           if (similarityResults.length > 0) {
             for (const match of similarityResults) {
               results.push({
@@ -889,7 +902,7 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       // Update usage with estimated token count
       if (totalTokensUsed > 0) {
         // Update the token count with estimated usage
@@ -900,7 +913,7 @@ class TextAnalysisService {
       console.error('Error using Cohere embeddings:', error);
       throw error;
     }
-    
+
     return results;
   }
 
@@ -917,7 +930,7 @@ class TextAnalysisService {
 
       // Use sentence-transformers/all-MiniLM-L6-v2 model for embeddings
       const modelEndpoint = 'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2';
-      
+
       for (const chunk of chunks) {
         // Skip short chunks
         if (chunk.text.length < 100) continue;
@@ -933,7 +946,7 @@ class TextAnalysisService {
             }
           }
         );
-        
+
         // Track token usage (HuggingFace doesn't provide token count, so we estimate)
         const estimatedTokens = Math.ceil(chunk.text.length / 4);
         totalTokensUsed += estimatedTokens;
@@ -944,7 +957,7 @@ class TextAnalysisService {
 
           // Check similarity against known sources
           const similarityResults = await this.checkEmbeddingSimilarity(chunk.text, embedding);
-          
+
           if (similarityResults.length > 0) {
             for (const match of similarityResults) {
               results.push({
@@ -960,7 +973,7 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       // Update usage with estimated token count
       if (totalTokensUsed > 0) {
         // Update the token count with estimated usage
@@ -971,7 +984,7 @@ class TextAnalysisService {
       console.error('Error using HuggingFace embeddings:', error);
       throw error;
     }
-    
+
     return results;
   }
 
@@ -981,10 +994,10 @@ class TextAnalysisService {
    */
   private async checkEmbeddingSimilarity(text: string, embedding: number[]): Promise<{source: string, similarity: number, url: string}[]> {
     const results: {source: string, similarity: number, url: string}[] = [];
-    
+
     // Simulate checking against academic sources based on text patterns
     // In a real implementation, this would calculate cosine similarity against vectors in a database
-    
+
     // Check for academic writing patterns
     const academicPatterns = [
       /according to research/i,
@@ -995,7 +1008,7 @@ class TextAnalysisService {
       /\([^)]*\d{4}[^)]*\)/i, // Citation pattern (Year)
       /\w+\s+\(\d{4}\)/i      // Author (Year) pattern
     ];
-    
+
     // Calculate a simulated similarity score based on patterns
     let patternMatches = 0;
     for (const pattern of academicPatterns) {
@@ -1003,39 +1016,48 @@ class TextAnalysisService {
         patternMatches++;
       }
     }
-    
+
     // If we have matches, create simulated results
     if (patternMatches > 0) {
       const simulatedSimilarity = 0.7 + (patternMatches / academicPatterns.length) * 0.25;
-      
-      // Generate a plausible academic source
-      const academicSources = [
-        { name: 'Journal of Academic Research', domain: 'journal-academic-research.edu' },
-        { name: 'International Science Review', domain: 'int-science-review.org' },
-        { name: 'Academic Quarterly', domain: 'academic-quarterly.edu' },
-        { name: 'Research Perspectives', domain: 'research-perspectives.org' },
-        { name: 'Science Direct Database', domain: 'sciencedirect.com' }
+
+      // Use legitimate academic search engines and databases
+      const academicDatabases = [
+        { name: 'Google Scholar', searchUrl: 'https://scholar.google.com/scholar?q=' },
+        { name: 'Scopus', searchUrl: 'https://www.scopus.com/results/results.uri?query=' },
+        { name: 'Web of Science', searchUrl: 'https://www.webofscience.com/wos/woscc/summary/search?query=' },
+        { name: 'IEEE Xplore', searchUrl: 'https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=' },
+        { name: 'ScienceDirect', searchUrl: 'https://www.sciencedirect.com/search?qs=' },
+        { name: 'Wiley Online Library', searchUrl: 'https://onlinelibrary.wiley.com/action/doSearch?AllField=' },
+        { name: 'JSTOR', searchUrl: 'https://www.jstor.org/action/doBasicSearch?Query=' },
+        { name: 'PubMed', searchUrl: 'https://pubmed.ncbi.nlm.nih.gov/?term=' },
+        { name: 'SpringerLink', searchUrl: 'https://link.springer.com/search?query=' }
       ];
-      
-      const source = academicSources[Math.floor(Math.random() * academicSources.length)];
-      const year = 2015 + Math.floor(Math.random() * 8); // Random year between 2015-2022
-      
+
+      // Create a search query from the text content
+      // Extract key phrases or use citation information if present
+      const searchTerms = text.substring(0, 100).replace(/[^a-zA-Z0-9\s]/g, ' ').trim();
+      const encodedQuery = encodeURIComponent(searchTerms);
+
+      // Select a random academic database
+      const database = academicDatabases[Math.floor(Math.random() * academicDatabases.length)];
+
       results.push({
-        source: `${source.name} (${year})`,
+        source: `${database.name} Search Results`,
         similarity: simulatedSimilarity,
-        url: `https://www.${source.domain}/article/${Math.floor(Math.random() * 10000)}`
+        url: `${database.searchUrl}${encodedQuery}`
       });
     }
-    
+
     return results;
   }
-  
+
   /**
    * Detect plagiarism using Copyleaks API
    */
   private async detectPlagiarismWithCopyleaks(text: string): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
-    
+
     try {
       // Step 1: Get authentication token
       const authResponse = await axios.post(
@@ -1050,9 +1072,9 @@ class TextAnalysisService {
           }
         }
       );
-      
+
       const token = authResponse.data.access_token;
-      
+
       // Step 2: Create a new scan
       const scanResponse = await axios.post(
         'https://api.copyleaks.com/v3/scans/submit/file',
@@ -1073,19 +1095,19 @@ class TextAnalysisService {
           }
         }
       );
-      
+
       const scanId = scanResponse.data.id;
-      
+
       // Step 3: Wait for scan to complete (in a real implementation, this would be a webhook or polling)
       // For demonstration, we'll simulate finding results
-      
+
       // Process paragraphs to find potential matches
       const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-      
+
       for (const paragraph of paragraphs) {
         // Skip short paragraphs
         if (paragraph.length < 200) continue;
-        
+
         // If the paragraph has patterns that might indicate plagiarism
         if (this.containsWebContentPatterns(paragraph)) {
           const startIndex = text.indexOf(paragraph);
@@ -1106,17 +1128,17 @@ class TextAnalysisService {
       console.error('Error using Copyleaks API:', error);
       throw error;
     }
-    
+
     return results;
   }
-  
+
   /**
    * Helper method to split text into chunks for API processing
    */
   private splitTextIntoChunks(text: string, chunkSize: number): string[] {
     const chunks: string[] = [];
     let startIndex = 0;
-    
+
     while (startIndex < text.length) {
       // Find a good break point (end of sentence or paragraph)
       let endIndex = Math.min(startIndex + chunkSize, text.length);
@@ -1127,14 +1149,14 @@ class TextAnalysisService {
           endIndex = sentenceEnd + 1;
         }
       }
-      
+
       chunks.push(text.substring(startIndex, endIndex));
       startIndex = endIndex;
     }
-    
+
     return chunks;
   }
-  
+
   /**
    * Helper method to check if text contains academic patterns
    */
@@ -1143,10 +1165,10 @@ class TextAnalysisService {
     const hasResultTerms = /\b(results|show|demonstrate|indicate|suggest|reveal|confirm|establish)\b/i.test(text);
     const hasCitationPattern = /\([A-Za-z]+(\s+et\s+al\.)?\s*,\s*\d{4}\)/i.test(text);
     const hasStatisticalTerms = /\b(significant|correlation|regression|p\s*<\s*0\.\d+|confidence interval|statistical|variance)\b/i.test(text);
-    
+
     return (hasAcademicTerms && hasResultTerms) || (hasAcademicTerms && hasStatisticalTerms) || hasCitationPattern;
   }
-  
+
   /**
    * Helper method to check if text contains web content patterns
    */
@@ -1154,58 +1176,63 @@ class TextAnalysisService {
     const hasDefinitionPattern = /\b(is defined as|refers to|is a|can be described as)\b/i.test(text);
     const hasListPattern = /\b(firstly|secondly|thirdly|finally|in addition|moreover|furthermore)\b/i.test(text);
     const hasExplanationPattern = /\b(for example|for instance|such as|namely|specifically)\b/i.test(text);
-    
+
     return (hasDefinitionPattern && hasExplanationPattern) || (hasListPattern && hasExplanationPattern);
   }
-  
+
   /**
    * Fallback simulation for plagiarism detection when APIs are unavailable
    */
   private detectPlagiarismSimulation(text: string): PlagiarismInstance[] {
     const instances: PlagiarismInstance[] = [];
-    
+
     // 1. GPT-4 Approach: Use embeddings to detect semantic similarity
     // This simulates the OpenAI text-embedding-ada-002 model for content matching
     const detectWithGPT4 = (text: string): PlagiarismInstance[] => {
       const results: PlagiarismInstance[] = [];
       const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      
-      // Academic sources that would be matched in a real implementation
-      const academicSources = [
-        { name: "Nature", baseUrl: "https://www.nature.com/search?q=" },
-        { name: "Science", baseUrl: "https://www.science.org/action/doSearch?text=" },
-        { name: "PLOS ONE", baseUrl: "https://journals.plos.org/plosone/search?q=" },
-        { name: "Cell", baseUrl: "https://www.cell.com/action/doSearch?text=" },
-        { name: "Journal of Educational Psychology", baseUrl: "https://psycnet.apa.org/search/display?q=" }
+
+      // Use legitimate academic search engines and databases
+      const academicDatabases = [
+        { name: "Google Scholar", searchUrl: "https://scholar.google.com/scholar?q=" },
+        { name: "Scopus", searchUrl: "https://www.scopus.com/results/results.uri?query=" },
+        { name: "Web of Science", searchUrl: "https://www.webofscience.com/wos/woscc/summary/search?query=" },
+        { name: "IEEE Xplore", searchUrl: "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=" },
+        { name: "ScienceDirect", searchUrl: "https://www.sciencedirect.com/search?qs=" },
+        { name: "Wiley Online Library", searchUrl: "https://onlinelibrary.wiley.com/action/doSearch?AllField=" },
+        { name: "JSTOR", searchUrl: "https://www.jstor.org/action/doBasicSearch?Query=" },
+        { name: "PubMed", searchUrl: "https://pubmed.ncbi.nlm.nih.gov/?term=" },
+        { name: "SpringerLink", searchUrl: "https://link.springer.com/search?query=" }
       ];
-      
+
       for (const sentence of sentences) {
         // Skip short sentences
         if (sentence.trim().split(/\s+/).length < 10) continue;
-        
+
         // Sophisticated pattern matching that simulates embedding similarity
         const hasAcademicTerms = /\b(study|research|analysis|methodology|framework|paradigm|theory)\b/i.test(sentence);
         const hasResultTerms = /\b(results|show|demonstrate|indicate|suggest|reveal|confirm|establish)\b/i.test(sentence);
         const hasCitationPattern = /\([A-Za-z]+(\s+et\s+al\.)?\s*,\s*\d{4}\)/i.test(sentence);
         const hasStatisticalTerms = /\b(significant|correlation|regression|p\s*<\s*0\.\d+|confidence interval|statistical|variance)\b/i.test(sentence);
-        
+
         // Calculate a similarity score based on these patterns
         let similarityScore = 0;
         if (hasAcademicTerms) similarityScore += 20;
         if (hasResultTerms) similarityScore += 20;
         if (hasStatisticalTerms) similarityScore += 30;
         if (hasCitationPattern) similarityScore -= 15; // Properly cited content is less likely plagiarized
-        
+
         // Only flag content with high similarity
         if (similarityScore >= 40) {
-          const randomSource = academicSources[Math.floor(Math.random() * academicSources.length)];
+          // Select a random academic database
+          const randomDatabase = academicDatabases[Math.floor(Math.random() * academicDatabases.length)];
           const matchPercentage = Math.min(95, 60 + similarityScore/2 + (Math.random() * 10));
-          
+
           const sentenceIndex = text.indexOf(sentence);
           if (sentenceIndex !== -1) {
             // Create a search query from the first few words of the sentence
             const searchQuery = sentence.substring(0, Math.min(50, sentence.length)).trim().replace(/\s+/g, '+');
-            const sourceUrl = randomSource.baseUrl + searchQuery;
+            const sourceUrl = randomDatabase.searchUrl + searchQuery;
 
             results.push({
               id: this.generateId(),
@@ -1219,15 +1246,15 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       return results;
     };
-    
+
     // 2. Copyleaks Approach: Web content matching and academic database comparison
     // This simulates the Copyleaks API for web content matching
     const detectWithCopyleaks = (text: string): PlagiarismInstance[] => {
       const results: PlagiarismInstance[] = [];
-      
+
       // Web sources that would be matched in a real implementation
       const webSources = [
         { name: "Wikipedia", url: "https://en.wikipedia.org/wiki/" },
@@ -1236,7 +1263,7 @@ class TextAnalysisService {
         { name: "Stanford Encyclopedia of Philosophy", url: "https://plato.stanford.edu/entries/" },
         { name: "MIT OpenCourseWare", url: "https://ocw.mit.edu/courses/" }
       ];
-      
+
       // Exact phrase matching (n-gram analysis)
       const exactPhrases = [
         { phrase: "according to recent research", source: "Academic Writing Database", url: "https://academic-phrasebank.manchester.ac.uk/" },
@@ -1245,12 +1272,12 @@ class TextAnalysisService {
         { phrase: "previous studies have shown that", source: "Academic Corpus", url: "https://www.sciencedirect.com/search?qs=previous%20studies%20have%20shown" },
         { phrase: "this paper aims to address the gap", source: "Research Methodology Handbook", url: "https://uk.sagepub.com/en-gb/eur/the-sage-handbook-of-qualitative-research/book242504" }
       ];
-      
+
       // Check for exact phrase matches (simulates n-gram fingerprinting)
       for (const {phrase, source, url} of exactPhrases) {
         const regex = new RegExp(phrase, 'gi');
         let match;
-        
+
         while ((match = regex.exec(text)) !== null) {
           results.push({
             id: this.generateId(),
@@ -1263,30 +1290,30 @@ class TextAnalysisService {
           });
         }
       }
-      
+
       // Check paragraphs for web content matching
       const paragraphs = text.split(/\n\s*\n/).filter(p => p.trim().length > 0);
-      
+
       for (const paragraph of paragraphs) {
         // Skip short paragraphs
         if (paragraph.trim().split(/\s+/).length < 30) continue;
-        
+
         // Check for patterns common in educational content
         const hasDefinitionPattern = /\b(is defined as|refers to|is a|can be described as)\b/i.test(paragraph);
         const hasListPattern = /\b(firstly|secondly|thirdly|finally|in addition|moreover|furthermore)\b/i.test(paragraph);
         const hasExplanationPattern = /\b(for example|for instance|such as|namely|specifically)\b/i.test(paragraph);
-        
+
         // Calculate similarity based on these patterns
         let similarityScore = 0;
         if (hasDefinitionPattern) similarityScore += 25;
         if (hasListPattern) similarityScore += 15;
         if (hasExplanationPattern) similarityScore += 20;
-        
+
         // Only flag content with high similarity
         if (similarityScore >= 35) {
           const randomSource = webSources[Math.floor(Math.random() * webSources.length)];
           const matchPercentage = Math.min(90, 55 + similarityScore/2 + (Math.random() * 10));
-          
+
           const paragraphIndex = text.indexOf(paragraph);
           if (paragraphIndex !== -1) {
             // Generate a more specific URL by creating a search query from key phrases
@@ -1309,15 +1336,15 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       return results;
     };
-    
+
     // 3. Turnitin-style approach: Document fingerprinting and database comparison
     // This simulates the Turnitin API for academic database matching
     const detectWithTurnitin = (text: string): PlagiarismInstance[] => {
       const results: PlagiarismInstance[] = [];
-      
+
       // Academic papers that would be matched in a real implementation
       const academicPapers = [
         { title: "Advances in Natural Language Processing", journal: "Computational Linguistics", year: 2023, doi: "10.1162/coli_a_00432" },
@@ -1326,33 +1353,33 @@ class TextAnalysisService {
         { title: "Digital Literacy in the 21st Century", journal: "Computers & Education", year: 2023, doi: "10.1016/j.compedu.2023.104768" },
         { title: "Ethical Considerations in AI Research", journal: "AI & Society", year: 2024, doi: "10.1007/s00146-023-01653-w" }
       ];
-      
+
       // Identify sections that might be from academic papers
       const sections = text.split(/\n\s*\n/).filter(s => s.trim().length > 0);
-      
+
       for (let i = 0; i < sections.length; i++) {
         const section = sections[i].trim();
         // Skip short sections
         if (section.split(/\s+/).length < 50) continue;
-        
+
         // Check for patterns typical in academic papers
         const hasMethods = /\b(methodology|method|approach|procedure|experiment|study design)\b/i.test(section);
         const hasResults = /\b(results|findings|data|analysis|significant|statistical)\b/i.test(section);
         const hasDiscussion = /\b(discussion|implications|conclusion|suggest|recommend|future research)\b/i.test(section);
         const hasCitations = (section.match(/\([^)]+\d{4}[^)]*\)/g) || []).length >= 2; // At least 2 citations
-        
+
         // Calculate similarity based on these patterns
         let similarityScore = 0;
         if (hasMethods) similarityScore += 20;
         if (hasResults) similarityScore += 25;
         if (hasDiscussion) similarityScore += 15;
         if (hasCitations) similarityScore += 30;
-        
+
         // Only flag content with very high similarity
         if (similarityScore >= 60) {
           const randomPaper = academicPapers[Math.floor(Math.random() * academicPapers.length)];
           const matchPercentage = Math.min(98, 70 + similarityScore/4 + (Math.random() * 5));
-          
+
           const sectionIndex = text.indexOf(section);
           if (sectionIndex !== -1) {
             results.push({
@@ -1367,27 +1394,27 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       return results;
     };
-    
+
     // Combine results from all three approaches
     const gpt4Results = detectWithGPT4(text);
     const copyleaksResults = detectWithCopyleaks(text);
     const turnitinResults = detectWithTurnitin(text);
-    
+
     instances.push(...gpt4Results, ...copyleaksResults, ...turnitinResults);
-    
+
     // Remove overlapping instances, prioritizing higher match percentages
     return instances
       .sort((a, b) => b.matchPercentage - a.matchPercentage)
-      .filter((instance, index, self) => 
-        index === self.findIndex(i => 
+      .filter((instance, index, self) =>
+        index === self.findIndex(i =>
           (i.startIndex <= instance.endIndex && i.endIndex >= instance.startIndex)
         )
       );
   }
-  
+
   /**
    * Detect grammar and style issues in text using NLP and machine learning approaches
    * @param text Text to analyze
@@ -1411,27 +1438,27 @@ class TextAnalysisService {
         variant: 'default'
       });
     }
-    
+
     // Fall back to simulation if APIs fail or are unavailable
     return this.detectGrammarIssuesSimulation(text);
   }
-  
+
   /**
    * Detect grammar issues using real APIs (LanguageTool or TextGears)
    * Note: This will use simulation until you add the API keys next week
    */
   private async detectGrammarIssuesWithApis(text: string): Promise<GrammarIssue[]> {
     const results: GrammarIssue[] = [];
-    
+
     // Check if we have any grammar API keys available
     const hasGrammarApis = ENV.API.LANGUAGETOOL_API_KEY || ENV.API.TEXTGEARS_API_KEY;
-    
+
     if (!hasGrammarApis) {
       console.log('No grammar checking APIs configured. Using simulation instead.');
       // Return empty results to trigger the fallback to simulation
       return results;
     }
-    
+
     // Use LanguageTool API if available (will be added next week)
     if (ENV.API.LANGUAGETOOL_API_KEY) {
       try {
@@ -1458,20 +1485,20 @@ class TextAnalysisService {
         console.error('TextGears grammar checking failed:', error);
       }
     }
-    
+
     return results;
   }
-  
+
   /**
    * Detect grammar issues using LanguageTool API
    */
   private async detectGrammarIssuesWithLanguageTool(text: string): Promise<GrammarIssue[]> {
     const results: GrammarIssue[] = [];
-    
+
     try {
       // For longer texts, we need to split them into chunks to avoid API limits
       const maxChunkSize = 20000; // LanguageTool typically has a limit around 20K chars
-      
+
       if (text.length <= maxChunkSize) {
         // Process the entire text at once if it's within limits
         const chunkResults = await this.processLanguageToolChunk(text, 0);
@@ -1482,13 +1509,13 @@ class TextAnalysisService {
         let currentChunk = '';
         let currentOffset = 0;
         let chunkStartOffset = 0;
-        
+
         for (const paragraph of paragraphs) {
           // If adding this paragraph would exceed the chunk size, process the current chunk
           if (currentChunk.length + paragraph.length + 2 > maxChunkSize && currentChunk.length > 0) {
             const chunkResults = await this.processLanguageToolChunk(currentChunk, chunkStartOffset);
             results.push(...chunkResults);
-            
+
             // Reset for next chunk
             currentChunk = paragraph + '\n\n';
             chunkStartOffset = currentOffset;
@@ -1496,10 +1523,10 @@ class TextAnalysisService {
             // Add to current chunk
             currentChunk += paragraph + '\n\n';
           }
-          
+
           currentOffset += paragraph.length + 2; // +2 for the newlines
         }
-        
+
         // Process the final chunk if not empty
         if (currentChunk.trim().length > 0) {
           const chunkResults = await this.processLanguageToolChunk(currentChunk, chunkStartOffset);
@@ -1510,16 +1537,16 @@ class TextAnalysisService {
       console.error('Error using LanguageTool API:', error);
       throw error;
     }
-    
+
     return this.deduplicateAndSortGrammarIssues(results);
   }
-  
+
   /**
    * Process a single chunk of text with LanguageTool API
    */
   private async processLanguageToolChunk(text: string, offsetAdjustment: number): Promise<GrammarIssue[]> {
     const chunkResults: GrammarIssue[] = [];
-    
+
     try {
       // Enhanced LanguageTool API request with more parameters
       const response = await axios.post(
@@ -1540,21 +1567,21 @@ class TextAnalysisService {
           }
         }
       );
-      
+
       // Process the response with enhanced categorization
       if (response.data?.matches) {
         for (const match of response.data.matches) {
           const issueText = text.substring(match.offset, match.offset + match.length);
-          
+
           // Enhanced severity mapping based on rule category and issue type
           let severity: 'high' | 'medium' | 'low' = this.determineSeverity(match);
-          
+
           // Enhanced issue type categorization
           const issueType = this.categorizeGrammarIssue(match);
-          
+
           // Get the best suggestion from replacements
           const suggestion = this.getBestSuggestion(match, issueText);
-          
+
           chunkResults.push({
             id: this.generateId(),
             text: issueText,
@@ -1577,21 +1604,21 @@ class TextAnalysisService {
       console.error('Error processing LanguageTool chunk:', error);
       throw error;
     }
-    
+
     return chunkResults;
   }
-  
+
   /**
    * Determine severity of grammar issue based on rule category and type
    */
   private determineSeverity(match: any): 'high' | 'medium' | 'low' {
     // Default to medium severity
     let severity: 'high' | 'medium' | 'low' = 'medium';
-    
+
     // Check if we have category information
     if (match.rule?.category?.id) {
       const categoryId = match.rule.category.id;
-      
+
       // High severity issues
       if (['GRAMMAR', 'TYPOS', 'PUNCTUATION', 'CONFUSION_RULE'].includes(categoryId)) {
         severity = 'high';
@@ -1605,7 +1632,7 @@ class TextAnalysisService {
         severity = 'low';
       }
     }
-    
+
     // Override based on specific rule IDs for critical issues
     if (match.rule?.id) {
       const criticalRules = [
@@ -1616,26 +1643,26 @@ class TextAnalysisService {
         'WHITESPACE_RULE', // Spacing issues
         'SENTENCE_WHITESPACE' // Sentence spacing
       ];
-      
+
       if (criticalRules.some(rule => match.rule.id.includes(rule))) {
         severity = 'high';
       }
     }
-    
+
     return severity;
   }
-  
+
   /**
    * Categorize grammar issues into more user-friendly types
    */
   private categorizeGrammarIssue(match: any): string {
     // Default to the rule description if available
     const defaultType = match.rule?.description || 'Grammar Issue';
-    
+
     // Check for specific rule IDs to provide better categorization
     if (match.rule?.id) {
       const ruleId = match.rule.id;
-      
+
       // Map common rule patterns to user-friendly categories
       if (ruleId.includes('MORFOLOGIK_RULE')) {
         return 'Spelling Error';
@@ -1653,7 +1680,7 @@ class TextAnalysisService {
         return 'Style: Redundant Expression';
       }
     }
-    
+
     // Use category ID as fallback for categorization
     if (match.rule?.category?.id) {
       const categoryMap: Record<string, string> = {
@@ -1668,16 +1695,16 @@ class TextAnalysisService {
         'CONFUSED_WORDS': 'Commonly Confused Words',
         'CREATIVE_WRITING': 'Style Suggestion'
       };
-      
+
       const category = categoryMap[match.rule.category.id];
       if (category) {
         return category;
       }
     }
-    
+
     return defaultType;
   }
-  
+
   /**
    * Get the best suggestion from the replacements list
    */
@@ -1686,11 +1713,11 @@ class TextAnalysisService {
     if (!match.replacements || match.replacements.length === 0) {
       return 'Review this text';
     }
-    
+
     // If we have replacements, pick the best one
     // For now, we'll use the first one as it's typically the most likely
     const suggestion = match.replacements[0].value;
-    
+
     // If the suggestion is identical to the original text, provide more context
     if (suggestion === originalText) {
       if (match.message) {
@@ -1699,17 +1726,17 @@ class TextAnalysisService {
         return 'Review this text for potential issues';
       }
     }
-    
+
     return suggestion;
   }
-  
+
   /**
    * Get disabled rules based on current context and settings
    */
   private getDisabledRulesForContext(): string {
     // Base set of rules to disable
     const disabledRules = [];
-    
+
     // Adjust based on language model setting
     if (this.settings.languageModel === 'creative') {
       // For creative writing, disable some strict style rules
@@ -1721,17 +1748,17 @@ class TextAnalysisService {
         'COMMA_PARENTHESIS_WHITESPACE'
       );
     }
-    
+
     return disabledRules.join(',');
   }
-  
+
   /**
    * Get enabled rules based on current context and settings
    */
   private getEnabledRulesForContext(): string {
     // Base set of rules to enable
     const enabledRules = [];
-    
+
     // Adjust based on language model setting
     if (this.settings.languageModel === 'academic') {
       // For academic writing, enable additional academic style rules
@@ -1742,31 +1769,31 @@ class TextAnalysisService {
         'COMMA_PARENTHESIS_WHITESPACE'
       );
     }
-    
+
     return enabledRules.join(',');
   }
-  
+
   /**
    * Deduplicate and sort grammar issues
    */
   private deduplicateAndSortGrammarIssues(issues: GrammarIssue[]): GrammarIssue[] {
     // Remove duplicates (can happen when processing overlapping chunks)
-    const uniqueIssues = issues.filter((issue, index, self) => 
-      index === self.findIndex(i => 
+    const uniqueIssues = issues.filter((issue, index, self) =>
+      index === self.findIndex(i =>
         i.startIndex === issue.startIndex && i.endIndex === issue.endIndex
       )
     );
-    
+
     // Sort by position in text
     return uniqueIssues.sort((a, b) => a.startIndex - b.startIndex);
   }
-  
+
   /**
    * Detect grammar issues using TextGears API
    */
   private async detectGrammarIssuesWithTextGears(text: string): Promise<GrammarIssue[]> {
     const results: GrammarIssue[] = [];
-    
+
     try {
       // Call TextGears API
       const response = await axios.get(
@@ -1779,12 +1806,12 @@ class TextAnalysisService {
           }
         }
       );
-      
+
       // Process the response
       if (response.data && response.data.errors) {
         for (const error of response.data.errors) {
           const issueText = text.substring(error.offset, error.offset + error.length);
-          
+
           // Map severity based on error type
           let severity: 'high' | 'medium' | 'low' = 'medium';
           if (error.type === 'grammar') {
@@ -1794,14 +1821,14 @@ class TextAnalysisService {
           } else if (error.type === 'style') {
             severity = 'low';
           }
-          
+
           results.push({
             id: this.generateId(),
             text: issueText,
             startIndex: error.offset,
             endIndex: error.offset + error.length,
             issueType: error.description || 'Grammar Issue',
-            suggestion: error.better && error.better.length > 0 ? 
+            suggestion: error.better && error.better.length > 0 ?
               error.better[0] : 'Review this text',
             severity: severity
           });
@@ -1811,21 +1838,21 @@ class TextAnalysisService {
       console.error('Error using TextGears API:', error);
       throw error;
     }
-    
+
     return results;
   }
-  
+
   /**
    * Fallback simulation for grammar checking when APIs are unavailable
    */
   private detectGrammarIssuesSimulation(text: string): GrammarIssue[] {
     const issues: GrammarIssue[] = [];
-    
+
     // 1. Enhanced rule-based grammar checking
     // This simulates LanguageTool's comprehensive rule system
     const detectRuleBasedIssues = (text: string): GrammarIssue[] => {
       const ruleBasedIssues: GrammarIssue[] = [];
-      
+
       // Comprehensive grammar rules based on linguistic patterns
       const grammarRules = [
         // Subject-verb agreement errors
@@ -1841,7 +1868,7 @@ class TextAnalysisService {
           suggestion: "Ensure the verb agrees with the plural subject",
           severity: "high" as const
         },
-        
+
         // Article usage errors
         {
           pattern: /\b(a) [aeiou][a-z]*\b/gi,
@@ -1855,7 +1882,7 @@ class TextAnalysisService {
           suggestion: "Use 'a' before words that begin with consonant sounds",
           severity: "medium" as const
         },
-        
+
         // Preposition errors
         {
           pattern: /\b(interested|engaged|involved) (of|to|from)\b/gi,
@@ -1869,7 +1896,7 @@ class TextAnalysisService {
           suggestion: "The correct preposition is 'from'",
           severity: "medium" as const
         },
-        
+
         // Commonly confused words (enhanced detection)
         {
           pattern: /\b(their|they're|there)\b/gi,
@@ -1901,7 +1928,7 @@ class TextAnalysisService {
           suggestion: "Verify correct usage: 'then' (time) vs 'than' (comparison)",
           severity: "medium" as const
         },
-        
+
         // Punctuation errors
         {
           pattern: /[,.!?][A-Za-z]/g,
@@ -1921,7 +1948,7 @@ class TextAnalysisService {
           suggestion: "Add a space after a period that ends a sentence",
           severity: "medium" as const
         },
-        
+
         // Style issues
         {
           pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi,
@@ -1941,7 +1968,7 @@ class TextAnalysisService {
           suggestion: "Consider using active voice for stronger writing",
           severity: "low" as const
         },
-        
+
         // Wordiness and redundancy
         {
           pattern: /\b(in order to|for the purpose of)\b/gi,
@@ -1961,7 +1988,7 @@ class TextAnalysisService {
           suggestion: "Replace with 'because' for conciseness",
           severity: "low" as const
         },
-        
+
         // Comma usage
         {
           pattern: /\b(however|therefore|moreover|furthermore|nevertheless|consequently),/gi,
@@ -1976,7 +2003,7 @@ class TextAnalysisService {
           severity: "medium" as const
         }
       ];
-      
+
       // Apply each rule to the text
       for (const rule of grammarRules) {
         let match;
@@ -1992,16 +2019,16 @@ class TextAnalysisService {
           });
         }
       }
-      
+
       return ruleBasedIssues;
     };
-    
+
     // 2. Statistical language modeling approach
     // This simulates the use of n-gram language models to detect unlikely word sequences
     const detectStatisticalIssues = (text: string): GrammarIssue[] => {
       const statisticalIssues: GrammarIssue[] = [];
       const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      
+
       // Unusual bigrams and trigrams that would be flagged by statistical models
       const unusualSequences = [
         { sequence: "the it", suggestion: "Check for missing or incorrect words" },
@@ -2019,17 +2046,17 @@ class TextAnalysisService {
         { sequence: "less people", suggestion: "Change to 'fewer people'" },
         { sequence: "amount of people", suggestion: "Change to 'number of people'" }
       ];
-      
+
       // Check for unusual sequences in each sentence
       for (const sentence of sentences) {
         const lowerSentence = sentence.toLowerCase();
-        
+
         for (const { sequence, suggestion } of unusualSequences) {
           const index = lowerSentence.indexOf(sequence);
           if (index !== -1) {
             const sentenceIndex = text.indexOf(sentence);
             const startIndex = sentenceIndex + index;
-            
+
             statisticalIssues.push({
               id: this.generateId(),
               text: sentence.substring(index, index + sequence.length),
@@ -2042,21 +2069,21 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       return statisticalIssues;
     };
-    
+
     // 3. Contextual error detection
     // This simulates the use of transformer models like BERT for context-aware error detection
     const detectContextualIssues = (text: string): GrammarIssue[] => {
       const contextualIssues: GrammarIssue[] = [];
       const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      
+
       // Simulate contextual analysis for each sentence
       for (const sentence of sentences) {
         // Skip very short sentences
         if (sentence.trim().split(/\s+/).length < 5) continue;
-        
+
         // Contextual analysis for homophone errors (words that sound alike)
         const homophones = [
           { pair: ["accept", "except"], context: /\b(accept|except)\b/i },
@@ -2071,7 +2098,7 @@ class TextAnalysisService {
           { pair: ["stationary", "stationery"], context: /\b(stationary|stationery)\b/i },
           { pair: ["weather", "whether"], context: /\b(weather|whether)\b/i }
         ];
-        
+
         // Check for potential homophone confusion based on context
         for (const { pair, context } of homophones) {
           const match = sentence.match(context);
@@ -2082,7 +2109,7 @@ class TextAnalysisService {
             if (Math.random() < 0.3) {
               const sentenceIndex = text.indexOf(sentence);
               const startIndex = sentenceIndex + match.index!;
-              
+
               contextualIssues.push({
                 id: this.generateId(),
                 text: match[0],
@@ -2095,15 +2122,15 @@ class TextAnalysisService {
             }
           }
         }
-        
+
         // Contextual analysis for sentence fragments and run-on sentences
         const words = sentence.split(/\s+/);
-        
+
         // Detect potential sentence fragments (incomplete sentences)
-        if (words.length >= 2 && words.length <= 4 && 
-            !/\b(I|we|you|they|he|she|it|this|that|these|those)\b/i.test(sentence) && 
+        if (words.length >= 2 && words.length <= 4 &&
+            !/\b(I|we|you|they|he|she|it|this|that|these|those)\b/i.test(sentence) &&
             !/\b(is|am|are|was|were|be|been|being)\b/i.test(sentence)) {
-          
+
           const sentenceIndex = text.indexOf(sentence);
           if (sentenceIndex !== -1) {
             contextualIssues.push({
@@ -2117,11 +2144,11 @@ class TextAnalysisService {
             });
           }
         }
-        
+
         // Detect potential run-on sentences (too long or too many clauses)
-        if (words.length > 30 && 
+        if (words.length > 30 &&
             (sentence.match(/\band\b|\bbut\b|\bor\b|\byet\b|\bso\b|\bfor\b|\bnor\b/gi) || []).length >= 3) {
-          
+
           const sentenceIndex = text.indexOf(sentence);
           if (sentenceIndex !== -1) {
             contextualIssues.push({
@@ -2136,15 +2163,15 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       return contextualIssues;
     };
-    
+
     // 4. Machine learning classification for style and tone
     // This simulates ML models that detect style issues, formality levels, and tone problems
     const detectStyleIssues = (text: string): GrammarIssue[] => {
       const styleIssues: GrammarIssue[] = [];
-      
+
       // Detect informal language in formal contexts
       const informalPatterns = [
         { pattern: /\b(gonna|wanna|gotta|kinda|sorta)\b/gi, suggestion: "Use more formal language (e.g., 'going to' instead of 'gonna')" },
@@ -2153,7 +2180,7 @@ class TextAnalysisService {
         { pattern: /\b(tons of|loads of|a lot of)\b/gi, suggestion: "Use more precise quantifiers like 'many', 'numerous', or 'a significant number of'" },
         { pattern: /\b(awesome|cool|amazing|super)\b/gi, suggestion: "Consider more formal alternatives like 'excellent', 'impressive', or 'exceptional'" }
       ];
-      
+
       // Check for informal language patterns
       for (const { pattern, suggestion } of informalPatterns) {
         let match;
@@ -2169,7 +2196,7 @@ class TextAnalysisService {
           });
         }
       }
-      
+
       // Detect overused words and phrases
       const overusedPatterns = [
         { pattern: /\b(very|really|quite|extremely)\b/gi, suggestion: "Consider using a stronger, more specific word instead of intensifiers" },
@@ -2177,20 +2204,20 @@ class TextAnalysisService {
         { pattern: /\b(in conclusion|to sum up|in summary)\b/gi, suggestion: "Vary your transitional phrases" },
         { pattern: /\b(thing|stuff)\b/gi, suggestion: "Use more specific nouns" }
       ];
-      
+
       // Count occurrences of potentially overused words
       const wordCounts: Record<string, number> = {};
-      
+
       for (const { pattern } of overusedPatterns) {
         let match;
         while ((match = pattern.exec(text)) !== null) {
           const word = match[0].toLowerCase();
           wordCounts[word] = (wordCounts[word] || 0) + 1;
-          
+
           // Flag if a word appears too frequently
           if (wordCounts[word] >= 3) {
             const overusedPattern = overusedPatterns.find(p => p.pattern.test(word));
-            
+
             styleIssues.push({
               id: this.generateId(),
               text: match[0],
@@ -2203,38 +2230,38 @@ class TextAnalysisService {
           }
         }
       }
-      
+
       return styleIssues;
     };
-    
+
     // Combine results from all approaches
     const ruleBasedIssues = detectRuleBasedIssues(text);
     const statisticalIssues = detectStatisticalIssues(text);
     const contextualIssues = detectContextualIssues(text);
     const styleIssues = detectStyleIssues(text);
-    
+
     issues.push(...ruleBasedIssues, ...statisticalIssues, ...contextualIssues, ...styleIssues);
-    
+
     // Remove duplicate or overlapping issues, prioritizing more severe issues
     return issues
       .sort((a, b) => {
         // Sort by severity first
         const severityOrder = { high: 0, medium: 1, low: 2 };
-        const severityDiff = severityOrder[a.severity as keyof typeof severityOrder] - 
+        const severityDiff = severityOrder[a.severity as keyof typeof severityOrder] -
                             severityOrder[b.severity as keyof typeof severityOrder];
-        
+
         if (severityDiff !== 0) return severityDiff;
-        
+
         // Then sort by position in text
         return a.startIndex - b.startIndex;
       })
-      .filter((issue, index, self) => 
-        index === self.findIndex(i => 
+      .filter((issue, index, self) =>
+        index === self.findIndex(i =>
           (i.startIndex <= issue.endIndex && i.endIndex >= issue.startIndex)
         )
       );
   }
-  
+
 
 }
 
