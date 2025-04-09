@@ -29,17 +29,8 @@ class TextAnalysisService {
     // Load cached results from local storage
     this.loadFromLocalStorage();
 
-    // Initialize with default settings
-    this.settings = {
-      checkPlagiarism: DEFAULT_ANALYSIS_SETTINGS.checkPlagiarism,
-      checkGrammar: DEFAULT_ANALYSIS_SETTINGS.checkGrammar,
-      checkReadability: DEFAULT_ANALYSIS_SETTINGS.checkReadability,
-      languageModel: DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
-      languageModelCategory: DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory,
-      adaptiveAnalysis: DEFAULT_ANALYSIS_SETTINGS.adaptiveAnalysis,
-      userFeedback: DEFAULT_ANALYSIS_SETTINGS.userFeedback,
-      customWeights: DEFAULT_ANALYSIS_SETTINGS.customWeights
-    };
+    // Load settings from local storage or use defaults
+    this.loadSettings();
   }
 
   /**
@@ -72,6 +63,56 @@ class TextAnalysisService {
       this.analysisResults = [];
     }
   }
+  
+  /**
+   * Load settings from local storage or use defaults
+   */
+  private loadSettings(): void {
+    try {
+      // Initialize with default settings
+      const defaultSettings: AnalysisSettings = {
+        checkPlagiarism: DEFAULT_ANALYSIS_SETTINGS.checkPlagiarism,
+        checkGrammar: DEFAULT_ANALYSIS_SETTINGS.checkGrammar,
+        checkReadability: DEFAULT_ANALYSIS_SETTINGS.checkReadability,
+        languageModel: DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
+        languageModelCategory: DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory,
+        adaptiveAnalysis: DEFAULT_ANALYSIS_SETTINGS.adaptiveAnalysis,
+        userFeedback: DEFAULT_ANALYSIS_SETTINGS.userFeedback,
+        customWeights: DEFAULT_ANALYSIS_SETTINGS.customWeights
+      };
+
+      // Try to load saved settings
+      const storedSettings = localStorage.getItem(STORAGE_KEYS.SETTINGS);
+      if (storedSettings) {
+        const parsedSettings = JSON.parse(storedSettings) as Partial<AnalysisSettings>;
+        
+        // Merge with defaults, ensuring required fields have fallbacks
+        this.settings = {
+          ...defaultSettings,
+          ...parsedSettings,
+          // Ensure these critical fields are always defined
+          languageModel: parsedSettings.languageModel || defaultSettings.languageModel,
+          languageModelCategory: parsedSettings.languageModelCategory || defaultSettings.languageModelCategory
+        };
+      } else {
+        // No stored settings, use defaults
+        this.settings = defaultSettings;
+      }
+    } catch (error) {
+      console.error('Failed to load settings from local storage:', error);
+      // If loading fails, use default settings
+      this.settings = {
+        checkPlagiarism: DEFAULT_ANALYSIS_SETTINGS.checkPlagiarism,
+        checkGrammar: DEFAULT_ANALYSIS_SETTINGS.checkGrammar,
+        checkReadability: DEFAULT_ANALYSIS_SETTINGS.checkReadability,
+        languageModel: DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
+        languageModelCategory: DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory,
+        adaptiveAnalysis: DEFAULT_ANALYSIS_SETTINGS.adaptiveAnalysis,
+        userFeedback: DEFAULT_ANALYSIS_SETTINGS.userFeedback,
+        customWeights: DEFAULT_ANALYSIS_SETTINGS.customWeights
+      };
+    }
+  }
 
   /**
    * Save analysis results to local storage
@@ -91,8 +132,20 @@ class TextAnalysisService {
    * Update analysis settings
    */
   public updateSettings(newSettings: Partial<AnalysisSettings>): void {
-    this.settings = { ...this.settings, ...newSettings };
-    
+    // Ensure critical fields are never undefined
+    const updatedSettings = { ...this.settings, ...newSettings };
+
+    // Fallbacks for critical fields
+    if (!updatedSettings.languageModel) {
+      updatedSettings.languageModel = DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType;
+    }
+
+    if (!updatedSettings.languageModelCategory) {
+      updatedSettings.languageModelCategory = DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory;
+    }
+
+    this.settings = updatedSettings;
+
     // Save to local storage
     localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(this.settings));
   }
