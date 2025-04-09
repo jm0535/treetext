@@ -417,9 +417,13 @@ class TextAnalysisService {
     // Ensure language model settings are initialized with valid values
     // Check if languageModel is one of the valid LanguageModelType values
     const validLanguageModels: LanguageModelType[] = [
+      // General models
       'standard', 'creative',
-      'academic-general', 'scientific', 'legal',
+      // Academic models
+      'academic-general', 'scientific', 'statistical', 'legal',
+      // Business models
       'business', 'marketing', 'technical',
+      // Specialized models
       'journalism', 'medical', 'documentation'
     ];
 
@@ -918,6 +922,40 @@ class TextAnalysisService {
           { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 0.5 }
         ];
         break;
+
+      case 'medical':
+        // Medical writing has specific requirements for precision and clarity
+        commonErrors = [
+          ...baseErrors,
+          // Medical-specific issues
+          { pattern: /\b(about|approximately|around|roughly)\b/gi, penalty: 2 }, // Imprecise quantifiers
+          { pattern: /\b(seems to|appears to|looks like)\b/gi, penalty: 2.5 }, // Uncertain language
+          { pattern: /\b(a lot|lots of|tons of|many|several|various|different)\b/gi, penalty: 2 }, // Vague quantifiers
+          
+          // Passive voice is acceptable in medical writing
+          { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 0.5 },
+          
+          // Sentence structure issues
+          { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 3 }, // Double conjunctions
+        ];
+        break;
+
+      case 'documentation':
+        // Documentation requires clarity, consistency, and precision
+        commonErrors = [
+          ...baseErrors,
+          // Documentation-specific issues
+          { pattern: /\b(click on|click|select|choose|pick|tap)\b/gi, penalty: 1 }, // Inconsistent instruction verbs
+          { pattern: /\b(may|might|could|should|would)\b/gi, penalty: 1.5 }, // Ambiguous instructions
+          { pattern: /\b(easy|simple|just|simply|easily|quickly)\b/gi, penalty: 1 }, // Subjective descriptors
+          
+          // Passive voice should be avoided in documentation
+          { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 1.5 },
+          
+          // Sentence structure issues
+          { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 2 }, // Double conjunctions
+        ];
+        break;
         
       case 'standard':
       default:
@@ -962,6 +1000,28 @@ class TextAnalysisService {
         if (sentenceLengthVariance < 5 && sentences.length > 5) {
           // Penalize lack of variety in sentence length
           score -= Math.min(10, (5 - sentenceLengthVariance) * 2);
+        }
+        break;
+
+      case 'medical':
+        // Medical writing requires precision with moderate sentence length
+        if (avgWordsPerSentence > 35) {
+          // Penalize excessively long sentences in medical writing
+          score -= Math.min(15, (avgWordsPerSentence - 35) * 0.7);
+        } else if (avgWordsPerSentence < 10 && sentences.length > 3) {
+          // Penalize very short sentences that may lack necessary detail
+          score -= Math.min(10, (10 - avgWordsPerSentence) * 1.2);
+        }
+        break;
+
+      case 'documentation':
+        // Documentation should have clear, concise sentences
+        if (avgWordsPerSentence > 25) {
+          // Penalize long sentences in documentation
+          score -= Math.min(15, (avgWordsPerSentence - 25) * 0.8);
+        } else if (avgWordsPerSentence < 8 && sentences.length > 3) {
+          // Very short sentences are acceptable in documentation
+          score -= Math.min(5, (8 - avgWordsPerSentence) * 0.8);
         }
         break;
         
@@ -1030,6 +1090,44 @@ class TextAnalysisService {
         if (metrics.avgSentenceLength > 25) {
           // Penalty for excessively long sentences
           readabilityScore -= Math.min(15, (metrics.avgSentenceLength - 25) * 1.5);
+        }
+        break;
+
+      case 'medical':
+        // Medical writing has specific readability requirements
+        // Balance between precision and clarity is important
+        if (metrics.avgSentenceLength > 30) {
+          // Penalty for excessively long sentences in medical content
+          readabilityScore -= Math.min(15, (metrics.avgSentenceLength - 30) * 1.2);
+        }
+        
+        // Technical terms are expected in medical writing
+        if (metrics.avgWordLength > 6) {
+          // Less penalty for appropriate technical terminology
+          readabilityScore += Math.min(5, (metrics.avgWordLength - 6) * 1);
+        }
+        
+        // Penalize dense paragraphs in medical writing
+        if (metrics.totalSentences / Math.max(1, metrics.totalParagraphs) > 5) {
+          readabilityScore -= Math.min(10, ((metrics.totalSentences / Math.max(1, metrics.totalParagraphs)) - 5) * 1.5);
+        }
+        break;
+
+      case 'documentation':
+        // Documentation requires high readability and clear structure
+        if (metrics.avgSentenceLength > 20) {
+          // Strong penalty for long sentences in documentation
+          readabilityScore -= Math.min(20, (metrics.avgSentenceLength - 20) * 1.5);
+        }
+        
+        // Penalize complex words in documentation
+        if (metrics.avgWordLength > 5.5) {
+          readabilityScore -= Math.min(15, (metrics.avgWordLength - 5.5) * 3);
+        }
+        
+        // Reward shorter paragraphs in documentation
+        if (metrics.totalSentences / Math.max(1, metrics.totalParagraphs) < 3) {
+          readabilityScore += Math.min(10, 5 - (metrics.totalSentences / Math.max(1, metrics.totalParagraphs)));
         }
         break;
         
