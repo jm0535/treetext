@@ -7,18 +7,18 @@ import { toast } from "@/hooks/use-toast";
 import { UsageLimit } from "@/types";
 import { STORAGE_KEYS } from "@/utils/constants";
 
-// Default usage limits - professional tier
+// Default usage limits - academic tier (increased for thesis analysis)
 const DEFAULT_USAGE_LIMITS: UsageLimit = {
-  // Daily limits (conservative to manage costs)
-  dailyAnalysisLimit: 10,           // 10 analyses per day
+  // Daily limits (increased for large documents)
+  dailyAnalysisLimit: 50,           // 50 analyses per day
   dailyAnalysisCount: 0,
-  dailyTokenLimit: 50000,           // ~25 pages of text per day
+  dailyTokenLimit: 500000,          // ~250 pages of text per day
   dailyTokenCount: 0,
   
   // Monthly limits
-  monthlyAnalysisLimit: 100,        // 100 analyses per month
+  monthlyAnalysisLimit: 500,        // 500 analyses per month
   monthlyAnalysisCount: 0,
-  monthlyTokenLimit: 500000,        // ~250 pages of text per month
+  monthlyTokenLimit: 5000000,       // ~2500 pages of text per month
   monthlyTokenCount: 0,
   
   // Last reset timestamps
@@ -36,6 +36,33 @@ class UsageService {
   private constructor() {
     this.usageLimit = this.loadUsageLimits();
     this.checkAndResetLimits();
+
+    // TEMPORARY: Reset all limits on initialization for thesis analysis
+    this.resetAllLimits();
+  }
+  
+  /**
+   * Reset all usage limits to zero
+   * TEMPORARY: Added for thesis analysis
+   */
+  public resetAllLimits(): void {
+    console.log('Resetting all usage limits for thesis analysis');
+
+    // Reset all counters to zero
+    this.usageLimit.dailyAnalysisCount = 0;
+    this.usageLimit.monthlyAnalysisCount = 0;
+    this.usageLimit.dailyTokenCount = 0;
+    this.usageLimit.monthlyTokenCount = 0;
+
+    // Update timestamps to now
+    const now = new Date();
+    this.usageLimit.lastDailyReset = now.toISOString();
+    this.usageLimit.lastMonthlyReset = now.toISOString();
+
+    // Save to local storage
+    this.saveUsageLimits();
+
+    console.log('All usage limits have been reset');
   }
   
   /**
@@ -118,6 +145,11 @@ class UsageService {
    * @returns Boolean indicating if analysis is allowed
    */
   public canPerformAnalysis(textLength: number): boolean {
+    // TEMPORARY: Always allow analysis regardless of limits
+    console.log('Usage limits temporarily disabled for thesis analysis');
+    return true;
+
+    /* Original implementation commented out for now
     // Refresh limits in case day/month has changed
     this.checkAndResetLimits();
     
@@ -167,6 +199,7 @@ class UsageService {
     
     // All checks passed
     return true;
+    */
   }
   
   /**
@@ -175,6 +208,11 @@ class UsageService {
    * @param actualTokens Actual tokens used (if available, otherwise estimated)
    */
   public recordUsage(textLength: number, actualTokens?: number): void {
+    // TEMPORARY: Don't record usage for thesis analysis
+    console.log('Usage recording temporarily disabled for thesis analysis');
+    return;
+
+    /* Original implementation commented out for now
     // Estimate token count if not provided
     const wordCount = textLength / 5; // Rough estimate: 5 chars per word
     const tokenCount = actualTokens || Math.ceil(wordCount * AVG_TOKENS_PER_WORD);
@@ -191,6 +229,7 @@ class UsageService {
     // Log usage for monitoring
     console.log(`Usage recorded: +1 analysis, +${tokenCount} tokens`);
     console.log(`Daily usage: ${this.usageLimit.dailyAnalysisCount}/${this.usageLimit.dailyAnalysisLimit} analyses, ${this.usageLimit.dailyTokenCount}/${this.usageLimit.dailyTokenLimit} tokens`);
+    */
   }
   
   /**

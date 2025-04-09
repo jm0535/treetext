@@ -72,6 +72,163 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const [passwordDialogOpen, setPasswordDialogOpen] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Get PDF page count without processing the content
+  const getPageCount = async (file: File): Promise<number> => {
+    if (file.type !== 'application/pdf') {
+      return 0;
+    }
+
+    const fileUrl = URL.createObjectURL(file);
+    try {
+      const loadingTask = pdfjsLib.getDocument({
+        url: fileUrl,
+        cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+        cMapPacked: true,
+      });
+
+      // Use a timeout to prevent hanging on large PDFs
+      const pdfPromise = loadingTask.promise;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Timeout getting page count'));
+        }, 5000); // 5 second timeout just for page count
+      });
+
+      const pdf = await Promise.race([pdfPromise, timeoutPromise]);
+      const pageCount = pdf.numPages;
+      URL.revokeObjectURL(fileUrl);
+      return pageCount;
+    } catch (error) {
+      URL.revokeObjectURL(fileUrl);
+      console.error('Error getting page count:', error);
+      return 0;
+    }
+  };
+
+  // Process only a sample of a large document
+  const processSampleOfDocument = async (file: File): Promise<string> => {
+    try {
+      setIsLoading(true);
+      setProgress(10);
+
+      // Show a progress notification for large documents
+      toast({
+        title: "Processing Document Sample",
+        description: "Analyzing a representative sample of your document for better performance.",
+        variant: "info",
+      });
+
+      // Set a timeout to prevent the browser from hanging
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Sample processing timed out. The document may be too complex.'));
+        }, 90000); // 90 second timeout for very large documents
+      });
+
+      if (file.type === 'application/pdf') {
+        // For PDFs, process a strategic sample of pages
+        const fileUrl = URL.createObjectURL(file);
+        try {
+          const loadingTask = pdfjsLib.getDocument({
+            url: fileUrl,
+            cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+            cMapPacked: true,
+          });
+
+          const pdf = await Promise.race([loadingTask.promise, timeoutPromise]);
+
+          // For very large documents like a thesis, sample pages strategically
+          // Get total page count
+          const totalPages = pdf.numPages;
+          setProgress(20);
+
+          // Sample pages from beginning, middle, and end for better representation
+          let pagesToSample = [];
+
+          // For documents with more than 30 pages, use strategic sampling
+          if (totalPages > 30) {
+            // Get first 3 pages (introduction)
+            for (let i = 1; i <= Math.min(3, totalPages); i++) {
+              pagesToSample.push(i);
+            }
+
+            // Get 2 pages from each quarter of the document
+            const quarter = Math.floor(totalPages / 4);
+            pagesToSample.push(quarter, quarter + 1);                   // 1st quarter
+            pagesToSample.push(2 * quarter, 2 * quarter + 1);           // 2nd quarter
+            pagesToSample.push(3 * quarter, 3 * quarter + 1);           // 3rd quarter
+
+            // Get last 3 pages (conclusion)
+            for (let i = Math.max(1, totalPages - 2); i <= totalPages; i++) {
+              pagesToSample.push(i);
+            }
+
+            // Remove duplicates and sort
+            pagesToSample = [...new Set(pagesToSample)].sort((a, b) => a - b);
+          } else {
+            // For smaller documents, take first 10 pages
+            pagesToSample = Array.from({length: Math.min(10, totalPages)}, (_, i) => i + 1);
+          }
+
+          let sampleText = `[PDF Document Sample: ${file.name}]\n\n`;
+          sampleText += `Note: This is a strategic sample of ${pagesToSample.length} pages from your ${totalPages}-page document.\n\n`;
+
+          // Process pages in batches to prevent UI freezing
+          const BATCH_SIZE = 2;
+          for (let batchIndex = 0; batchIndex < pagesToSample.length; batchIndex += BATCH_SIZE) {
+            const currentBatch = pagesToSample.slice(batchIndex, batchIndex + BATCH_SIZE);
+            setProgress(Math.floor(30 + (batchIndex / pagesToSample.length) * 60));
+
+            // Process current batch of pages
+            for (const pageNum of currentBatch) {
+              try {
+                const page = await pdf.getPage(pageNum);
+                const textContent = await page.getTextContent();
+                const pageText = textContent.items
+                  .map(item => 'str' in item ? item.str : '')
+                  .join(' ');
+
+                sampleText += `Page ${pageNum}:\n${pageText}\n\n`;
+              } catch (pageError) {
+                console.error(`Error processing page ${pageNum}:`, pageError);
+                sampleText += `Page ${pageNum}: [Error extracting content]\n\n`;
+              }
+            }
+
+            // Small delay to allow UI to update
+            await new Promise(resolve => setTimeout(resolve, 20));
+          }
+
+          URL.revokeObjectURL(fileUrl);
+          setProgress(100);
+          return sampleText;
+        } catch (error) {
+          URL.revokeObjectURL(fileUrl);
+          throw error;
+        }
+      } else if (file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        // For DOCX, extract but add a note that it's a sample
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await Promise.race([mammoth.extractRawText({ arrayBuffer }), timeoutPromise]);
+        setProgress(100);
+        return `[Word Document Sample: ${file.name}]\n\nNote: This document was very large. The analysis may not include all content.\n\n${result.value.substring(0, 50000)}`;
+      } else if (file.type === 'text/plain' || file.type === 'text/markdown' || file.type === 'text/html') {
+        // For text files, read only the first 50,000 characters
+        const text = await Promise.race([readTextFile(file), timeoutPromise]);
+        setProgress(100);
+        const sample = text.substring(0, 50000);
+        return `[Text Document Sample: ${file.name}]\n\nNote: This document was very large. The analysis includes only the first 50,000 characters.\n\n${sample}`;
+      } else {
+        throw new Error('Cannot process a sample of this file type');
+      }
+    } catch (error) {
+      console.error('Error processing document sample:', error);
+      throw new Error(`Failed to process document sample: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     setError(null);
@@ -98,27 +255,25 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     e.stopPropagation();
-    
-    const droppedFile = e.dataTransfer.files?.[0] || null;
     setError(null);
     
-    if (!droppedFile) {
-      return;
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const droppedFile = e.dataTransfer.files[0];
+      
+      // Validate file size
+      if (droppedFile.size > MAX_FILE_SIZE) {
+        setError(`File size exceeds the maximum limit of 100MB. Your file is ${(droppedFile.size / (1024 * 1024)).toFixed(2)}MB.`);
+        return;
+      }
+      
+      // Validate file type
+      if (!SUPPORTED_FILE_TYPES.includes(droppedFile.type)) {
+        setError(`Unsupported file type: ${droppedFile.type}. Please upload a supported document format.`);
+        return;
+      }
+      
+      setFile(droppedFile);
     }
-    
-    // Validate file size
-    if (droppedFile.size > MAX_FILE_SIZE) {
-      setError(`File size exceeds the maximum limit of 100MB. Your file is ${(droppedFile.size / (1024 * 1024)).toFixed(2)}MB.`);
-      return;
-    }
-    
-    // Validate file type
-    if (!SUPPORTED_FILE_TYPES.includes(droppedFile.type)) {
-      setError(`Unsupported file type: ${droppedFile.type}. Please upload a supported document format.`);
-      return;
-    }
-    
-    setFile(droppedFile);
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -128,190 +283,191 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
 
   // Function to extract text from a PDF file using PDF.js
   const extractTextFromPdf = async (file: File): Promise<string> => {
+    const fileUrl = URL.createObjectURL(file);
+    let extractedText = '';
+    
     try {
-      setProgress(20);
-      console.log('Starting PDF extraction for:', file.name);
+      const loadingTask = pdfjsLib.getDocument({
+        url: fileUrl,
+        password: isPdfPasswordProtected ? pdfPassword : '',
+        cMapUrl: `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/cmaps/`,
+        cMapPacked: true,
+      });
       
-      // Convert the file to an ArrayBuffer
-      const arrayBuffer = await file.arrayBuffer();
-      console.log('File converted to ArrayBuffer, size:', arrayBuffer.byteLength);
+      // Set a timeout to prevent the browser from hanging
+      const pdfPromise = loadingTask.promise;
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('PDF processing timed out. The document may be too large or complex.'));
+        }, 60000); // 60 second timeout for large documents
+      });
       
-      // Load the PDF document
-      setProgress(40);
-      console.log('Creating PDF loading task...');
+      const pdf = await Promise.race([pdfPromise, timeoutPromise]);
+      const numPages = pdf.numPages;
       
-      // Use a try-catch specifically for the document loading
-      try {
-        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-        console.log('Waiting for PDF document to load...');
-        const pdf = await loadingTask.promise;
-        console.log('PDF loaded successfully, pages:', pdf.numPages);
+      // Process pages in batches to prevent UI freezing
+      const BATCH_SIZE = 5;
+      for (let i = 1; i <= numPages; i += BATCH_SIZE) {
+        const pagePromises = [];
         
-        setProgress(60);
-        let fullText = `[PDF Document: ${file.name}]\n\n`;
-        
-        // If the PDF has no pages, return a message
-        if (pdf.numPages === 0) {
-          return `[PDF Document: ${file.name}]\n\nThis PDF appears to be empty or contains no text content that can be extracted.`;
+        // Create a batch of page processing promises
+        for (let j = i; j <= Math.min(i + BATCH_SIZE - 1, numPages); j++) {
+          pagePromises.push(pdf.getPage(j).then(async (page) => {
+            const textContent = await page.getTextContent();
+            return { 
+              pageNum: j, 
+              text: textContent.items.map(item => 'str' in item ? item.str : '').join(' ') 
+            };
+          }));
         }
         
-        // Extract text from each page
-        for (let i = 1; i <= pdf.numPages; i++) {
-          console.log(`Processing page ${i} of ${pdf.numPages}...`);
-          const page = await pdf.getPage(i);
-          const textContent = await page.getTextContent();
-          const textItems = textContent.items;
-          
-          // Concatenate the text items
-          const pageText = textItems
-            .map((item: { str?: string }) => {
-              // Check if the item has a 'str' property (TextItem) or not (TextMarkedContent)
-              return item.str || '';
-            })
-            .join(' ');
-          
-          fullText += pageText + '\n';
-          console.log(`Page ${i} processed, extracted ${pageText.length} characters`);
-          
-          // Update progress based on page completion
-          setProgress(60 + Math.floor((i / pdf.numPages) * 30));
+        // Process the current batch
+        const pageResults = await Promise.all(pagePromises);
+        pageResults.sort((a, b) => a.pageNum - b.pageNum);
+        
+        // Add the text from each page to the result
+        for (const result of pageResults) {
+          extractedText += `Page ${result.pageNum}:\n${result.text}\n\n`;
         }
         
-        // If we extracted no text, provide a fallback message
-        if (fullText.trim() === `[PDF Document: ${file.name}]`) {
-          return `[PDF Document: ${file.name}]\n\nThis PDF appears to contain no extractable text content. It may consist of scanned images or have content protection enabled.`;
-        }
+        // Update progress
+        setProgress(Math.min(Math.floor((i / numPages) * 100), 95));
         
-        console.log('PDF extraction completed successfully');
-        return fullText;
-      } catch (pdfError) {
-        console.error('Error loading PDF document:', pdfError);
-        // Fallback to a simpler extraction method
-        return `[PDF Document: ${file.name}]\n\nUnable to parse this PDF document. It may be corrupted, password-protected, or use unsupported features.\n\nFor demonstration purposes, here is some placeholder text that would normally be extracted from your document:\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies aliquam, magna libero commodo justo, eget tincidunt purus augue vel velit.`;
+        // Small delay to allow UI to update
+        await new Promise(resolve => setTimeout(resolve, 10));
       }
+      
+      URL.revokeObjectURL(fileUrl);
+      return extractedText;
     } catch (error) {
-      console.error('Error extracting text from PDF:', error);
-      throw new Error('Failed to extract text from the PDF document. Please try again.');
+      URL.revokeObjectURL(fileUrl);
+      
+      if (error instanceof Error && error.message.includes('Invalid password')) {
+        setIsPdfPasswordProtected(true);
+        setPasswordDialogOpen(true);
+        throw new Error('PDF is password protected. Please enter the password.');
+      }
+      
+      throw error;
     }
   };
 
   // Function to extract text from a DOCX file using mammoth
   const extractTextFromDocx = async (file: File): Promise<string> => {
     try {
-      setProgress(30);
-      // Convert the file to an ArrayBuffer
       const arrayBuffer = await file.arrayBuffer();
       
-      setProgress(60);
-      // Extract text from the DOCX file
-      const result = await mammoth.extractRawText({ arrayBuffer });
-      const text = `[Word Document: ${file.name}]\n\n${result.value}`;
+      // Set a timeout to prevent the browser from hanging
+      const mammothPromise = mammoth.extractRawText({ arrayBuffer });
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('DOCX processing timed out. The document may be too large or complex.'));
+        }, 60000); // 60 second timeout for large documents
+      });
       
-      setProgress(90);
-      return text;
+      const result = await Promise.race([mammothPromise, timeoutPromise]);
+      return result.value;
     } catch (error) {
-      console.error('Error extracting text from DOCX:', error);
-      throw new Error('Failed to extract text from the Word document. Please try again.');
+      throw error;
     }
   };
 
   // Check if a PDF is password protected
   const checkPdfProtection = async (file: File): Promise<boolean> => {
+    const fileUrl = URL.createObjectURL(file);
+    
     try {
-      console.log('Checking if PDF is password protected:', file.name);
-      const isProtected = await pdfProcessingService.isPasswordProtected(file);
+      const loadingTask = pdfjsLib.getDocument({
+        url: fileUrl,
+        password: '',
+      });
       
-      if (isProtected) {
-        console.log('PDF is password protected');
-        setIsPdfPasswordProtected(true);
-        setPasswordDialogOpen(true);
-        return true;
-      }
-      
+      await loadingTask.promise;
+      URL.revokeObjectURL(fileUrl);
       return false;
     } catch (error) {
-      console.error('Error checking PDF protection:', error);
+      URL.revokeObjectURL(fileUrl);
+      if (error instanceof Error && error.message.includes('Invalid password')) {
+        return true;
+      }
       return false;
     }
   };
-  
+
   const extractTextFromFile = async (uploadedFile: File): Promise<string> => {
     setIsLoading(true);
     setProgress(10);
     
     try {
-      // For text files, we can directly read the content
-      if (uploadedFile.type === 'text/plain' || uploadedFile.type === 'text/markdown' || uploadedFile.type === 'text/html') {
-        const text = await readTextFile(uploadedFile);
-        setProgress(100);
-        return text;
-      }
+      // Check if file is too large and needs sampling
+      const isVeryLargeFile = uploadedFile.size > 10 * 1024 * 1024; // 10MB
+      let pageCount = 0;
       
-      // For PDF files, use advanced PDF processing
+      // For PDFs, check page count
       if (uploadedFile.type === 'application/pdf') {
-        // Check if PDF is password protected
-        const isProtected = await checkPdfProtection(uploadedFile);
+        pageCount = await getPageCount(uploadedFile);
+      }
+      
+      // If file is very large or has many pages, ask user if they want to process a sample
+      if (isVeryLargeFile || pageCount > 100) {
+        const confirmMessage = pageCount > 0 
+          ? `This document has ${pageCount} pages and may take a long time to process. Would you like to process only a sample of the document for faster analysis?`
+          : `This document is very large (${(uploadedFile.size / (1024 * 1024)).toFixed(2)}MB) and may take a long time to process. Would you like to process only a sample of the document for faster analysis?`;
+          
+        const shouldProcessSample = window.confirm(confirmMessage);
         
-        if (isProtected) {
-          // If it's password protected, return a placeholder and wait for password dialog
-          setIsLoading(false);
-          return `[PDF Document: ${uploadedFile.name}]\n\nThis PDF is password protected. Please enter the password to extract the content.`;
+        if (shouldProcessSample) {
+          return await processSampleOfDocument(uploadedFile);
         }
-        
-        // Use the advanced PDF processing service
-        const text = await pdfProcessingService.extractTextFromPdf(
-          uploadedFile,
-          undefined, // No password needed for non-protected PDFs
-          useOcr,
-          useServerProcessing,
-          (progress) => {
-            setProgress(Math.floor(20 + progress * 0.7)); // Scale progress to 20-90%
+      }
+      
+      // Process the entire document
+      let extractedText = '';
+      
+      switch (uploadedFile.type) {
+        case 'text/plain':
+        case 'text/markdown':
+        case 'text/html':
+          extractedText = await readTextFile(uploadedFile);
+          break;
+          
+        case 'application/pdf':
+          // Check if PDF is password protected
+          if (await checkPdfProtection(uploadedFile)) {
+            setIsPdfPasswordProtected(true);
+            setPasswordDialogOpen(true);
+            throw new Error('PDF is password protected. Please enter the password.');
           }
-        );
-        
-        setProgress(100);
-        return `[PDF Document: ${uploadedFile.name}]\n\n${text}`;
-      }
-      
-      // For DOCX files, use mammoth
-      if (uploadedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        const text = await extractTextFromDocx(uploadedFile);
-        setProgress(100);
-        return text;
-      }
-      
-      // For other file types, we still use placeholder text
-      setProgress(50);
-      let extractedText = "";
-      
-      if (uploadedFile.type === 'application/msword') {
-        extractedText = `[Word Document (DOC): ${uploadedFile.name}]\n\n`;
-        extractedText += "This is a legacy DOC format file. For full support, we would need a server-side conversion service.\n\n";
-        extractedText += "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies aliquam, ";
-        extractedText += "magna libero commodo justo, eget tincidunt purus augue vel velit.";
-      } else if (uploadedFile.type === 'application/rtf') {
-        extractedText = `[RTF Document: ${uploadedFile.name}]\n\n`;
-        extractedText += "RTF parsing requires additional libraries not included in this demo.\n\n";
-        extractedText += "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies aliquam, ";
-        extractedText += "magna libero commodo justo, eget tincidunt purus augue vel velit.";
-      } else if (uploadedFile.type === 'application/vnd.oasis.opendocument.text') {
-        extractedText = `[OpenDocument Text: ${uploadedFile.name}]\n\n`;
-        extractedText += "ODT parsing requires additional libraries not included in this demo.\n\n";
-        extractedText += "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies aliquam, ";
-        extractedText += "magna libero commodo justo, eget tincidunt purus augue vel velit.";
-      } else {
-        // For any other file type, provide a generic message
-        extractedText = `[Document: ${uploadedFile.name}]\n\n`;
-        extractedText += "This file type is not fully supported in this demo.\n\n";
-        extractedText += "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies aliquam, ";
-        extractedText += "magna libero commodo justo, eget tincidunt purus augue vel velit.";
+          
+          if (useServerProcessing) {
+            // Use server-side processing for complex PDFs
+            extractedText = await pdfProcessingService.processWithServer(uploadedFile, useOcr);
+          } else {
+            // Use client-side processing
+            extractedText = await extractTextFromPdf(uploadedFile);
+          }
+          break;
+          
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        case 'application/msword':
+          extractedText = await extractTextFromDocx(uploadedFile);
+          break;
+          
+        case 'application/rtf':
+        case 'application/vnd.oasis.opendocument.text':
+          // For RTF and ODT, we would need additional libraries
+          // For now, just show a message
+          extractedText = `[${uploadedFile.type.split('/')[1].toUpperCase()} Document: ${uploadedFile.name}]\n\nContent extraction for this format is limited. For best results, consider converting to PDF or DOCX.`;
+          break;
+          
+        default:
+          throw new Error(`Unsupported file type: ${uploadedFile.type}`);
       }
       
       setProgress(100);
       return extractedText;
     } catch (error) {
-      console.error('Error extracting text from file:', error);
-      throw new Error('Failed to extract text from the document. Please try again.');
+      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -322,11 +478,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       const reader = new FileReader();
       
       reader.onload = (e) => {
-        resolve(e.target?.result as string || '');
+        resolve(e.target?.result as string);
       };
       
       reader.onerror = () => {
-        reject(new Error('Failed to read file. Please try again.'));
+        reject(new Error('Error reading text file'));
       };
       
       reader.readAsText(uploadedFile);
@@ -339,32 +495,43 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       return;
     }
     
+    setError(null);
+    setIsLoading(true);
+    setProgress(0);
+    
     try {
-      setError(null);
+      // Extract text from the file
       const extractedText = await extractTextFromFile(file);
       
       // Set the extracted text for analysis
       setText(extractedText);
       
+      // Show success message
       toast({
-        title: 'File Uploaded Successfully',
+        title: "Document Uploaded Successfully",
         description: `${file.name} has been processed and is ready for analysis.`,
+        variant: "success",
       });
       
-      // Clear the file after successful upload
-      setFile(null);
+      // Clear the file input
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error) {
-      console.error('Upload error:', error);
-      setError(error instanceof Error ? error.message : 'An unknown error occurred during upload.');
+      console.error('Error uploading file:', error);
       
-      toast({
-        title: 'Upload Failed',
-        description: error instanceof Error ? error.message : 'Failed to process the document. Please try again.',
-        variant: 'destructive',
-      });
+      // Don't show error for password protected PDFs as we'll show a dialog instead
+      if (error instanceof Error && !error.message.includes('password protected')) {
+        setError(`Error processing file: ${error.message}`);
+        
+        toast({
+          title: "Upload Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -377,239 +544,208 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   };
 
   const getFileTypeIcon = (fileType: string) => {
-    return FILE_TYPE_ICONS[fileType] || <FileIcon className="h-6 w-6 text-gray-500" />;
+    return FILE_TYPE_ICONS[fileType] || <FileText className="h-6 w-6 text-gray-500" />;
   };
 
   const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) {
-      return bytes + ' bytes';
-    } else if (bytes < 1024 * 1024) {
-      return (bytes / 1024).toFixed(2) + ' KB';
-    } else {
-      return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-    }
+    if (bytes < 1024) return bytes + ' bytes';
+    else if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    else if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    else return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
   };
 
   // Handle password submission
-  const handlePasswordSubmit = async () => {
-    if (!file) {
-      setPasswordDialogOpen(false);
+  const handlePasswordSubmit = () => {
+    if (!pdfPassword) {
       return;
     }
     
-    try {
-      setIsLoading(true);
-      setProgress(20);
-      
-      // Use the PDF processing service with the password
-      const text = await pdfProcessingService.extractTextFromPdf(
-        file,
-        pdfPassword,
-        useOcr,
-        useServerProcessing,
-        (progress) => {
-          setProgress(Math.floor(20 + progress * 0.7)); // Scale progress to 20-90%
-        }
-      );
-      
-      setPasswordDialogOpen(false);
-      setText(`[PDF Document: ${file.name}]\n\n${text}`);
-      
-      toast({
-        title: 'File Uploaded Successfully',
-        description: `${file.name} has been processed and is ready for analysis.`,
-      });
-      
-      // Clear the file after successful upload
-      setFile(null);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-    } catch (error) {
-      console.error('Error processing password-protected PDF:', error);
-      setError(`Failed to process password-protected PDF: ${error instanceof Error ? error.message : String(error)}`);
-      
-      toast({
-        title: 'Password Error',
-        description: 'The password may be incorrect or the document is corrupted.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsLoading(false);
-      setProgress(0);
+    setPasswordDialogOpen(false);
+    setIsLoading(true);
+    setProgress(0);
+    
+    // Re-attempt extraction with the provided password
+    if (file) {
+      extractTextFromFile(file)
+        .then(extractedText => {
+          setText(extractedText);
+          
+          toast({
+            title: "Document Uploaded Successfully",
+            description: `${file.name} has been processed and is ready for analysis.`,
+            variant: "success",
+          });
+          
+          // Clear the file input
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        })
+        .catch(error => {
+          console.error('Error processing file with password:', error);
+          
+          if (error instanceof Error && error.message.includes('Invalid password')) {
+            setError('Incorrect password. Please try again.');
+            setPasswordDialogOpen(true);
+          } else {
+            setError(`Error processing file: ${error.message}`);
+            
+            toast({
+              title: "Upload Failed",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
     }
   };
-  
+
   return (
-    <>
-      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Password Protected PDF</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <p className="text-sm text-muted-foreground">
-              This PDF document is password protected. Please enter the password to extract its content.
-            </p>
-            <div className="space-y-2">
-              <Label htmlFor="pdf-password">Password</Label>
-              <div className="relative">
-                <Input
-                  id="pdf-password"
-                  type={showPassword ? "text" : "password"}
-                  value={pdfPassword}
-                  onChange={(e) => setPdfPassword(e.target.value)}
-                  placeholder="Enter document password"
-                  className="pr-10"
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                </Button>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center space-x-2">
-                <Checkbox id="use-ocr" checked={useOcr} onCheckedChange={(checked) => setUseOcr(checked === true)} />
-                <Label htmlFor="use-ocr" className="text-sm font-normal cursor-pointer flex items-center">
-                  <Scan className="h-4 w-4 mr-1" /> Use OCR for scanned pages
-                </Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Checkbox id="use-server" checked={useServerProcessing} onCheckedChange={(checked) => setUseServerProcessing(checked === true)} />
-                <Label htmlFor="use-server" className="text-sm font-normal cursor-pointer flex items-center">
-                  <Server className="h-4 w-4 mr-1" /> Use server-side processing for complex documents
-                </Label>
-              </div>
-            </div>
+    <div className={className}>
+      <div className="space-y-4">
+        <div className="flex flex-col space-y-2">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-medium">Upload Document</h3>
+            {file && (
+              <Button variant="ghost" size="sm" onClick={clearFile} className="h-8 px-2">
+                <X className="h-4 w-4 mr-1" /> Clear
+              </Button>
+            )}
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handlePasswordSubmit} disabled={!pdfPassword}>Submit</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      <Card className={`w-full ${className || ''}`}>
-        <CardContent className="p-6">
-        <div className="mb-4">
-          <h3 className="text-lg font-medium">Upload Document</h3>
-          <p className="text-sm text-muted-foreground">
-            Upload a document to analyze for plagiarism, grammar, and readability.
-          </p>
+          <p className="text-sm text-muted-foreground">Upload a document to analyze for plagiarism, grammar, and readability.</p>
         </div>
-        
+
         {error && (
-          <Alert variant="destructive" className="mb-4">
+          <Alert variant="destructive">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Error</AlertTitle>
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        
-        <div
-          className={`border-2 border-dashed rounded-md p-6 text-center ${
-            file ? 'border-primary' : 'border-muted-foreground/25'
-          } hover:border-primary/50 transition-colors cursor-pointer`}
-          onDrop={handleDrop}
-          onDragOver={handleDragOver}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            className="hidden"
-            accept=".txt,.pdf,.docx,.doc,.html,.md,.rtf,.odt"
-          />
-          
-          {!file && (
-            <div className="flex flex-col items-center justify-center py-4">
-              <Upload className="h-10 w-10 text-muted-foreground mb-2" />
-              <p className="text-sm font-medium mb-1">Drag and drop your document here</p>
-              <p className="text-xs text-muted-foreground mb-2">
-                Supported formats: TXT, PDF, DOCX, DOC, HTML, MD, RTF, ODT (Max 100MB)
-              </p>
-              <Button variant="outline" type="button" size="sm">
-                Browse Files
-              </Button>
-            </div>
-          )}
-          
-          {file && (
-            <div className="flex items-center justify-between py-2">
-              <div className="flex items-center">
-                {getFileTypeIcon(file.type)}
-                <div className="ml-3 text-left">
-                  <p className="text-sm font-medium truncate max-w-[200px]">{file.name}</p>
-                  <p className="text-xs text-muted-foreground">{formatFileSize(file.size)}</p>
+
+        {file ? (
+          <Card className="border-dashed">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {getFileTypeIcon(file.type)}
+                  <div>
+                    <p className="font-medium truncate max-w-[200px]">{file.name}</p>
+                    <p className="text-sm text-muted-foreground">{formatFileSize(file.size)}</p>
+                  </div>
                 </div>
+                <Button variant="ghost" size="sm" onClick={() => setFile(null)} className="h-8 px-2">
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  clearFile();
-                }}
-                aria-label="Remove file"
-              >
-                <X className="h-4 w-4 text-muted-foreground" />
-              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div
+            className="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <div className="flex flex-col items-center justify-center space-y-3">
+              <Upload className="h-8 w-8 text-muted-foreground" />
+              <div>
+                <p className="font-medium">Drag & drop your file here</p>
+                <p className="text-sm text-muted-foreground">or click to browse</p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Supported formats: PDF, DOCX, TXT, HTML, MD, RTF, ODT (Max 100MB)
+              </p>
             </div>
-          )}
-        </div>
-        
-        {isLoading && (
-          <div className="mt-4">
-            <Progress value={progress} className="h-2" />
-            <p className="text-xs text-muted-foreground mt-1 text-center">
-              Processing document... {progress}%
-            </p>
+            <input
+              ref={fileInputRef}
+              type="file"
+              className="hidden"
+              accept={SUPPORTED_FILE_TYPES.join(',')}
+              onChange={handleFileChange}
+            />
           </div>
         )}
-        
+
         {file && file.type === 'application/pdf' && (
-          <div className="mt-4 space-y-2 border rounded-md p-3 bg-muted/20">
+          <div className="space-y-2">
             <h4 className="text-sm font-medium">Advanced PDF Options</h4>
             <div className="space-y-2">
               <div className="flex items-center space-x-2">
-                <Checkbox id="use-ocr" checked={useOcr} onCheckedChange={(checked) => setUseOcr(checked === true)} />
-                <Label htmlFor="use-ocr" className="text-sm font-normal cursor-pointer flex items-center">
+                <Checkbox id="use-ocr" checked={useOcr} onCheckedChange={(checked) => setUseOcr(checked as boolean)} />
+                <Label htmlFor="use-ocr" className="text-sm cursor-pointer flex items-center">
                   <Scan className="h-4 w-4 mr-1" /> Use OCR for scanned pages
                 </Label>
               </div>
               <div className="flex items-center space-x-2">
-                <Checkbox id="use-server" checked={useServerProcessing} onCheckedChange={(checked) => setUseServerProcessing(checked === true)} />
-                <Label htmlFor="use-server" className="text-sm font-normal cursor-pointer flex items-center">
+                <Checkbox 
+                  id="use-server" 
+                  checked={useServerProcessing} 
+                  onCheckedChange={(checked) => setUseServerProcessing(checked as boolean)} 
+                />
+                <Label htmlFor="use-server" className="text-sm cursor-pointer flex items-center">
                   <Server className="h-4 w-4 mr-1" /> Use server-side processing for complex documents
                 </Label>
               </div>
             </div>
           </div>
         )}
-        
-        <div className="mt-4 flex justify-end">
-          <Button
-            onClick={handleUpload}
-            disabled={!file || isLoading}
-            className="w-full sm:w-auto"
-          >
-            {isLoading ? 'Processing...' : 'Upload & Analyze'}
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-    </>
+
+        {isLoading ? (
+          <div className="space-y-2">
+            <Progress value={progress} className="h-2" />
+            <p className="text-sm text-center text-muted-foreground">
+              {progress < 100 ? 'Processing document...' : 'Finalizing...'}
+            </p>
+          </div>
+        ) : (
+          file && (
+            <Button className="w-full" onClick={handleUpload}>
+              Upload & Analyze
+            </Button>
+          )
+        )}
+      </div>
+
+      {/* Password Dialog */}
+      <Dialog open={passwordDialogOpen} onOpenChange={setPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>PDF Password Required</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <p className="text-sm">This PDF is password protected. Please enter the password to continue.</p>
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter password"
+                value={pdfPassword}
+                onChange={(e) => setPdfPassword(e.target.value)}
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPasswordDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handlePasswordSubmit}>
+              Submit
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 };
 

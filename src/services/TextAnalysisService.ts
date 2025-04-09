@@ -1490,6 +1490,14 @@ class TextAnalysisService {
           // Bonus for proper citation usage
           readabilityScore += Math.min(10, citations.length * 2);
         }
+        
+        // Reward section headers in long scientific documents
+        const sectionHeaderPattern = /^\s*\d+(\.\d+)*\s+[A-Z][\w\s]+$|^\s*[A-Z][\w\s]{2,50}$/gm;
+        const sectionHeaders = text.match(sectionHeaderPattern) || [];
+        if (sectionHeaders.length > 0 && metrics.totalWords > 1000) {
+          // Bonus for proper document structure in long documents
+          readabilityScore += Math.min(15, sectionHeaders.length * 1.5);
+        }
         break;
 
       case "academic":
@@ -2323,45 +2331,7 @@ class TextAnalysisService {
       const simulatedSimilarity =
         0.7 + (patternMatches / academicPatterns.length) * 0.25;
 
-      // Use legitimate academic search engines and databases
-      const academicDatabases = [
-        {
-          name: "Google Scholar",
-          searchUrl: "https://scholar.google.com/scholar?q=",
-        },
-        {
-          name: "Scopus",
-          searchUrl: "https://www.scopus.com/results/results.uri?query=",
-        },
-        {
-          name: "Web of Science",
-          searchUrl:
-            "https://www.webofscience.com/wos/woscc/summary/search?query=",
-        },
-        {
-          name: "IEEE Xplore",
-          searchUrl:
-            "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=",
-        },
-        {
-          name: "ScienceDirect",
-          searchUrl: "https://www.sciencedirect.com/search?qs=",
-        },
-        {
-          name: "Wiley Online Library",
-          searchUrl:
-            "https://onlinelibrary.wiley.com/action/doSearch?AllField=",
-        },
-        {
-          name: "JSTOR",
-          searchUrl: "https://www.jstor.org/action/doBasicSearch?Query=",
-        },
-        { name: "PubMed", searchUrl: "https://pubmed.ncbi.nlm.nih.gov/?term=" },
-        {
-          name: "SpringerLink",
-          searchUrl: "https://link.springer.com/search?query=",
-        },
-      ];
+      // Use the academicDatabases defined at the class level in detectPlagiarismSimulation
 
       // Create a search query from the text content
       // Extract key phrases or use citation information if present
@@ -2544,6 +2514,46 @@ class TextAnalysisService {
    * Fallback simulation for plagiarism detection when APIs are unavailable
    */
   private detectPlagiarismSimulation(text: string): PlagiarismInstance[] {
+    // Define academic databases at the class level to avoid undefined errors
+    const academicDatabases = [
+      {
+        name: "Google Scholar",
+        searchUrl: "https://scholar.google.com/scholar?q=",
+      },
+      {
+        name: "Scopus",
+        searchUrl: "https://www.scopus.com/results/results.uri?query=",
+      },
+      {
+        name: "Web of Science",
+        searchUrl:
+          "https://www.webofscience.com/wos/woscc/summary/search?query=",
+      },
+      {
+        name: "IEEE Xplore",
+        searchUrl:
+          "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=",
+      },
+      {
+        name: "ScienceDirect",
+        searchUrl: "https://www.sciencedirect.com/search?qs=",
+      },
+      {
+        name: "Wiley Online Library",
+        searchUrl:
+          "https://onlinelibrary.wiley.com/action/doSearch?AllField=",
+      },
+      {
+        name: "JSTOR",
+        searchUrl: "https://www.jstor.org/action/doBasicSearch?Query=",
+      },
+      { name: "PubMed", searchUrl: "https://pubmed.ncbi.nlm.nih.gov/?term=" },
+      {
+        name: "SpringerLink",
+        searchUrl: "https://link.springer.com/search?query=",
+      },
+    ];
+    
     const instances: PlagiarismInstance[] = [];
 
     // 1. GPT-4 Approach: Use embeddings to detect semantic similarity
@@ -2552,45 +2562,7 @@ class TextAnalysisService {
       const results: PlagiarismInstance[] = [];
       const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
 
-      // Use legitimate academic search engines and databases
-      const academicDatabases = [
-        {
-          name: "Google Scholar",
-          searchUrl: "https://scholar.google.com/scholar?q=",
-        },
-        {
-          name: "Scopus",
-          searchUrl: "https://www.scopus.com/results/results.uri?query=",
-        },
-        {
-          name: "Web of Science",
-          searchUrl:
-            "https://www.webofscience.com/wos/woscc/summary/search?query=",
-        },
-        {
-          name: "IEEE Xplore",
-          searchUrl:
-            "https://ieeexplore.ieee.org/search/searchresult.jsp?queryText=",
-        },
-        {
-          name: "ScienceDirect",
-          searchUrl: "https://www.sciencedirect.com/search?qs=",
-        },
-        {
-          name: "Wiley Online Library",
-          searchUrl:
-            "https://onlinelibrary.wiley.com/action/doSearch?AllField=",
-        },
-        {
-          name: "JSTOR",
-          searchUrl: "https://www.jstor.org/action/doBasicSearch?Query=",
-        },
-        { name: "PubMed", searchUrl: "https://pubmed.ncbi.nlm.nih.gov/?term=" },
-        {
-          name: "SpringerLink",
-          searchUrl: "https://link.springer.com/search?query=",
-        },
-      ];
+      // Use the academicDatabases defined at the class level
 
       for (const sentence of sentences) {
         // Skip short sentences
@@ -2628,6 +2600,8 @@ class TextAnalysisService {
             academicDatabases[
               Math.floor(Math.random() * academicDatabases.length)
             ];
+          // Define randomSource to use the same database for consistency
+          const randomSource = { name: randomDatabase.name, url: randomDatabase.searchUrl };
           const matchPercentage = Math.min(
             95,
             60 + similarityScore / 2 + Math.random() * 10,
@@ -2647,7 +2621,7 @@ class TextAnalysisService {
               text: sentence,
               startIndex: sentenceIndex,
               endIndex: sentenceIndex + sentence.length,
-              matchedSource: randomDatabase.name,
+              matchedSource: randomSource.name,
               matchPercentage: matchPercentage,
               sourceUrl: sourceUrl,
             });
@@ -2778,7 +2752,7 @@ class TextAnalysisService {
               text: paragraph,
               startIndex: paragraphIndex,
               endIndex: paragraphIndex + paragraph.length,
-              matchedSource: randomDatabase.name,
+              matchedSource: randomSource.name,
               matchPercentage: matchPercentage,
               sourceUrl: sourceUrl,
             });
@@ -2904,21 +2878,8 @@ class TextAnalysisService {
         const sentenceIndex = text.indexOf(sentence);
 
         if (sentenceIndex !== -1) {
-          // Select a random academic database
-          const academicDatabases = [
-            {
-              name: "Google Scholar",
-              searchUrl: "https://scholar.google.com/scholar?q=",
-            },
-            {
-              name: "ScienceDirect",
-              searchUrl: "https://www.sciencedirect.com/search?qs=",
-            },
-          ];
-          const randomDatabase =
-            academicDatabases[
-              Math.floor(Math.random() * academicDatabases.length)
-            ];
+          // Use the academicDatabases defined at the class level
+          const randomDatabase = academicDatabases[Math.floor(Math.random() * academicDatabases.length)];
 
           // Create a search query from the first few words of the sentence
           const searchQuery = sentence
