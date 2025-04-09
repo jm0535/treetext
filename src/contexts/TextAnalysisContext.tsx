@@ -49,6 +49,20 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       setIsAnalyzing(true);
       setAnalysisError(null);
       
+      // Ensure settings are properly initialized before analysis
+      const currentSettings = TextAnalysisService.getSettings();
+      const needsUpdate = !currentSettings.languageModel || !currentSettings.languageModelCategory;
+
+      if (needsUpdate) {
+        // If either language model field is not defined, update with default settings
+        TextAnalysisService.updateSettings({
+          languageModel: currentSettings.languageModel || 'standard',
+          languageModelCategory: currentSettings.languageModelCategory || 'general'
+        });
+        // Update local state with the new settings
+        setSettings(TextAnalysisService.getSettings());
+      }
+      
       const result = await TextAnalysisService.analyzeText(currentText);
       setCurrentAnalysis(result);
       
@@ -61,7 +75,7 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       });
     } catch (error) {
       console.error("Failed to analyze text:", error);
-      
+
       const errorMessage = error instanceof Error 
         ? error.message 
         : "There was an error analyzing your text. Please try again.";
