@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { useTextAnalysis } from '@/hooks/useTextAnalysis';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
@@ -26,6 +26,7 @@ const EnhancedTextEditor: React.FC<EnhancedTextEditorProps> = ({ className }) =>
   } = useTextAnalysis();
   
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   
   // Auto-focus the textarea when the component mounts
   useEffect(() => {
@@ -79,14 +80,14 @@ const EnhancedTextEditor: React.FC<EnhancedTextEditorProps> = ({ className }) =>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div>
-                      <Popover>
+                      <Popover open={settingsOpen} onOpenChange={setSettingsOpen}>
                         <PopoverTrigger asChild>
                           <Button variant="outline" size="icon" aria-label="Settings">
                             <Settings className="h-4 w-4 text-muted-foreground" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-80 p-0" align="end">
-                          <AnalysisSettings />
+                        <PopoverContent className="w-[550px] p-0" align="end" sideOffset={5}>
+                          <AnalysisSettings onClose={() => setSettingsOpen(false)} />
                         </PopoverContent>
                       </Popover>
                     </div>

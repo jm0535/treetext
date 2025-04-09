@@ -22,7 +22,7 @@ const UserGuidePage: React.FC = () => {
             <div>
               <h2 className="text-lg font-medium mb-2">About This Guide</h2>
               <p className="text-muted-foreground mb-2">
-                This user guide was last updated on April 8, 2025 and is based on treeText version 1.0.0, initially released on April 3, 2025.
+                This user guide was last updated on April 9, 2025 and is based on treeText version 1.1.0, initially released on April 3, 2025.
               </p>
               <p className="text-muted-foreground">
                 If you need additional help beyond this guide, please visit our <a href="/help" className="text-primary hover:underline">Help Center</a> or <a href="/contact-us" className="text-primary hover:underline">contact our support team</a>.
@@ -32,10 +32,11 @@ const UserGuidePage: React.FC = () => {
         </div>
         
         <Tabs defaultValue="getting-started" className="mb-12">
-          <TabsList className="grid grid-cols-2 md:grid-cols-4 mb-6">
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-6">
             <TabsTrigger value="getting-started">Getting Started</TabsTrigger>
             <TabsTrigger value="text-analysis">Text Analysis</TabsTrigger>
             <TabsTrigger value="features">Features</TabsTrigger>
+            <TabsTrigger value="ai-features">AI Features</TabsTrigger>
             <TabsTrigger value="faq">FAQ</TabsTrigger>
           </TabsList>
           
@@ -398,6 +399,142 @@ const UserGuidePage: React.FC = () => {
             </div>
           </TabsContent>
           
+          <TabsContent value="ai-features">
+            <div className="space-y-8">
+              <section>
+                <h2 className="text-2xl font-semibold mb-4">AI-Powered Analysis</h2>
+                <p className="text-muted-foreground mb-6">
+                  treeText leverages advanced AI models to provide intelligent analysis tailored to your specific content type and writing style.
+                </p>
+                
+                <div className="space-y-6">
+                  <div className="border rounded-lg p-5">
+                    <h3 className="text-xl font-medium mb-3">Adaptive AI Calibration</h3>
+                    <p className="text-muted-foreground mb-4">
+                      Our adaptive AI calibration system automatically adjusts analysis parameters based on your document type and feedback.
+                    </p>
+                    
+                    <div className="bg-muted/30 p-4 rounded-md space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full mt-1">
+                          <Settings className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Automatic Weight Adjustment</h4>
+                          <p className="text-sm text-muted-foreground">The system intelligently adjusts weights for plagiarism detection, grammar checking, and readability analysis based on your document type.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full mt-1">
+                          <BookOpen className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Document Type Recognition</h4>
+                          <p className="text-sm text-muted-foreground">The system recognizes different document types (academic, business, creative, technical) and applies appropriate analysis standards.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full mt-1">
+                          <Check className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Feedback Integration</h4>
+                          <p className="text-sm text-muted-foreground">Your ratings and feedback are used to continuously improve analysis accuracy for your specific writing style.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-lg p-5">
+                    <h3 className="text-xl font-medium mb-3">Tiered Language Models</h3>
+                    <p className="text-muted-foreground mb-4">
+                      treeText offers specialized language models for different types of content, providing more accurate and relevant analysis.
+                    </p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="border rounded-md p-4">
+                        <h4 className="font-medium mb-2">Academic Models</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Academic General: For essays, term papers, and general academic writing</li>
+                          <li>• Scientific: For research papers, lab reports, and scientific articles</li>
+                          <li>• Statistical: For data-driven papers and quantitative research</li>
+                          <li>• Legal: For legal briefs, case studies, and law-related documents</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="border rounded-md p-4">
+                        <h4 className="font-medium mb-2">Business Models</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Business General: For reports, proposals, and business correspondence</li>
+                          <li>• Marketing: For promotional content, sales materials, and advertising</li>
+                          <li>• Technical: For specifications, documentation, and technical reports</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="border rounded-md p-4">
+                        <h4 className="font-medium mb-2">Specialized Models</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Journalism: For news articles, blog posts, and journalistic writing</li>
+                          <li>• Medical: For clinical reports, health information, and medical content</li>
+                          <li>• Documentation: For user guides, manuals, and instructional content</li>
+                        </ul>
+                      </div>
+                      
+                      <div className="border rounded-md p-4">
+                        <h4 className="font-medium mb-2">General Models</h4>
+                        <ul className="text-sm text-muted-foreground space-y-1">
+                          <li>• Standard: For general purpose writing and everyday content</li>
+                          <li>• Creative: For stories, fiction, and creative writing projects</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="border rounded-lg p-5">
+                    <h3 className="text-xl font-medium mb-3">AI-Driven Recommendations</h3>
+                    <p className="text-muted-foreground mb-4">
+                      treeText provides intelligent recommendations to improve your writing based on analysis results.
+                    </p>
+                    
+                    <div className="bg-muted/30 p-4 rounded-md space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full mt-1">
+                          <AlertTriangle className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Context-Aware Suggestions</h4>
+                          <p className="text-sm text-muted-foreground">Receive suggestions that consider the specific context and purpose of your document.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full mt-1">
+                          <Type className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Style-Specific Feedback</h4>
+                          <p className="text-sm text-muted-foreground">Get feedback tailored to your chosen writing style and document type.</p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start gap-3">
+                        <div className="bg-primary/10 p-2 rounded-full mt-1">
+                          <FileText className="h-4 w-4 text-primary" />
+                        </div>
+                        <div>
+                          <h4 className="font-medium">Adaptive Learning</h4>
+                          <p className="text-sm text-muted-foreground">The system learns from your preferences and improves recommendations over time.</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+            </div>
+          </TabsContent>
+          
           <TabsContent value="faq">
             <div className="space-y-8">
               <section>
@@ -449,6 +586,27 @@ const UserGuidePage: React.FC = () => {
                     <AccordionTrigger>What languages are supported?</AccordionTrigger>
                     <AccordionContent className="text-muted-foreground">
                       Currently, treeText primarily supports English (American, British, and Australian variants). We're working on adding support for additional languages in future updates.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="ai-calibration">
+                    <AccordionTrigger>How does the AI calibration work?</AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      The AI calibration feature automatically adjusts analysis settings based on your document type and style preferences. When enabled, treeText will recommend the most appropriate language model for your content and fine-tune analysis weights for plagiarism detection, grammar checking, and readability metrics. You can provide feedback on analysis results to further improve the calibration for your specific needs.
+                    </AccordionContent>
+                  </AccordionItem>
+                  
+                  <AccordionItem value="language-models">
+                    <AccordionTrigger>What are the different language models available?</AccordionTrigger>
+                    <AccordionContent className="text-muted-foreground">
+                      treeText offers several specialized language models organized in categories:
+                      <ul className="list-disc list-inside mt-2 space-y-1">
+                        <li><strong>Academic:</strong> General academic, Scientific, Statistical, and Legal</li>
+                        <li><strong>Business:</strong> General business, Marketing, and Technical</li>
+                        <li><strong>Specialized:</strong> Journalism, Medical, and Documentation</li>
+                        <li><strong>General:</strong> Standard and Creative writing</li>
+                      </ul>
+                      Each model is optimized for specific content types and writing styles, providing more accurate and relevant analysis results.
                     </AccordionContent>
                   </AccordionItem>
                   

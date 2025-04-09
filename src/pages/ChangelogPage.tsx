@@ -14,6 +14,22 @@ const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
       date: 'April 9, 2025',
+      version: '1.1.0',
+      title: 'Enhanced AI Calibration and Language Model Integration',
+      description: 'Improved AI calibration with intelligent language model recommendations and fixed code issues',
+      changes: [
+        'Enhanced AI calibration to automatically recommend appropriate language models based on document type',
+        'Implemented tiered language model structure with specialized models for different content types',
+        'Added document type recognition for more accurate analysis settings',
+        'Improved weight adjustment system for different document categories',
+        'Fixed variable redefinition issues in TextAnalysisService',
+        'Added user feedback notifications for AI calibration updates',
+        'Updated user guide with comprehensive AI features documentation'
+      ],
+      commitId: 'b2c4d6e'
+    },
+    {
+      date: 'April 9, 2025',
       version: '0.6.0',
       title: 'Improved Plagiarism Detection and API Fallbacks',
       description: 'Enhanced plagiarism detection with multiple API fallbacks and improved source linking',

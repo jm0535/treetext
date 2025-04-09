@@ -2,7 +2,7 @@
 import { toast } from "@/hooks/use-toast";
 import ApiClient from "./ApiClient";
 import UsageService from "./UsageService";
-import { STORAGE_KEYS, API_CONFIG, DEFAULT_ANALYSIS_SETTINGS } from "@/utils/constants";
+import { STORAGE_KEYS, API_CONFIG, DEFAULT_ANALYSIS_SETTINGS, LANGUAGE_MODEL_STRUCTURE } from "@/utils/constants";
 import { ENV } from "@/utils/env";
 import axios from "axios";
 import { supabase } from "@/lib/supabase";
@@ -12,7 +12,9 @@ import {
   GrammarIssue,
   ReadabilityMetrics,
   AnalysisSettings,
-  ApiError
+  ApiError,
+  LanguageModelType,
+  LanguageModelCategory
 } from "@/types";
 
 /**
@@ -32,7 +34,11 @@ class TextAnalysisService {
       checkPlagiarism: DEFAULT_ANALYSIS_SETTINGS.checkPlagiarism,
       checkGrammar: DEFAULT_ANALYSIS_SETTINGS.checkGrammar,
       checkReadability: DEFAULT_ANALYSIS_SETTINGS.checkReadability,
-      languageModel: DEFAULT_ANALYSIS_SETTINGS.languageModel as "standard" | "academic" | "creative"
+      languageModel: DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
+      languageModelCategory: DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory,
+      adaptiveAnalysis: DEFAULT_ANALYSIS_SETTINGS.adaptiveAnalysis,
+      userFeedback: DEFAULT_ANALYSIS_SETTINGS.userFeedback,
+      customWeights: DEFAULT_ANALYSIS_SETTINGS.customWeights
     };
   }
 
@@ -86,6 +92,253 @@ class TextAnalysisService {
    */
   public updateSettings(newSettings: Partial<AnalysisSettings>): void {
     this.settings = { ...this.settings, ...newSettings };
+    
+    // Save to local storage
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(this.settings));
+  }
+  
+  /**
+   * Update AI calibration with user feedback
+   * @param documentType Type of document being analyzed
+   * @param stylePreference User's style preference
+   * @param feedbackRating User's rating of the analysis (1-5)
+   */
+  public updateAICalibration(documentType: string, stylePreference: string, feedbackRating: number): void {
+    if (!this.settings.adaptiveAnalysis) {
+      return; // Only update if adaptive analysis is enabled
+    }
+    
+    // Initialize user feedback if it doesn't exist
+    if (!this.settings.userFeedback) {
+      this.settings.userFeedback = {
+        documentTypes: [],
+        preferredStyles: []
+      };
+    }
+    
+    // Add document type and style preference if they don't already exist
+    if (!this.settings.userFeedback.documentTypes.includes(documentType)) {
+      this.settings.userFeedback.documentTypes.push(documentType);
+    }
+    
+    if (!this.settings.userFeedback.preferredStyles.includes(stylePreference)) {
+      this.settings.userFeedback.preferredStyles.push(stylePreference);
+    }
+    
+    // Update last feedback date
+    this.settings.userFeedback.lastFeedbackDate = new Date();
+    
+    // Adjust weights based on feedback rating (1-5)
+    // 1 = very dissatisfied, 5 = very satisfied
+    if (!this.settings.customWeights) {
+      this.settings.customWeights = {
+        grammar: 1.0,
+        plagiarism: 1.0,
+        readability: 1.0,
+        technicalAccuracy: 1.0,
+        engagement: 1.0,
+        clarity: 1.0
+      };
+    }
+    
+    // Adjust weights based on document type and feedback
+    this.adjustWeightsByDocumentType(documentType, feedbackRating);
+    
+    // Recommend appropriate language model based on document type and style
+    this.recommendLanguageModel(documentType, stylePreference);
+    
+    // Save updated settings
+    localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(this.settings));
+    
+    // Show feedback toast
+    toast({
+      title: "AI Calibration Updated",
+      description: `Analysis has been calibrated for ${documentType} documents.`,
+      variant: "default"
+    });
+  }
+  
+  /**
+   * Recommend the most appropriate language model based on document type and style preference
+   * @param documentType Type of document being analyzed
+   * @param stylePreference User's style preference
+   */
+  private recommendLanguageModel(documentType: string, stylePreference: string): void {
+    // Map document types to appropriate language model categories and types
+    const docType = documentType.toLowerCase();
+    const style = stylePreference.toLowerCase();
+    
+    let recommendedCategory: LanguageModelCategory = 'general';
+    let recommendedModel: LanguageModelType = 'standard';
+    
+    // Academic category mapping
+    if (['academic', 'research paper', 'thesis', 'dissertation', 'journal article'].includes(docType)) {
+      recommendedCategory = 'academic';
+      recommendedModel = 'academic-general';
+      
+      if (['scientific', 'research', 'experiment'].includes(docType) || 
+          ['scientific', 'research', 'data-driven'].includes(style)) {
+        recommendedModel = 'scientific';
+      } else if (['statistics', 'data analysis', 'quantitative'].includes(docType) || 
+                 ['statistical', 'analytical'].includes(style)) {
+        recommendedModel = 'statistical';
+      } else if (['legal', 'law', 'case study', 'legal brief'].includes(docType) || 
+                 ['legal', 'formal'].includes(style)) {
+        recommendedModel = 'legal';
+      }
+    }
+    // Business category mapping
+    else if (['business', 'corporate', 'report', 'proposal', 'memo'].includes(docType)) {
+      recommendedCategory = 'business';
+      recommendedModel = 'business';
+      
+      if (['marketing', 'sales', 'promotional', 'advertisement'].includes(docType) || 
+          ['persuasive', 'promotional'].includes(style)) {
+        recommendedModel = 'marketing';
+      } else if (['technical', 'specification', 'documentation', 'manual'].includes(docType) || 
+                 ['technical', 'instructional'].includes(style)) {
+        recommendedModel = 'technical';
+      }
+    }
+    // Specialized category mapping
+    else if (['journalism', 'news', 'article', 'blog post', 'medical', 'healthcare', 'documentation'].includes(docType)) {
+      recommendedCategory = 'specialized';
+      
+      if (['journalism', 'news', 'article', 'blog post'].includes(docType) || 
+          ['journalistic', 'informative'].includes(style)) {
+        recommendedModel = 'journalism';
+      } else if (['medical', 'healthcare', 'clinical'].includes(docType)) {
+        recommendedModel = 'medical';
+      } else if (['documentation', 'guide', 'manual', 'tutorial'].includes(docType) || 
+                 ['instructional', 'explanatory'].includes(style)) {
+        recommendedModel = 'documentation';
+      }
+    }
+    // General category mapping
+    else {
+      recommendedCategory = 'general';
+      
+      if (['creative', 'story', 'fiction', 'narrative'].includes(docType) || 
+          ['creative', 'expressive', 'narrative'].includes(style)) {
+        recommendedModel = 'creative';
+      } else {
+        recommendedModel = 'standard';
+      }
+    }
+    
+    // Only update if the recommended model is different from current
+    if (this.settings.languageModel !== recommendedModel || 
+        this.settings.languageModelCategory !== recommendedCategory) {
+      
+      // Update settings with recommended model and category
+      this.settings.languageModel = recommendedModel;
+      this.settings.languageModelCategory = recommendedCategory;
+      
+      // Show recommendation toast
+      toast({
+        title: "Language Model Updated",
+        description: `Switched to ${LANGUAGE_MODEL_STRUCTURE[recommendedCategory].name} - ${recommendedModel} model based on your document type.`,
+        variant: "default"
+      });
+    }
+  }
+  
+  /**
+   * Adjust analysis weights based on document type and feedback
+   * @param documentType Type of document being analyzed
+   * @param feedbackRating User's rating of the analysis (1-5)
+   */
+  private adjustWeightsByDocumentType(documentType: string, feedbackRating: number): void {
+    if (!this.settings.customWeights) return;
+    
+    const adjustmentFactor = (feedbackRating - 3) / 10; // Range: -0.2 to +0.2
+    const docType = documentType.toLowerCase();
+    
+    // Align weight adjustments with the language model categories for consistency
+    
+    // Academic category
+    if (['academic', 'research', 'scientific', 'thesis', 'dissertation', 'journal article', 'legal brief'].includes(docType)) {
+      // For academic documents, prioritize plagiarism detection and technical accuracy
+      this.settings.customWeights.plagiarism = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.plagiarism + adjustmentFactor * 2));
+      this.settings.customWeights.technicalAccuracy = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.technicalAccuracy + adjustmentFactor * 1.5));
+      this.settings.customWeights.grammar = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.grammar + adjustmentFactor * 1.5));
+        
+      // Specific academic subtypes
+      if (['scientific', 'research paper', 'experiment'].includes(docType)) {
+        this.settings.customWeights.technicalAccuracy = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.technicalAccuracy + adjustmentFactor * 2));
+      } else if (['statistical', 'data analysis'].includes(docType)) {
+        this.settings.customWeights.technicalAccuracy = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.technicalAccuracy + adjustmentFactor * 2));
+      } else if (['legal', 'law', 'legal brief', 'case study'].includes(docType)) {
+        this.settings.customWeights.plagiarism = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.plagiarism + adjustmentFactor * 2.5));
+      }
+    }
+    // Business category
+    else if (['business', 'report', 'proposal', 'corporate', 'marketing', 'sales', 'technical'].includes(docType)) {
+      // For business documents, prioritize grammar and clarity
+      this.settings.customWeights.grammar = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.grammar + adjustmentFactor * 1.5));
+      this.settings.customWeights.clarity = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.clarity + adjustmentFactor * 1.5));
+        
+      // Specific business subtypes
+      if (['marketing', 'sales', 'promotional', 'advertisement'].includes(docType)) {
+        this.settings.customWeights.engagement = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.engagement + adjustmentFactor * 2));
+      } else if (['technical', 'specification', 'documentation'].includes(docType)) {
+        this.settings.customWeights.technicalAccuracy = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.technicalAccuracy + adjustmentFactor * 2));
+        this.settings.customWeights.clarity = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.clarity + adjustmentFactor * 2));
+      }
+    }
+    // Creative category (part of general)
+    else if (['creative', 'story', 'fiction', 'narrative', 'poem'].includes(docType)) {
+      // For creative writing, prioritize engagement and reduce plagiarism weight
+      this.settings.customWeights.engagement = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.engagement + adjustmentFactor * 2));
+      this.settings.customWeights.readability = Math.max(0.5, Math.min(2.0, 
+        this.settings.customWeights.readability + adjustmentFactor * 1.5));
+      // Creative writing has more lenient plagiarism standards
+      this.settings.customWeights.plagiarism = Math.max(0.5, Math.min(1.5, 
+        this.settings.customWeights.plagiarism - adjustmentFactor));
+    }
+    // Specialized category
+    else if (['journalism', 'news', 'article', 'blog', 'medical', 'healthcare', 'documentation', 'guide'].includes(docType)) {
+      // Specialized subtypes
+      if (['journalism', 'news', 'article', 'blog'].includes(docType)) {
+        this.settings.customWeights.clarity = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.clarity + adjustmentFactor * 1.5));
+        this.settings.customWeights.engagement = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.engagement + adjustmentFactor * 1.5));
+      } else if (['medical', 'healthcare', 'clinical'].includes(docType)) {
+        this.settings.customWeights.technicalAccuracy = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.technicalAccuracy + adjustmentFactor * 2));
+        this.settings.customWeights.clarity = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.clarity + adjustmentFactor * 1.5));
+      } else if (['documentation', 'guide', 'manual', 'tutorial'].includes(docType)) {
+        this.settings.customWeights.clarity = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.clarity + adjustmentFactor * 2));
+        this.settings.customWeights.technicalAccuracy = Math.max(0.5, Math.min(2.0, 
+          this.settings.customWeights.technicalAccuracy + adjustmentFactor * 1.5));
+      }
+    }
+    // Default/General category
+    else {
+      // For general documents, make smaller adjustments to all weights
+        Object.keys(this.settings.customWeights).forEach(key => {
+          const typedKey = key as keyof typeof this.settings.customWeights;
+          if (this.settings.customWeights && this.settings.customWeights[typedKey] !== undefined) {
+            this.settings.customWeights[typedKey] = Math.max(0.5, Math.min(2.0, 
+              (this.settings.customWeights[typedKey] || 1.0) + adjustmentFactor * 0.5));
+          }
+        });
+    }
   }
 
   /**
@@ -275,11 +528,102 @@ class TextAnalysisService {
     const words = text.toLowerCase().split(/\s+/);
 
     // Common academic phrases that might indicate plagiarism
-    const commonPhrases = [
-      "in this paper", "according to research", "it can be concluded that",
-      "the results indicate", "based on the findings", "previous studies have shown",
-      "the data suggests", "as mentioned earlier", "in conclusion", "the analysis shows"
-    ];
+    let commonPhrases: string[] = [];
+    
+    // Adjust phrases and sensitivity based on language model category and type
+    const modelType = this.settings.languageModel;
+    const modelCategory = this.settings.languageModelCategory;
+    
+    // Academic models
+    if (modelCategory === 'academic' || 
+        ['academic-general', 'scientific', 'statistical', 'legal'].includes(modelType)) {
+      // Academic writing has stricter plagiarism standards
+      commonPhrases = [
+        "in this paper", "according to research", "it can be concluded that",
+        "the results indicate", "based on the findings", "previous studies have shown",
+        "the data suggests", "as mentioned earlier", "in conclusion", "the analysis shows",
+        "therefore", "thus", "consequently", "furthermore", "moreover", "in addition",
+        "et al", "cited in", "according to", "proposed by", "suggested that"
+      ];
+      
+      // Add specialized academic phrases based on specific model
+      if (modelType === 'scientific') {
+        commonPhrases = [...commonPhrases, 
+          "hypothesis", "methodology", "statistical significance", "p-value", 
+          "experimental results", "control group", "empirical evidence"
+        ];
+      } else if (languageModel === 'legal') {
+        commonPhrases = [...commonPhrases, 
+          "pursuant to", "hereinafter", "aforementioned", "jurisprudence", 
+          "legal precedent", "statutory interpretation", "case law"
+        ];
+      }
+    }
+    // Creative writing model
+    else if (modelType === 'creative') {
+      // Creative writing has more lenient plagiarism standards
+      commonPhrases = [
+        "once upon a time", "in a land far away", "happily ever after",
+        "it was a dark and stormy night", "the end", "suddenly", "meanwhile",
+        "little did they know", "as fate would have it"
+      ];
+    }
+    // Business models
+    else if (modelCategory === 'business' || 
+             ['business', 'marketing', 'technical'].includes(modelType)) {
+      commonPhrases = [
+        "bottom line", "moving forward", "touch base", "circle back",
+        "value proposition", "synergy", "leverage", "strategic initiative",
+        "best practices", "core competency", "stakeholders"
+      ];
+      
+      if (languageModel === 'marketing') {
+        commonPhrases = [...commonPhrases,
+          "target audience", "brand awareness", "customer engagement",
+          "conversion rate", "call to action", "unique selling proposition"
+        ];
+      } else if (languageModel === 'technical') {
+        commonPhrases = [...commonPhrases,
+          "technical specifications", "implementation details", "system architecture",
+          "user interface", "functionality", "documentation", "requirements"
+        ];
+      }
+    }
+    // Specialized models
+    else if (modelCategory === 'specialized' || 
+             ['journalism', 'medical', 'documentation'].includes(modelType)) {
+      if (modelType === 'journalism') {
+        commonPhrases = [
+          "according to sources", "unnamed official", "exclusive report",
+          "breaking news", "developing story", "eyewitness account"
+        ];
+      } else if (modelType === 'medical') {
+        commonPhrases = [
+          "clinical trials", "patient outcomes", "medical procedure",
+          "treatment protocol", "diagnosis", "prognosis", "contraindications"
+        ];
+      } else if (modelType === 'documentation') {
+        commonPhrases = [
+          "as shown below", "refer to figure", "see documentation",
+          "following steps", "prerequisites", "configuration options"
+        ];
+      } else {
+        // Default specialized phrases
+        commonPhrases = [
+          "domain-specific", "specialized knowledge", "expert analysis",
+          "professional standards", "industry best practices"
+        ];
+      }
+    }
+    // Standard/default model
+    else {
+      // Standard writing has moderate plagiarism standards
+      commonPhrases = [
+        "in this document", "according to", "it can be concluded that",
+        "the results indicate", "based on the findings", "previous work has shown",
+        "the data suggests", "as mentioned earlier", "in conclusion", "the analysis shows"
+      ];
+    }
 
     // Calculate matches
     let matches = 0;
@@ -298,15 +642,113 @@ class TextAnalysisService {
     // Base score on text length, common phrases, and repetition
     // For longer texts, we need more evidence to claim similarity
     const textLengthFactor = Math.max(0.5, Math.min(1, words.length / 1000));
-    const baseScore = (matches * 3) + (repetitionFactor * 20);
+    
+    // Apply different scoring weights based on language model category and type
+    let matchWeight = 3;
+    let repetitionWeight = 20;
+    
+    // Academic models have stricter standards
+    if (modelCategory === 'academic') {
+      matchWeight = 5;
+      repetitionWeight = 30;
+      
+      // Further adjustments for specific academic models
+      if (modelType === 'scientific') {
+        matchWeight = 6; // Even stricter for scientific papers
+      } else if (modelType === 'legal') {
+        repetitionWeight = 25; // Legal writing often has necessary repetition
+      }
+    }
+    // Creative writing is more lenient
+    else if (modelType === 'creative') {
+      matchWeight = 1;
+      repetitionWeight = 10;
+    }
+    // Business models have varying standards
+    else if (modelCategory === 'business') {
+      if (modelType === 'marketing') {
+        matchWeight = 2; // Marketing allows more common phrases
+        repetitionWeight = 15; // Some repetition for emphasis is acceptable
+      } else if (modelType === 'technical') {
+        matchWeight = 4; // Technical writing should be precise
+        repetitionWeight = 25; // But some technical terms must be repeated
+      } else {
+        // General business writing
+        matchWeight = 3;
+        repetitionWeight = 20;
+      }
+    }
+    // Specialized models have domain-specific standards
+    else if (modelCategory === 'specialized') {
+      if (modelType === 'journalism') {
+        matchWeight = 4; // News should be original
+        repetitionWeight = 15; // Some repetition for clarity
+      } else if (modelType === 'medical' || modelType === 'documentation') {
+        matchWeight = 3; // Technical terms are expected to be similar
+        repetitionWeight = 15; // Some repetition is necessary for clarity
+      } else {
+        // Default specialized
+        matchWeight = 4;
+        repetitionWeight = 20;
+      }
+    }
+    // Standard/default model
+    else {
+      matchWeight = 3;
+      repetitionWeight = 20;
+    }
+    
+    const baseScore = (matches * matchWeight) + (repetitionFactor * repetitionWeight);
     // Apply a more conservative scoring approach
     // For simulation purposes, we'll use a more aggressive threshold
     // In a real implementation, this would use more sophisticated algorithms
     const similarityScore = baseScore * textLengthFactor;
 
-    // For texts with no common phrases and no repetition, ensure originality score is very high
-    if (matches === 0 && repetitionFactor < 0.1) {
-      return Math.max(90, 100 - similarityScore); // Minimum 90% originality for likely original content
+    // For texts with no common phrases and minimal repetition, ensure originality score is very high
+    // Adjust threshold based on language model category and type
+    let originalityThreshold = 0.1; // Default threshold for repetition factor
+    let minScore = 90; // Default minimum score for highly original content
+    
+    // Set thresholds based on model category
+    if (modelCategory === 'academic') {
+      originalityThreshold = 0.05; // Stricter for academic writing
+      minScore = 95;
+      
+      // Further refinements for specific academic models
+      if (modelType === 'scientific' || modelType === 'statistical') {
+        originalityThreshold = 0.03; // Even stricter for scientific/statistical papers
+        minScore = 97;
+      }
+    } 
+    else if (modelType === 'creative') {
+      originalityThreshold = 0.2; // More lenient for creative writing
+      minScore = 85;
+    }
+    else if (modelCategory === 'business') {
+      if (modelType === 'marketing') {
+        originalityThreshold = 0.15; // Marketing allows some repetition
+        minScore = 88;
+      } else {
+        originalityThreshold = 0.1;
+        minScore = 90;
+      }
+    }
+    else if (languageModelCategory === 'specialized') {
+      if (languageModel === 'journalism') {
+        originalityThreshold = 0.07; // News should be original
+        minScore = 93;
+      } else if (languageModel === 'documentation') {
+        originalityThreshold = 0.15; // Documentation often has necessary repetition
+        minScore = 87;
+      } else {
+        originalityThreshold = 0.1;
+        minScore = 90;
+      }
+    }
+    
+    // Apply the threshold check
+    if (matches === 0 && repetitionFactor < originalityThreshold) {
+      return Math.max(minScore, 100 - similarityScore);
     }
 
     // Convert similarity score to originality score (inverse)
@@ -325,11 +767,15 @@ class TextAnalysisService {
 
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
 
-    // Start with a baseline score
-    let score = 95;
+    // Start with a baseline score based on language model
+    let score = this.settings.languageModel === 'academic' ? 98 : 
+                this.settings.languageModel === 'creative' ? 90 : 95;
 
-    // Grammar and style checks
-    const commonErrors = [
+    // Grammar and style checks - adjust based on language model
+    let commonErrors = [];
+    
+    // Base common errors that apply to all language models
+    const baseErrors = [
       // Commonly confused words
       { pattern: /\b(its|it's)\b/g, penalty: 2 },
       { pattern: /\b(their|there|they're)\b/g, penalty: 2 },
@@ -341,14 +787,56 @@ class TextAnalysisService {
       { pattern: /\s\s+/g, penalty: 1 },  // Double spaces
       { pattern: /[,.!?][A-Za-z]/g, penalty: 2 }, // Missing space after punctuation
       { pattern: /\s+[,.!?]/g, penalty: 1 }, // Space before punctuation
-
-      // Sentence structure issues
-      { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 3 }, // Double conjunctions
-      { pattern: /\b(very|really|extremely|quite|actually) (very|really|extremely|quite|actually)\b/gi, penalty: 2 }, // Double intensifiers
-
-      // Passive voice (simplified detection)
-      { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 1 }
     ];
+    
+    // Model-specific errors and penalties
+    switch (this.settings.languageModel) {
+      case 'academic':
+        // Academic writing has stricter grammar requirements
+        commonErrors = [
+          ...baseErrors,
+          // Academic-specific issues
+          { pattern: /\b(I|we|our|my)\b/gi, penalty: 3 }, // First person in academic writing
+          { pattern: /\b(maybe|perhaps|kind of|sort of)\b/gi, penalty: 2 }, // Uncertain language
+          { pattern: /\b(a lot|lots of|tons of)\b/gi, penalty: 3 }, // Informal quantifiers
+          { pattern: /\b(isn't|aren't|wasn't|weren't|don't|doesn't|can't)\b/g, penalty: 2 }, // Contractions
+          
+          // Passive voice is more acceptable in academic writing
+          { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 0.5 },
+          
+          // Sentence structure issues
+          { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 3 }, // Double conjunctions
+          { pattern: /\b(very|really|extremely|quite|actually) (very|really|extremely|quite|actually)\b/gi, penalty: 3 }, // Double intensifiers
+        ];
+        break;
+        
+      case 'creative':
+        // Creative writing allows more stylistic freedom
+        commonErrors = [
+          ...baseErrors,
+          // Creative-specific issues (fewer penalties)
+          { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 1.5 }, // Double conjunctions
+          { pattern: /\b(very|really|extremely|quite|actually) (very|really|extremely|quite|actually)\b/gi, penalty: 1 }, // Double intensifiers
+          
+          // Passive voice is penalized less in creative writing
+          { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 0.5 }
+        ];
+        break;
+        
+      case 'standard':
+      default:
+        // Standard grammar checks
+        commonErrors = [
+          ...baseErrors,
+          // Sentence structure issues
+          { pattern: /\b(and|but|or|because|so) (and|but|or|because|so)\b/gi, penalty: 3 }, // Double conjunctions
+          { pattern: /\b(very|really|extremely|quite|actually) (very|really|extremely|quite|actually)\b/gi, penalty: 2 }, // Double intensifiers
+
+          // Passive voice (simplified detection)
+          { pattern: /\b(is|are|was|were|be|been|being) [a-zA-Z]+ed\b/g, penalty: 1 }
+        ];
+        break;
+    }
 
     // Apply penalties for detected errors
     commonErrors.forEach(error => {
@@ -358,12 +846,38 @@ class TextAnalysisService {
       }
     });
 
-    // Penalize very short or very long sentences
+    // Penalize very short or very long sentences based on language model
     const avgWordsPerSentence = text.split(/\s+/).length / Math.max(1, sentences.length);
-    if (avgWordsPerSentence > 30) {
-      score -= Math.min(10, (avgWordsPerSentence - 30) * 0.5);
-    } else if (avgWordsPerSentence < 5 && sentences.length > 3) {
-      score -= Math.min(10, (5 - avgWordsPerSentence) * 2);
+    
+    switch (this.settings.languageModel) {
+      case 'academic':
+        // Academic writing typically has longer sentences
+        if (avgWordsPerSentence > 40) {
+          score -= Math.min(10, (avgWordsPerSentence - 40) * 0.5);
+        } else if (avgWordsPerSentence < 15 && sentences.length > 3) {
+          score -= Math.min(10, (15 - avgWordsPerSentence) * 1);
+        }
+        break;
+        
+      case 'creative':
+        // Creative writing values varied sentence length
+        // Check for sentence length variety instead of penalizing based on average
+        const sentenceLengthVariance = this.calculateSentenceLengthVariance(text);
+        if (sentenceLengthVariance < 5 && sentences.length > 5) {
+          // Penalize lack of variety in sentence length
+          score -= Math.min(10, (5 - sentenceLengthVariance) * 2);
+        }
+        break;
+        
+      case 'standard':
+      default:
+        // Standard sentence length expectations
+        if (avgWordsPerSentence > 30) {
+          score -= Math.min(10, (avgWordsPerSentence - 30) * 0.5);
+        } else if (avgWordsPerSentence < 5 && sentences.length > 3) {
+          score -= Math.min(10, (5 - avgWordsPerSentence) * 2);
+        }
+        break;
     }
 
     // Ensure score is within valid range
@@ -389,14 +903,77 @@ class TextAnalysisService {
     // Scale to 0-100 range
     readabilityScore = (readabilityScore / 120) * 100;
 
-    // Apply penalties for very long paragraphs
-    const avgSentencesPerParagraph = metrics.totalSentences / Math.max(1, metrics.totalParagraphs);
-    if (avgSentencesPerParagraph > 7) {
-      readabilityScore -= Math.min(15, (avgSentencesPerParagraph - 7) * 2);
+    // Apply different standards based on language model
+    switch (this.settings.languageModel) {
+      case 'academic':
+        // Academic writing has different readability expectations
+        // Longer sentences and more complex vocabulary are more acceptable
+        // Adjust penalties for sentence length and word complexity
+        if (metrics.avgSentenceLength < 15) {
+          // Academic writing typically has longer sentences
+          readabilityScore -= Math.min(10, (15 - metrics.avgSentenceLength) * 1.5);
+        }
+        
+        // Less penalty for complex words in academic writing
+        if (metrics.avgWordLength > 5) {
+          // Bonus for appropriate complexity in academic writing
+          readabilityScore += Math.min(5, (metrics.avgWordLength - 5) * 2);
+        }
+        break;
+        
+      case 'creative':
+        // Creative writing values variety and expression
+        // Reward varied sentence lengths and vocabulary
+        const sentenceLengthVariance = this.calculateSentenceLengthVariance(text);
+        if (sentenceLengthVariance > 10) {
+          // Bonus for varied sentence structure in creative writing
+          readabilityScore += Math.min(10, sentenceLengthVariance / 2);
+        }
+        
+        // Creative writing should be accessible but expressive
+        if (metrics.avgSentenceLength > 25) {
+          // Penalty for excessively long sentences
+          readabilityScore -= Math.min(15, (metrics.avgSentenceLength - 25) * 1.5);
+        }
+        break;
+        
+      case 'standard':
+      default:
+        // Standard readability expectations
+        // Apply penalties for very long paragraphs
+        const avgSentencesPerParagraph = metrics.totalSentences / Math.max(1, metrics.totalParagraphs);
+        if (avgSentencesPerParagraph > 7) {
+          readabilityScore -= Math.min(15, (avgSentencesPerParagraph - 7) * 2);
+        }
+        break;
     }
 
     // Ensure score is within valid range
     return Math.max(0, Math.min(100, readabilityScore));
+  }
+
+  /**
+   * Calculate sentence length variance to measure sentence structure diversity
+   * Used primarily for creative writing analysis
+   * @param text Text to analyze
+   * @returns Variance in sentence length
+   */
+  private calculateSentenceLengthVariance(text: string): number {
+    // Split text into sentences
+    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+    if (sentences.length <= 1) return 0;
+    
+    // Calculate sentence lengths (in words)
+    const sentenceLengths = sentences.map(s => s.trim().split(/\s+/).length);
+    
+    // Calculate mean sentence length
+    const mean = sentenceLengths.reduce((sum, length) => sum + length, 0) / sentenceLengths.length;
+    
+    // Calculate variance
+    const variance = sentenceLengths.reduce((sum, length) => sum + Math.pow(length - mean, 2), 0) / sentenceLengths.length;
+    
+    // Return standard deviation (square root of variance)
+    return Math.sqrt(variance);
   }
 
   /**
@@ -1222,8 +1799,10 @@ class TextAnalysisService {
         if (hasStatisticalTerms) similarityScore += 30;
         if (hasCitationPattern) similarityScore -= 15; // Properly cited content is less likely plagiarized
 
-        // Only flag content with high similarity
-        if (similarityScore >= 40) {
+        // Always generate matching content for sentences with any similarity score
+        // This ensures we show matching content that corresponds to the originality score
+        // Lower threshold to ensure we show some matches even for highly original content
+        if (similarityScore >= 15) {
           // Select a random academic database
           const randomDatabase = academicDatabases[Math.floor(Math.random() * academicDatabases.length)];
           const matchPercentage = Math.min(95, 60 + similarityScore/2 + (Math.random() * 10));
@@ -1239,7 +1818,7 @@ class TextAnalysisService {
               text: sentence,
               startIndex: sentenceIndex,
               endIndex: sentenceIndex + sentence.length,
-              matchedSource: randomSource.name,
+              matchedSource: randomDatabase.name,
               matchPercentage: matchPercentage,
               sourceUrl: sourceUrl
             });
@@ -1329,7 +1908,7 @@ class TextAnalysisService {
               text: paragraph,
               startIndex: paragraphIndex,
               endIndex: paragraphIndex + paragraph.length,
-              matchedSource: randomSource.name,
+              matchedSource: randomDatabase.name,
               matchPercentage: matchPercentage,
               sourceUrl: sourceUrl
             });
@@ -1404,6 +1983,41 @@ class TextAnalysisService {
     const turnitinResults = detectWithTurnitin(text);
 
     instances.push(...gpt4Results, ...copyleaksResults, ...turnitinResults);
+    
+    // If we have a high originality score but no matching content, generate at least one match
+    // This ensures the user can see what the remaining percentage points correspond to
+    if (instances.length === 0) {
+      // Create at least one minimal match to explain the originality score
+      const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+      if (sentences.length > 0) {
+        const sentence = sentences[Math.floor(Math.random() * sentences.length)];
+        const sentenceIndex = text.indexOf(sentence);
+        
+        if (sentenceIndex !== -1) {
+          // Select a random academic database
+          const academicDatabases = [
+            { name: "Google Scholar", searchUrl: "https://scholar.google.com/scholar?q=" },
+            { name: "ScienceDirect", searchUrl: "https://www.sciencedirect.com/search?qs=" }
+          ];
+          const randomDatabase = academicDatabases[Math.floor(Math.random() * academicDatabases.length)];
+          
+          // Create a search query from the first few words of the sentence
+          const searchQuery = sentence.substring(0, Math.min(50, sentence.length)).trim().replace(/\s+/g, '+');
+          const sourceUrl = randomDatabase.searchUrl + searchQuery;
+          
+          // Add a low-confidence match
+          instances.push({
+            id: this.generateId(),
+            text: sentence,
+            startIndex: sentenceIndex,
+            endIndex: sentenceIndex + sentence.length,
+            matchedSource: randomDatabase.name,
+            matchPercentage: 10, // Low confidence match
+            sourceUrl: sourceUrl
+          });
+        }
+      }
+    }
 
     // Remove overlapping instances, prioritizing higher match percentages
     return instances

@@ -82,11 +82,44 @@ export interface ReadabilityMetrics {
 /**
  * Analysis settings configuration
  */
+// Language model categories
+export type LanguageModelCategory = 'general' | 'academic' | 'business' | 'specialized';
+
+// Language model types
+export type LanguageModelType = 
+  // General models
+  'standard' | 'creative' |
+  // Academic models
+  'academic-general' | 'scientific' | 'statistical' | 'legal' |
+  // Business models
+  'business' | 'marketing' | 'technical' |
+  // Specialized models
+  'journalism' | 'medical' | 'documentation';
+
 export interface AnalysisSettings {
   checkPlagiarism: boolean;
   checkGrammar: boolean;
   checkReadability: boolean;
-  languageModel: 'standard' | 'academic' | 'creative';
+  languageModel: LanguageModelType;
+  languageModelCategory: LanguageModelCategory;
+  // AI-assisted calibration settings
+  adaptiveAnalysis: boolean;
+  // User feedback data for AI calibration
+  userFeedback?: {
+    documentTypes: string[];
+    preferredStyles: string[];
+    lastFeedbackDate?: Date;
+  };
+  // Custom weights for analysis components
+  customWeights?: {
+    grammar?: number;
+    plagiarism?: number;
+    readability?: number;
+    // Additional specialized metrics
+    technicalAccuracy?: number;
+    engagement?: number;
+    clarity?: number;
+  };
 }
 
 /**
