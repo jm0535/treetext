@@ -90,6 +90,27 @@ export interface AnalysisSettings {
 }
 
 /**
+ * Usage limits and tracking
+ */
+export interface UsageLimit {
+  // Daily limits
+  dailyAnalysisLimit: number;       // Maximum number of analyses per day
+  dailyAnalysisCount: number;       // Current count of analyses today
+  dailyTokenLimit: number;          // Maximum number of tokens per day
+  dailyTokenCount: number;          // Current count of tokens used today
+  
+  // Monthly limits
+  monthlyAnalysisLimit: number;     // Maximum number of analyses per month
+  monthlyAnalysisCount: number;     // Current count of analyses this month
+  monthlyTokenLimit: number;        // Maximum number of tokens per month
+  monthlyTokenCount: number;        // Current count of tokens used this month
+  
+  // Last reset timestamps
+  lastDailyReset: string;           // ISO date string of last daily reset
+  lastMonthlyReset: string;         // ISO date string of last monthly reset
+}
+
+/**
  * User preferences
  */
 export interface UserPreferences {
@@ -97,6 +118,7 @@ export interface UserPreferences {
   fontSize: 'small' | 'medium' | 'large';
   autoAnalysis: boolean;
   analysisSettings: AnalysisSettings;
+  usageLimit?: UsageLimit;          // Usage limits for the user
 }
 
 /**

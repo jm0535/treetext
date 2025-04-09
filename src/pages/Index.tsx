@@ -5,6 +5,7 @@ import EnhancedTextEditor from '@/components/EnhancedTextEditor';
 import ResultsContainer from '@/components/ResultsContainer';
 import AnalysisHistory from '@/components/AnalysisHistory';
 import FileUploader from '@/components/FileUploader';
+import UsageStats from '@/components/UsageStats';
 import { useTextAnalysis } from '@/hooks/useTextAnalysis';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalysisResult } from '@/types';
@@ -53,35 +54,43 @@ const Index = () => {
           </div>
           
           {activeTab === 'editor' ? (
-            <div className="space-y-8">
-              <div className="bg-card rounded-lg shadow-sm border overflow-hidden">
-                <div className="flex items-center border-b p-2">
-                  <button
-                    onClick={() => setInputMethod('text')}
-                    className={`flex items-center px-4 py-2 rounded-md mr-2 ${inputMethod === 'text' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-medium' : 'hover:bg-muted'}`}
-                  >
-                    <Type className="mr-2 h-4 w-4" /> Text Input
-                  </button>
-                  <button
-                    onClick={() => setInputMethod('file')}
-                    className={`flex items-center px-4 py-2 rounded-md ${inputMethod === 'file' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-medium' : 'hover:bg-muted'}`}
-                  >
-                    <Upload className="mr-2 h-4 w-4" /> File Upload
-                  </button>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+              {/* Main content area - 3/4 width on medium screens and up */}
+              <div className="md:col-span-3 space-y-8">
+                <div className="bg-card rounded-lg shadow-sm border overflow-hidden">
+                  <div className="flex items-center border-b p-2">
+                    <button
+                      onClick={() => setInputMethod('text')}
+                      className={`flex items-center px-4 py-2 rounded-md mr-2 ${inputMethod === 'text' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-medium' : 'hover:bg-muted'}`}
+                    >
+                      <Type className="mr-2 h-4 w-4" /> Text Input
+                    </button>
+                    <button
+                      onClick={() => setInputMethod('file')}
+                      className={`flex items-center px-4 py-2 rounded-md ${inputMethod === 'file' ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 font-medium' : 'hover:bg-muted'}`}
+                    >
+                      <Upload className="mr-2 h-4 w-4" /> File Upload
+                    </button>
+                  </div>
+                  
+                  <div className="p-0">
+                    {inputMethod === 'text' ? (
+                      <EnhancedTextEditor className="container mx-auto px-0" />
+                    ) : (
+                      <div id="file-uploader">
+                        <FileUploader className="container mx-auto px-0" />
+                      </div>
+                    )}
+                  </div>
                 </div>
                 
-                <div className="p-0">
-                  {inputMethod === 'text' ? (
-                    <EnhancedTextEditor className="container mx-auto px-0" />
-                  ) : (
-                    <div id="file-uploader">
-                      <FileUploader className="container mx-auto px-0" />
-                    </div>
-                  )}
-                </div>
+                {currentAnalysis && <ResultsContainer />}
               </div>
               
-              {currentAnalysis && <ResultsContainer />}
+              {/* Sidebar - 1/4 width on medium screens and up */}
+              <div className="md:col-span-1 space-y-6">
+                <UsageStats />
+              </div>
             </div>
           ) : FEATURES.HISTORY_TRACKING && (
             <AnalysisHistory onSelectAnalysis={handleSelectAnalysis} />

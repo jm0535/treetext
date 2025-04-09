@@ -34,7 +34,8 @@ export const API_CONFIG = {
 export const STORAGE_KEYS = {
   RECENT_ANALYSES: 'treetext_recent_analyses',
   USER_PREFERENCES: 'treetext_user_preferences',
-  AUTH_TOKEN: 'treetext_auth_token'
+  AUTH_TOKEN: 'treetext_auth_token',
+  USAGE_LIMITS: 'treetext_usage_limits'
 };
 
 /**

@@ -13,6 +13,21 @@ interface ChangelogItem {
 const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
+      date: 'April 9, 2025',
+      version: '0.5.0',
+      title: 'Usage Limits and Authentication Requirements',
+      description: 'Implemented user rate limits and authentication for API access',
+      changes: [
+        'Added usage statistics UI component to visualize API usage',
+        'Implemented daily and monthly analysis limits to manage API costs',
+        'Added token usage tracking for OpenAI API calls',
+        'Restricted OpenAI API access to authenticated users only',
+        'Enhanced user feedback for limit notifications',
+        'Added graceful fallbacks for non-authenticated users'
+      ],
+      commitId: 'a7b9c3d'
+    },
+    {
       date: 'April 8, 2025',
       version: '0.4.0',
       title: 'Deployment Fixes and Performance Improvements',

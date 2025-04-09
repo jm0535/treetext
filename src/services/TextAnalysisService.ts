@@ -1,9 +1,11 @@
 
 import { toast } from "@/hooks/use-toast";
 import ApiClient from "./ApiClient";
+import UsageService from "./UsageService";
 import { STORAGE_KEYS, API_CONFIG, DEFAULT_ANALYSIS_SETTINGS } from "@/utils/constants";
 import { ENV } from "@/utils/env";
 import axios from "axios";
+import { supabase } from "@/lib/supabase";
 import { 
   AnalysisResult, 
   PlagiarismInstance, 
@@ -101,11 +103,21 @@ class TextAnalysisService {
       throw new Error('Text is empty');
     }
     
+    // Check usage limits before proceeding
+    if (!UsageService.canPerformAnalysis(text.length)) {
+      throw new Error('Usage limit exceeded. Please try again later.');
+    }
+    
     try {
       // Try to use the API for analysis if enabled in settings
       if (API_CONFIG.USE_API && API_CONFIG.BASE_URL) {
         try {
-          return await this.analyzeTextWithApi(text);
+          const result = await this.analyzeTextWithApi(text);
+          
+          // Record successful API usage
+          UsageService.recordUsage(text.length);
+          
+          return result;
         } catch (apiError) {
           // Log the API error
           console.error('API analysis failed:', apiError);
@@ -120,7 +132,12 @@ class TextAnalysisService {
       }
       
       // If API is disabled or API call failed, use local analysis
-      return await this.analyzeTextLocally(text);
+      const result = await this.analyzeTextLocally(text);
+      
+      // Record usage for local analysis (at reduced rate since it doesn't use external APIs)
+      UsageService.recordUsage(text.length, Math.ceil(text.length * 0.1 / 5));
+      
+      return result;
     } catch (error) {
       // Handle any errors from local analysis
       console.error('Analysis failed:', error);
@@ -581,19 +598,47 @@ class TextAnalysisService {
   private async detectPlagiarismWithApis(text: string): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
     
-    // Use OpenAI embeddings API if available
-    if (ENV.API.OPENAI_API_KEY) {
+    // Check if user is authenticated
+    const { data } = await supabase.auth.getSession();
+    const isAuthenticated = !!data.session;
+    
+    // Use OpenAI embeddings API if available AND user is authenticated
+    if (ENV.API.OPENAI_API_KEY && isAuthenticated) {
       try {
+        console.log('Using OpenAI embeddings for plagiarism detection');
         const openaiResults = await this.detectPlagiarismWithOpenAI(text);
         results.push(...openaiResults);
+
+        // If we got results from OpenAI, we can return them immediately
+        if (openaiResults.length > 0) {
+          return results;
+        }
       } catch (error) {
         console.error('OpenAI plagiarism detection failed:', error);
+        toast({
+          title: 'API Error',
+          description: 'OpenAI plagiarism detection failed. Using fallback methods.',
+          variant: 'default'
+        });
+      }
+    } else {
+      if (!isAuthenticated && ENV.API.OPENAI_API_KEY) {
+        console.log('User not authenticated. OpenAI API access restricted.');
+        toast({
+          title: 'Authentication Required',
+          description: 'Please log in to use advanced plagiarism detection with OpenAI.',
+          variant: 'destructive'
+        });
+      } else if (!ENV.API.OPENAI_API_KEY) {
+        console.log('OpenAI API key not available. Skipping embeddings-based plagiarism detection.');
       }
     }
     
-    // Use Copyleaks API if available
-    if (ENV.API.COPYLEAKS_API_KEY && ENV.API.COPYLEAKS_EMAIL) {
+    // Only use Copyleaks as a fallback if OpenAI failed AND Copyleaks is configured
+    // This will be added next week when you get the Copyleaks API key
+    if (results.length === 0 && ENV.API.COPYLEAKS_API_KEY && ENV.API.COPYLEAKS_EMAIL) {
       try {
+        console.log('Using Copyleaks for plagiarism detection');
         const copyleaksResults = await this.detectPlagiarismWithCopyleaks(text);
         results.push(...copyleaksResults);
       } catch (error) {
@@ -609,6 +654,7 @@ class TextAnalysisService {
    */
   private async detectPlagiarismWithOpenAI(text: string): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
+    let totalTokensUsed = 0;
     
     try {
       // Split text into chunks for processing (using semantic chunking)
@@ -633,6 +679,14 @@ class TextAnalysisService {
           }
         );
         
+        // Track token usage from API response if available
+        if (response.data?.usage?.total_tokens) {
+          totalTokensUsed += response.data.usage.total_tokens;
+        } else {
+          // Estimate if not provided
+          totalTokensUsed += Math.ceil(chunk.text.length / 5 * 1.5);
+        }
+        
         if (response.data?.data?.[0]?.embedding) {
           // Store the embedding vector
           const embedding = response.data.data[0].embedding;
@@ -655,6 +709,13 @@ class TextAnalysisService {
             }
           }
         }
+      }
+      
+      // Update usage with actual token count from API
+      if (totalTokensUsed > 0) {
+        // Update the token count with actual usage
+        UsageService.recordUsage(0, totalTokensUsed);
+        console.log(`OpenAI API usage: ${totalTokensUsed} tokens`);
       }
     } catch (error) {
       console.error('Error using OpenAI embeddings:', error);
@@ -1167,23 +1228,40 @@ class TextAnalysisService {
   
   /**
    * Detect grammar issues using real APIs (LanguageTool or TextGears)
+   * Note: This will use simulation until you add the API keys next week
    */
   private async detectGrammarIssuesWithApis(text: string): Promise<GrammarIssue[]> {
     const results: GrammarIssue[] = [];
     
-    // Use LanguageTool API if available
+    // Check if we have any grammar API keys available
+    const hasGrammarApis = ENV.API.LANGUAGETOOL_API_KEY || ENV.API.TEXTGEARS_API_KEY;
+    
+    if (!hasGrammarApis) {
+      console.log('No grammar checking APIs configured. Using simulation instead.');
+      // Return empty results to trigger the fallback to simulation
+      return results;
+    }
+    
+    // Use LanguageTool API if available (will be added next week)
     if (ENV.API.LANGUAGETOOL_API_KEY) {
       try {
+        console.log('Using LanguageTool for grammar checking');
         const languageToolResults = await this.detectGrammarIssuesWithLanguageTool(text);
         results.push(...languageToolResults);
       } catch (error) {
         console.error('LanguageTool grammar checking failed:', error);
+        toast({
+          title: 'API Error',
+          description: 'LanguageTool grammar checking failed. Trying alternatives.',
+          variant: 'default'
+        });
       }
     }
-    
-    // Use TextGears API as fallback if available
+
+    // Use TextGears API as fallback if available (will be added next week)
     if (results.length === 0 && ENV.API.TEXTGEARS_API_KEY) {
       try {
+        console.log('Using TextGears for grammar checking');
         const textGearsResults = await this.detectGrammarIssuesWithTextGears(text);
         results.push(...textGearsResults);
       } catch (error) {
