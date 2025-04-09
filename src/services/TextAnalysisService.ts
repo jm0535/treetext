@@ -22,6 +22,22 @@ import {
 } from "@/types";
 
 /**
+ * Interface for grammar rule match objects
+ */
+interface GrammarRuleMatch {
+  rule?: {
+    category?: {
+      id?: string;
+      name?: string;
+    };
+    id?: string;
+    description?: string;
+  };
+  type?: string;
+  message?: string;
+}
+
+/**
  * Service for text analysis operations
  */
 class TextAnalysisService {
@@ -3164,21 +3180,7 @@ class TextAnalysisService {
     return chunkResults;
   }
 
-  /**
-   * Interface for grammar rule match objects
-   */
-  private interface GrammarRuleMatch {
-    rule?: {
-      category?: {
-        id?: string;
-        name?: string;
-      };
-      id?: string;
-      description?: string;
-    };
-    type?: string;
-    message?: string;
-  }
+
 
   /**
    * Determine severity of grammar issue based on rule category and type
