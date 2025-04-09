@@ -83,7 +83,7 @@ const AnalysisSettings: React.FC<AnalysisSettingsProps> = ({ className, onClose 
   };
 
   return (
-    <Card className={`${className} shadow-lg border-opacity-50`}>
+    <Card className={`${className} shadow-lg border-opacity-50 flex flex-col max-h-[85vh]`}>
       <CardHeader className="pb-4 border-b bg-muted/10">
         <div className="flex items-center justify-between">
           <div>
@@ -97,7 +97,7 @@ const AnalysisSettings: React.FC<AnalysisSettingsProps> = ({ className, onClose 
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="overflow-y-auto flex-grow">
         <div className="space-y-7">
           <div className="space-y-5">
             <div className="flex items-center justify-between">
@@ -364,7 +364,7 @@ const AnalysisSettings: React.FC<AnalysisSettingsProps> = ({ className, onClose 
           </div>
         </div>
       </CardContent>
-      <CardFooter className="flex justify-between border-t pt-5 pb-3 bg-muted/5">
+      <CardFooter className="flex justify-between border-t pt-5 pb-3 bg-muted/5 sticky bottom-0 mt-auto">
         <Button variant="outline" onClick={onClose} className="transition-all duration-200 hover:bg-muted/50">
           <X className="mr-2 h-4 w-4" />
           Close

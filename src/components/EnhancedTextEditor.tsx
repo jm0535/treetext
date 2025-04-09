@@ -86,7 +86,7 @@ const EnhancedTextEditor: React.FC<EnhancedTextEditorProps> = ({ className }) =>
                             <Settings className="h-4 w-4 text-muted-foreground" />
                           </Button>
                         </PopoverTrigger>
-                        <PopoverContent className="w-[550px] p-0" align="end" sideOffset={5}>
+                        <PopoverContent className="w-[550px] p-0 max-h-[85vh]" align="end" sideOffset={5}>
                           <AnalysisSettings onClose={() => setSettingsOpen(false)} />
                         </PopoverContent>
                       </Popover>
