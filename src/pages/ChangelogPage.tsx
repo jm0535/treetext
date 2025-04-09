@@ -14,6 +14,21 @@ const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
       date: 'April 9, 2025',
+      version: '0.6.0',
+      title: 'Improved Plagiarism Detection and API Fallbacks',
+      description: 'Enhanced plagiarism detection with multiple API fallbacks and improved source linking',
+      changes: [
+        'Changed from Originality Score to Similarity Index for industry standard alignment',
+        'Fixed source URL generation for better reference linking',
+        'Added Cohere API as first fallback for plagiarism detection',
+        'Added HuggingFace API as second fallback for plagiarism detection',
+        'Improved source URL relevance by generating contextual search queries',
+        'Fixed UI issues in the plagiarism detection tab'
+      ],
+      commitId: 'f8d2e7b'
+    },
+    {
+      date: 'April 9, 2025',
       version: '0.5.0',
       title: 'Usage Limits and Authentication Requirements',
       description: 'Implemented user rate limits and authentication for API access',

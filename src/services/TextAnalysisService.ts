@@ -266,7 +266,7 @@ class TextAnalysisService {
   /**
    * Calculate plagiarism score based on text content
    * @param text Text to analyze
-   * @returns Score from 0-100 (higher is more original)
+   * @returns Similarity score from 0-100 (lower is more original, higher means more matching content)
    */
   private calculatePlagiarismScore(text: string): number {
     // This is a simplified algorithm for local analysis
@@ -294,11 +294,11 @@ class TextAnalysisService {
     const uniqueSentences = new Set(sentences.map(s => s.trim().toLowerCase()));
     const repetitionFactor = 1 - (uniqueSentences.size / sentences.length);
     
-    // Calculate final score (higher = more original)
-    const baseScore = 100 - (matches * 3) - (repetitionFactor * 20);
+    // Calculate similarity score (higher = more matching content, industry standard)
+    const similarityScore = (matches * 3) + (repetitionFactor * 20);
     
     // Ensure score is within valid range
-    return Math.max(0, Math.min(100, baseScore));
+    return Math.max(0, Math.min(100, similarityScore));
   }
   
   /**
@@ -634,8 +634,49 @@ class TextAnalysisService {
       }
     }
     
-    // Only use Copyleaks as a fallback if OpenAI failed AND Copyleaks is configured
-    // This will be added next week when you get the Copyleaks API key
+    // Try Cohere as first fallback if OpenAI failed
+    if (results.length === 0 && ENV.API.COHERE_API_KEY) {
+      try {
+        console.log('Using Cohere embeddings for plagiarism detection');
+        const cohereResults = await this.detectPlagiarismWithCohere(text);
+        results.push(...cohereResults);
+
+        // If we got results from Cohere, we can return them immediately
+        if (cohereResults.length > 0) {
+          return results;
+        }
+      } catch (error) {
+        console.error('Cohere plagiarism detection failed:', error);
+        toast({
+          title: 'API Error',
+          description: 'Cohere plagiarism detection failed. Trying next fallback.',
+          variant: 'default'
+        });
+      }
+    }
+    
+    // Try HuggingFace as second fallback
+    if (results.length === 0 && ENV.API.HUGGINGFACE_API_KEY) {
+      try {
+        console.log('Using HuggingFace embeddings for plagiarism detection');
+        const huggingfaceResults = await this.detectPlagiarismWithHuggingFace(text);
+        results.push(...huggingfaceResults);
+
+        // If we got results from HuggingFace, we can return them immediately
+        if (huggingfaceResults.length > 0) {
+          return results;
+        }
+      } catch (error) {
+        console.error('HuggingFace plagiarism detection failed:', error);
+        toast({
+          title: 'API Error',
+          description: 'HuggingFace plagiarism detection failed. Using simulation.',
+          variant: 'default'
+        });
+      }
+    }
+    
+    // Only use Copyleaks as a final fallback if all others failed AND Copyleaks is configured
     if (results.length === 0 && ENV.API.COPYLEAKS_API_KEY && ENV.API.COPYLEAKS_EMAIL) {
       try {
         console.log('Using Copyleaks for plagiarism detection');
@@ -655,7 +696,7 @@ class TextAnalysisService {
   private async detectPlagiarismWithOpenAI(text: string): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
     let totalTokensUsed = 0;
-    
+
     try {
       // Split text into chunks for processing (using semantic chunking)
       const chunks = this.splitTextIntoSemanticChunks(text);
@@ -791,6 +832,149 @@ class TextAnalysisService {
     return chunks;
   }
   
+  /**
+   * Detect plagiarism using Cohere embeddings API
+   */
+  private async detectPlagiarismWithCohere(text: string): Promise<PlagiarismInstance[]> {
+    const results: PlagiarismInstance[] = [];
+    let totalTokensUsed = 0;
+
+    try {
+      // Split text into chunks for processing (using semantic chunking)
+      const chunks = this.splitTextIntoSemanticChunks(text);
+      
+      for (const chunk of chunks) {
+        // Skip short chunks
+        if (chunk.text.length < 100) continue;
+
+        // Call Cohere API to get embeddings
+        const response = await axios.post(
+          'https://api.cohere.ai/v1/embed',
+          {
+            texts: [chunk.text],
+            model: 'embed-english-v3.0',
+            input_type: 'search_document'
+          },
+          {
+            headers: {
+              'Authorization': `Bearer ${ENV.API.COHERE_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        // Track token usage (Cohere doesn't provide token count, so we estimate)
+        const estimatedTokens = Math.ceil(chunk.text.length / 4);
+        totalTokensUsed += estimatedTokens;
+
+        if (response.data?.embeddings) {
+          // Store the embedding vector
+          const embedding = response.data.embeddings[0];
+
+          // Check similarity against known sources
+          const similarityResults = await this.checkEmbeddingSimilarity(chunk.text, embedding);
+          
+          if (similarityResults.length > 0) {
+            for (const match of similarityResults) {
+              results.push({
+                id: this.generateId(),
+                text: chunk.text,
+                startIndex: chunk.startIndex,
+                endIndex: chunk.endIndex,
+                matchedSource: match.source,
+                matchPercentage: match.similarity * 100,
+                sourceUrl: match.url
+              });
+            }
+          }
+        }
+      }
+      
+      // Update usage with estimated token count
+      if (totalTokensUsed > 0) {
+        // Update the token count with estimated usage
+        UsageService.recordUsage(0, totalTokensUsed);
+        console.log(`Cohere API usage: ~${totalTokensUsed} tokens (estimated)`);
+      }
+    } catch (error) {
+      console.error('Error using Cohere embeddings:', error);
+      throw error;
+    }
+    
+    return results;
+  }
+
+  /**
+   * Detect plagiarism using HuggingFace embeddings API
+   */
+  private async detectPlagiarismWithHuggingFace(text: string): Promise<PlagiarismInstance[]> {
+    const results: PlagiarismInstance[] = [];
+    let totalTokensUsed = 0;
+
+    try {
+      // Split text into chunks for processing (using semantic chunking)
+      const chunks = this.splitTextIntoSemanticChunks(text);
+
+      // Use sentence-transformers/all-MiniLM-L6-v2 model for embeddings
+      const modelEndpoint = 'https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2';
+      
+      for (const chunk of chunks) {
+        // Skip short chunks
+        if (chunk.text.length < 100) continue;
+
+        // Call HuggingFace API to get embeddings
+        const response = await axios.post(
+          modelEndpoint,
+          { inputs: chunk.text },
+          {
+            headers: {
+              'Authorization': `Bearer ${ENV.API.HUGGINGFACE_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        // Track token usage (HuggingFace doesn't provide token count, so we estimate)
+        const estimatedTokens = Math.ceil(chunk.text.length / 4);
+        totalTokensUsed += estimatedTokens;
+
+        if (response.data) {
+          // Store the embedding vector
+          const embedding = response.data;
+
+          // Check similarity against known sources
+          const similarityResults = await this.checkEmbeddingSimilarity(chunk.text, embedding);
+          
+          if (similarityResults.length > 0) {
+            for (const match of similarityResults) {
+              results.push({
+                id: this.generateId(),
+                text: chunk.text,
+                startIndex: chunk.startIndex,
+                endIndex: chunk.endIndex,
+                matchedSource: match.source,
+                matchPercentage: match.similarity * 100,
+                sourceUrl: match.url
+              });
+            }
+          }
+        }
+      }
+      
+      // Update usage with estimated token count
+      if (totalTokensUsed > 0) {
+        // Update the token count with estimated usage
+        UsageService.recordUsage(0, totalTokensUsed);
+        console.log(`HuggingFace API usage: ~${totalTokensUsed} tokens (estimated)`);
+      }
+    } catch (error) {
+      console.error('Error using HuggingFace embeddings:', error);
+      throw error;
+    }
+    
+    return results;
+  }
+
   /**
    * Check embedding similarity against known sources
    * In a production system, this would query a vector database
@@ -988,11 +1172,11 @@ class TextAnalysisService {
       
       // Academic sources that would be matched in a real implementation
       const academicSources = [
-        { name: "Nature", url: "https://www.nature.com/articles/s41586-023-06137-x" },
-        { name: "Science", url: "https://www.science.org/doi/10.1126/science.abq7485" },
-        { name: "PLOS ONE", url: "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0281039" },
-        { name: "Cell", url: "https://www.cell.com/cell/fulltext/S0092-8674(23)00506-8" },
-        { name: "Journal of Educational Psychology", url: "https://psycnet.apa.org/record/2023-65179-001" }
+        { name: "Nature", baseUrl: "https://www.nature.com/search?q=" },
+        { name: "Science", baseUrl: "https://www.science.org/action/doSearch?text=" },
+        { name: "PLOS ONE", baseUrl: "https://journals.plos.org/plosone/search?q=" },
+        { name: "Cell", baseUrl: "https://www.cell.com/action/doSearch?text=" },
+        { name: "Journal of Educational Psychology", baseUrl: "https://psycnet.apa.org/search/display?q=" }
       ];
       
       for (const sentence of sentences) {
@@ -1019,6 +1203,10 @@ class TextAnalysisService {
           
           const sentenceIndex = text.indexOf(sentence);
           if (sentenceIndex !== -1) {
+            // Create a search query from the first few words of the sentence
+            const searchQuery = sentence.substring(0, Math.min(50, sentence.length)).trim().replace(/\s+/g, '+');
+            const sourceUrl = randomSource.baseUrl + searchQuery;
+
             results.push({
               id: this.generateId(),
               text: sentence,
@@ -1026,7 +1214,7 @@ class TextAnalysisService {
               endIndex: sentenceIndex + sentence.length,
               matchedSource: randomSource.name,
               matchPercentage: matchPercentage,
-              sourceUrl: randomSource.url
+              sourceUrl: sourceUrl
             });
           }
         }
@@ -1101,12 +1289,14 @@ class TextAnalysisService {
           
           const paragraphIndex = text.indexOf(paragraph);
           if (paragraphIndex !== -1) {
-            // Generate a more specific URL by appending a search query
-            const searchQuery = paragraph.substring(0, 30).replace(/\s+/g, '%20');
-            const specificUrl = randomSource.url + (randomSource.name === "Wikipedia" ? 
-              "Special:Search?search=" + searchQuery : 
-              "search?q=" + searchQuery);
-            
+            // Generate a more specific URL by creating a search query from key phrases
+            const keyPhrases = paragraph.match(/\b\w+\s+\w+\s+\w+\b/g) || [];
+            const searchQuery = keyPhrases.length > 0 ?
+              keyPhrases[Math.floor(Math.random() * keyPhrases.length)].replace(/\s+/g, '+') :
+              paragraph.substring(0, 50).replace(/\s+/g, '+');
+
+            const sourceUrl = randomSource.url + searchQuery;
+
             results.push({
               id: this.generateId(),
               text: paragraph,
@@ -1114,7 +1304,7 @@ class TextAnalysisService {
               endIndex: paragraphIndex + paragraph.length,
               matchedSource: randomSource.name,
               matchPercentage: matchPercentage,
-              sourceUrl: specificUrl
+              sourceUrl: sourceUrl
             });
           }
         }

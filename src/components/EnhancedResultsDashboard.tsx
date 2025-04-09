@@ -86,17 +86,17 @@ const EnhancedResultsDashboard: React.FC = () => {
     }
   }, [currentText, analyzeText]);
   
-  // Helper function to get color based on score with more vibrant colors
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return "text-emerald-500";
-    if (score >= 70) return "text-amber-500";
+  // Helper function to get color based on similarity score (lower is better)
+  const getSimilarityScoreColor = (similarityScore: number) => {
+    if (similarityScore <= 10) return "text-emerald-500";
+    if (similarityScore <= 30) return "text-amber-500";
     return "text-rose-600";
   };
   
-  // Helper function to get progress color based on score with more vibrant colors
-  const getProgressColor = (score: number) => {
-    if (score >= 90) return "bg-emerald-500";
-    if (score >= 70) return "bg-amber-500";
+  // Helper function to get progress color based on similarity score (lower is better)
+  const getSimilarityProgressColor = (similarityScore: number) => {
+    if (similarityScore <= 10) return "bg-emerald-500";
+    if (similarityScore <= 30) return "bg-amber-500";
     return "bg-rose-600";
   };
   
@@ -199,32 +199,35 @@ const EnhancedResultsDashboard: React.FC = () => {
   // Render the plagiarism tab content
   const renderPlagiarismTab = () => {
     const { plagiarismInstances, plagiarismScore } = currentAnalysis;
+
+    // Calculate similarity score (inverse of originality score)
+    const similarityScore = 100 - plagiarismScore;
     return (
       <div>
         <div className="mb-6 flex flex-col md:flex-row md:items-center md:justify-between">
           <div>
-            <h3 className="text-xl font-bold mb-1 text-emerald-700 dark:text-emerald-400">Originality Score</h3>
+            <h3 className="text-xl font-bold mb-1 text-blue-700 dark:text-blue-400">Similarity Index</h3>
             <p className="text-muted-foreground text-sm">
-              Higher score indicates more original content
+              Lower score indicates more original content
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-center">
-            <span className={`text-4xl font-bold ${getScoreColor(plagiarismScore)}`}>
-              {Math.round(plagiarismScore)}%
+            <span className={`text-4xl font-bold ${getSimilarityScoreColor(similarityScore)}`}>
+              {Math.round(similarityScore)}%
             </span>
           </div>
         </div>
-        
-        <Progress 
-          value={plagiarismScore} 
-          className={`h-2 mb-8 ${getProgressColor(plagiarismScore)}`} 
+        <Progress
+          value={similarityScore}
+          max={100}
+          className={`h-2 mb-8 ${getSimilarityProgressColor(similarityScore)}`}
         />
-        
+
         <div className="mb-6">
-          <h3 className="text-lg font-medium mb-4 text-emerald-700 dark:text-emerald-400">Potential Matching Content</h3>
+          <h3 className="text-lg font-medium mb-4 text-blue-700 dark:text-blue-400">Matching Content</h3>
           {plagiarismInstances.length === 0 ? (
-            <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-md border-l-4 border-emerald-400 dark:border-emerald-600 shadow-sm">
-              <p className="text-emerald-700 dark:text-emerald-300 text-sm">
+            <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-md border-l-4 border-blue-400 dark:border-blue-600 shadow-sm">
+              <p className="text-blue-700 dark:text-blue-300 text-sm">
                 No significant matching content detected. Your text appears to be original.
               </p>
             </div>
@@ -243,9 +246,9 @@ const EnhancedResultsDashboard: React.FC = () => {
                       </span>
                       <span className="ml-2">{getSeverityBadge(instance.matchPercentage)}</span>
                     </div>
-                    <a 
-                      href={instance.source} 
-                      target="_blank" 
+                    <a
+                      href={instance.sourceUrl}
+                      target="_blank"
                       rel="noopener noreferrer"
                       className="text-xs flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
@@ -276,15 +279,15 @@ const EnhancedResultsDashboard: React.FC = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-center">
-            <span className={`text-4xl font-bold ${getScoreColor(grammarScore)}`}>
+            <span className={`text-4xl font-bold ${grammarScore >= 90 ? "text-emerald-500" : grammarScore >= 70 ? "text-amber-500" : "text-rose-600"}`}>
               {Math.round(grammarScore)}%
             </span>
           </div>
         </div>
         
-        <Progress 
-          value={grammarScore} 
-          className={`h-2 mb-8 ${getProgressColor(grammarScore)}`} 
+        <Progress
+          value={grammarScore}
+          className={`h-2 mb-8 ${grammarScore >= 90 ? "bg-emerald-500" : grammarScore >= 70 ? "bg-amber-500" : "bg-rose-600"}`}
         />
         
         <div className="mb-6">
@@ -358,15 +361,15 @@ const EnhancedResultsDashboard: React.FC = () => {
             </p>
           </div>
           <div className="mt-4 md:mt-0 text-center">
-            <span className={`text-4xl font-bold ${getScoreColor(readabilityScore)}`}>
+            <span className={`text-4xl font-bold ${readabilityScore >= 90 ? "text-emerald-500" : readabilityScore >= 70 ? "text-amber-500" : "text-rose-600"}`}>
               {Math.round(readabilityScore)}%
             </span>
           </div>
         </div>
         
-        <Progress 
-          value={readabilityScore} 
-          className={`h-2 mb-8 ${getProgressColor(readabilityScore)}`} 
+        <Progress
+          value={readabilityScore}
+          className={`h-2 mb-8 ${readabilityScore >= 90 ? "bg-emerald-500" : readabilityScore >= 70 ? "bg-amber-500" : "bg-rose-600"}`}
         />
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -499,21 +502,21 @@ const EnhancedResultsDashboard: React.FC = () => {
               </div>
               <div className="flex gap-6 bg-indigo-50 dark:bg-indigo-950/30 p-3 rounded-lg shadow-inner">
                 <div className="text-center">
-                  <div className={`text-xl font-bold ${getScoreColor(currentAnalysis.plagiarismScore)}`}>
-                    {Math.round(currentAnalysis.plagiarismScore)}%
+                  <div className={`text-xl font-bold ${getSimilarityScoreColor(100 - currentAnalysis.plagiarismScore)}`}>
+                    {Math.round(100 - currentAnalysis.plagiarismScore)}%
                   </div>
-                  <div className="text-xs text-muted-foreground">Originality</div>
+                  <div className="text-xs text-muted-foreground">Similarity</div>
                 </div>
                 <Separator orientation="vertical" className="h-12" />
                 <div className="text-center">
-                  <div className={`text-xl font-bold ${getScoreColor(currentAnalysis.grammarScore)}`}>
+                  <div className={`text-xl font-bold ${currentAnalysis.grammarScore >= 90 ? "text-emerald-500" : currentAnalysis.grammarScore >= 70 ? "text-amber-500" : "text-rose-600"}`}>
                     {Math.round(currentAnalysis.grammarScore)}%
                   </div>
                   <div className="text-xs text-muted-foreground">Grammar</div>
                 </div>
                 <Separator orientation="vertical" className="h-12" />
                 <div className="text-center">
-                  <div className={`text-xl font-bold ${getScoreColor(currentAnalysis.readabilityScore)}`}>
+                  <div className={`text-xl font-bold ${currentAnalysis.readabilityScore >= 90 ? "text-emerald-500" : currentAnalysis.readabilityScore >= 70 ? "text-amber-500" : "text-rose-600"}`}>
                     {Math.round(currentAnalysis.readabilityScore)}%
                   </div>
                   <div className="text-xs text-muted-foreground">Readability</div>
