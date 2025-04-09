@@ -13,6 +13,22 @@ interface ChangelogItem {
 const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
+      date: 'April 10, 2025',
+      version: '1.1.1',
+      title: 'Large Document Analysis Improvements and Bug Fixes',
+      description: 'Enhanced readability analysis for large documents and fixed critical variable reference issues',
+      changes: [
+        'Fixed "Cannot read properties of undefined" errors in TextAnalysisService',
+        'Enhanced readability analysis for scientific documents with section header detection',
+        'Added specialized analysis for thesis-length documents (10,000+ words)',
+        'Improved academic document structure recognition (abstracts, introductions, conclusions)',
+        'Fixed variable scope issues in plagiarism detection simulation',
+        'Optimized text processing for 120+ page documents',
+        'Updated user guide with information about large document analysis capabilities'
+      ],
+      commitId: 'e5f7g9h'
+    },
+    {
       date: 'April 9, 2025',
       version: '1.1.0',
       title: 'Enhanced AI Calibration and Language Model Integration',

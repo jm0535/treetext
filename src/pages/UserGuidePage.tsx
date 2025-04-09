@@ -453,6 +453,21 @@ const UserGuidePage: React.FC = () => {
                       treeText offers specialized language models for different types of content, providing more accurate and relevant analysis.
                     </p>
                     
+                    <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-md mb-4 border border-blue-200 dark:border-blue-800">
+                      <h4 className="font-medium flex items-center gap-2 mb-2">
+                        <Sparkles className="h-4 w-4 text-blue-500" />
+                        New: Enhanced Readability Analysis for Large Documents
+                      </h4>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Our latest update includes specialized readability analysis for large documents, including theses, dissertations, and research papers. The system now intelligently evaluates document structure, section organization, and content flow in long-form academic and scientific writing.
+                      </p>
+                      <ul className="text-xs text-muted-foreground space-y-1 pl-4 list-disc">
+                        <li>Scientific model: Recognizes section headers, citation patterns, and technical terminology</li>
+                        <li>Academic model: Identifies chapter structures, abstracts, introductions, and conclusions</li>
+                        <li>Optimized for documents over 10,000 words, including 120+ page theses</li>
+                      </ul>
+                    </div>
+                    
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="border rounded-md p-4">
                         <h4 className="font-medium mb-2">Academic Models</h4>

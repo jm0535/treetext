@@ -1517,6 +1517,27 @@ class TextAnalysisService {
           // Bonus for appropriate complexity in academic writing
           readabilityScore += Math.min(5, (metrics.avgWordLength - 5) * 2);
         }
+        
+        // Check for thesis-length documents (typically over 10,000 words)
+        if (metrics.totalWords > 10000) {
+          // Analyze document structure for thesis-length documents
+          const chapterPattern = /^\s*(?:chapter|section)\s+\d+[:\.]?\s+[A-Z][\w\s]+/gim;
+          const chapters = text.match(chapterPattern) || [];
+
+          // Reward well-structured long academic documents
+          if (chapters.length > 0) {
+            readabilityScore += Math.min(20, chapters.length * 2);
+          }
+
+          // Check for abstract/introduction/conclusion structure
+          const hasAbstract = /\babstract\b/i.test(text.substring(0, Math.min(text.length, 2000)));
+          const hasIntroduction = /\bintroduction\b/i.test(text);
+          const hasConclusion = /\bconclusion\b/i.test(text.substring(Math.max(0, text.length - 5000)));
+
+          if (hasAbstract && hasIntroduction && hasConclusion) {
+            readabilityScore += 10; // Bonus for proper academic structure
+          }
+        }
         break;
 
       case "creative":
@@ -3144,9 +3165,25 @@ class TextAnalysisService {
   }
 
   /**
+   * Interface for grammar rule match objects
+   */
+  private interface GrammarRuleMatch {
+    rule?: {
+      category?: {
+        id?: string;
+        name?: string;
+      };
+      id?: string;
+      description?: string;
+    };
+    type?: string;
+    message?: string;
+  }
+
+  /**
    * Determine severity of grammar issue based on rule category and type
    */
-  private determineSeverity(match: any): "high" | "medium" | "low" {
+  private determineSeverity(match: GrammarRuleMatch): "high" | "medium" | "low" {
     // Default to medium severity
     let severity: "high" | "medium" | "low" = "medium";
 
