@@ -88,8 +88,7 @@ export const LANGUAGE_MODEL_STRUCTURE = {
     description: 'Models for professional and commercial writing',
     models: [
       { id: 'business', name: 'Business', description: 'For general business documents' },
-      { id: 'marketing', name: 'Marketing', description: 'For persuasive and promotional content' },
-      { id: 'technical', name: 'Technical', description: 'For technical specifications and documentation' }
+      { id: 'marketing', name: 'Marketing', description: 'For persuasive and promotional content' }
     ]
   },
   specialized: {
@@ -98,7 +97,8 @@ export const LANGUAGE_MODEL_STRUCTURE = {
     models: [
       { id: 'journalism', name: 'Journalism', description: 'For news articles and media content' },
       { id: 'medical', name: 'Medical', description: 'For healthcare and medical content' },
-      { id: 'documentation', name: 'Documentation', description: 'For technical guides and API docs' }
+      { id: 'documentation', name: 'Documentation', description: 'For technical guides and API docs' },
+      { id: 'technical', name: 'Technical', description: 'For technical specifications and documentation' }
     ]
   }
 };
