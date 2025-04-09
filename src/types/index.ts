@@ -41,6 +41,12 @@ export interface GrammarIssue {
   issueType: string;
   suggestion: string;
   severity: 'high' | 'medium' | 'low';
+  context?: {
+    text: string;
+    offset: number;
+    length: number;
+  };
+  ruleId?: string; // Reference to the specific grammar rule that was violated
 }
 
 /**
@@ -66,6 +72,11 @@ export interface ReadabilityMetrics {
   totalSyllables?: number;
   totalParagraphs: number;
   readingTime: number; // in minutes
+  
+  // Enhanced analysis
+  audienceLevel?: string; // Target audience education level
+  complexityLevel?: string; // Text complexity categorization
+  improvementSuggestions?: string[]; // Specific suggestions to improve readability
 }
 
 /**
