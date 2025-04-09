@@ -414,13 +414,39 @@ class TextAnalysisService {
       throw new Error('Usage limit exceeded. Please try again later.');
     }
 
-    // Ensure language model settings are initialized
-    if (!this.settings.languageModel || !this.settings.languageModelCategory) {
+    // Ensure language model settings are initialized with valid values
+    // Check if languageModel is one of the valid LanguageModelType values
+    const validLanguageModels: LanguageModelType[] = [
+      'standard', 'creative',
+      'academic-general', 'scientific', 'legal',
+      'business', 'marketing', 'technical',
+      'journalism', 'medical', 'documentation'
+    ];
+
+    // Check if languageModelCategory is one of the valid LanguageModelCategory values
+    const validLanguageModelCategories: LanguageModelCategory[] = [
+      'general', 'academic', 'business', 'specialized'
+    ];
+
+    // Ensure we have valid settings
+    const currentLanguageModel = this.settings.languageModel;
+    const currentLanguageModelCategory = this.settings.languageModelCategory;
+
+    // If either setting is missing or invalid, update with defaults
+    if (!currentLanguageModel || !validLanguageModels.includes(currentLanguageModel) ||
+        !currentLanguageModelCategory || !validLanguageModelCategories.includes(currentLanguageModelCategory)) {
+      
+      // Update settings with valid values
       this.settings = {
         ...this.settings,
-        languageModel: this.settings.languageModel || DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
-        languageModelCategory: this.settings.languageModelCategory || DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory
+        languageModel: validLanguageModels.includes(currentLanguageModel) ?
+                      currentLanguageModel : DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
+        languageModelCategory: validLanguageModelCategories.includes(currentLanguageModelCategory) ?
+                      currentLanguageModelCategory : DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory
       };
+
+      // Save the updated settings
+      localStorage.setItem(STORAGE_KEYS.SETTINGS, JSON.stringify(this.settings));
     }
 
     try {
@@ -830,8 +856,16 @@ class TextAnalysisService {
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
 
     // Start with a baseline score based on language model
-    let score = this.settings.languageModel === 'academic' ? 98 : 
-                this.settings.languageModel === 'creative' ? 90 : 95;
+    let score = 95; // Default score
+
+    // Check for academic model types
+    if (this.settings.languageModel === 'academic-general' ||
+        this.settings.languageModel === 'scientific' ||
+        this.settings.languageModel === 'legal') {
+      score = 98; // Academic models get higher baseline
+    } else if (this.settings.languageModel === 'creative') {
+      score = 90; // Creative models get lower baseline (more flexibility)
+    }
 
     // Grammar and style checks - adjust based on language model
     let commonErrors = [];
