@@ -665,12 +665,12 @@ class TextAnalysisService {
         "best practices", "core competency", "stakeholders"
       ];
       
-      if (languageModel === 'marketing') {
+      if (modelType === 'marketing') {
         commonPhrases = [...commonPhrases,
           "target audience", "brand awareness", "customer engagement",
           "conversion rate", "call to action", "unique selling proposition"
         ];
-      } else if (languageModel === 'technical') {
+      } else if (modelType === 'technical') {
         commonPhrases = [...commonPhrases,
           "technical specifications", "implementation details", "system architecture",
           "user interface", "functionality", "documentation", "requirements"
@@ -821,11 +821,11 @@ class TextAnalysisService {
         minScore = 90;
       }
     }
-    else if (languageModelCategory === 'specialized') {
-      if (languageModel === 'journalism') {
+    else if (modelCategory === 'specialized') {
+      if (modelType === 'journalism') {
         originalityThreshold = 0.07; // News should be original
         minScore = 93;
-      } else if (languageModel === 'documentation') {
+      } else if (modelType === 'documentation') {
         originalityThreshold = 0.15; // Documentation often has necessary repetition
         minScore = 87;
       } else {
@@ -2265,7 +2265,9 @@ class TextAnalysisService {
           'text': text,
           'language': 'en-US',
           'enabledOnly': 'false',
-          'level': this.settings.languageModel === 'academic' ? 'picky' : 'default',
+          'level': (this.settings.languageModel === 'academic-general' ||
+                   this.settings.languageModel === 'scientific' ||
+                   this.settings.languageModel === 'legal') ? 'picky' : 'default',
           'disabledRules': this.getDisabledRulesForContext(),
           'enabledRules': this.getEnabledRulesForContext()
         }),
@@ -2470,7 +2472,12 @@ class TextAnalysisService {
     const enabledRules = [];
 
     // Adjust based on language model setting
-    if (this.settings.languageModel === 'academic') {
+    // Check for academic model types
+    const isAcademic = this.settings.languageModel === 'academic-general' ||
+                       this.settings.languageModel === 'scientific' ||
+                       this.settings.languageModel === 'legal';
+
+    if (isAcademic) {
       // For academic writing, enable additional academic style rules
       enabledRules.push(
         'PASSIVE_VOICE',
