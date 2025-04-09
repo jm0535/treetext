@@ -414,6 +414,15 @@ class TextAnalysisService {
       throw new Error('Usage limit exceeded. Please try again later.');
     }
 
+    // Ensure language model settings are initialized
+    if (!this.settings.languageModel || !this.settings.languageModelCategory) {
+      this.settings = {
+        ...this.settings,
+        languageModel: this.settings.languageModel || DEFAULT_ANALYSIS_SETTINGS.languageModel as LanguageModelType,
+        languageModelCategory: this.settings.languageModelCategory || DEFAULT_ANALYSIS_SETTINGS.languageModelCategory as LanguageModelCategory
+      };
+    }
+
     try {
       // Try to use the API for analysis if enabled in settings
       if (API_CONFIG.USE_API && API_CONFIG.BASE_URL) {
