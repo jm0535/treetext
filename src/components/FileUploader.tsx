@@ -88,6 +88,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const [cloudFiles, setCloudFiles] = useState<any[]>([]);
   const [cloudLoading, setCloudLoading] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [cloudAuthenticated, setCloudAuthenticated] = useState<{[key: string]: boolean}>({});
+  const [authDialogOpen, setAuthDialogOpen] = useState<boolean>(false);
+  const [currentFolder, setCurrentFolder] = useState<string>('root');
+  const [folderHistory, setFolderHistory] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Check if user is authenticated
@@ -99,27 +103,123 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     checkAuth();
   }, [user]);
 
-  // Handle cloud provider selection
+  // Handle cloud provider selection and authentication
   const handleCloudProviderSelect = (provider: string) => {
     setCloudProvider(provider);
+    
+    // Check if already authenticated with this provider
+    if (cloudAuthenticated[provider]) {
+      // Already authenticated, load files
+      loadCloudFiles(provider, 'root');
+    } else {
+      // Need to authenticate first
+      setAuthDialogOpen(true);
+    }
+  };
+  
+  // Handle cloud authentication
+  const handleCloudAuth = async () => {
     setCloudLoading(true);
+    
+    try {
+      // In a real implementation, this would redirect to OAuth flow
+      // For now, we'll simulate a successful authentication
+      
+      // Simulate OAuth authentication delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Mark this provider as authenticated
+      setCloudAuthenticated(prev => ({
+        ...prev,
+        [cloudProvider]: true
+      }));
+      
+      // Close auth dialog and load files
+      setAuthDialogOpen(false);
+      loadCloudFiles(cloudProvider, 'root');
+      
+      toast({
+        title: "Connected to " + cloudProvider,
+        description: `Successfully authenticated with ${cloudProvider}.`,
+      });
+    } catch (error) {
+      console.error("Error authenticating with cloud provider:", error);
+      toast({
+        title: "Authentication Failed",
+        description: "There was a problem connecting to the cloud provider.",
+        variant: "destructive"
+      });
+      setCloudLoading(false);
+    }
+  };
+  
+  // Load files from cloud provider
+  const loadCloudFiles = (provider: string, folderId: string) => {
+    setCloudLoading(true);
+    setCurrentFolder(folderId);
+    
+    // If navigating to a subfolder, update folder history
+    if (folderId !== 'root' && !folderHistory.includes(folderId)) {
+      setFolderHistory(prev => [...prev, folderId]);
+    }
     
     // Simulate loading cloud files
     setTimeout(() => {
       // Mock data for cloud files
-      const mockFiles = [
-        { id: '1', name: 'Research Paper.docx', size: 2500000, type: 'document' },
-        { id: '2', name: 'Thesis Draft.pdf', size: 15000000, type: 'pdf' },
-        { id: '3', name: 'Notes.txt', size: 50000, type: 'text' },
-        { id: '4', name: 'Project Proposal.docx', size: 1800000, type: 'document' },
-      ];
+      let mockFiles = [];
+      
+      if (folderId === 'root') {
+        mockFiles = [
+          { id: 'folder-1', name: 'Documents', size: 0, type: 'folder', childCount: 5 },
+          { id: 'folder-2', name: 'Research', size: 0, type: 'folder', childCount: 3 },
+          { id: '1', name: 'Research Paper.docx', size: 2500000, type: 'document' },
+          { id: '2', name: 'Thesis Draft.pdf', size: 15000000, type: 'pdf' },
+        ];
+      } else if (folderId === 'folder-1') {
+        mockFiles = [
+          { id: '3', name: 'Notes.txt', size: 50000, type: 'text' },
+          { id: '4', name: 'Project Proposal.docx', size: 1800000, type: 'document' },
+        ];
+      } else if (folderId === 'folder-2') {
+        mockFiles = [
+          { id: '5', name: 'Literature Review.pdf', size: 8500000, type: 'pdf' },
+          { id: '6', name: 'Data Analysis.xlsx', size: 3200000, type: 'spreadsheet' },
+          { id: '7', name: 'Methodology.docx', size: 1200000, type: 'document' },
+        ];
+      }
+      
       setCloudFiles(mockFiles);
       setCloudLoading(false);
-    }, 1500);
+      setCloudDialogOpen(true);
+    }, 1000);
+  };
+  
+  // Navigate to parent folder
+  const navigateToParentFolder = () => {
+    if (folderHistory.length > 0) {
+      // Remove current folder from history
+      const newHistory = [...folderHistory];
+      newHistory.pop();
+      setFolderHistory(newHistory);
+      
+      // Navigate to parent (last item in new history or root)
+      const parentFolder = newHistory.length > 0 ? newHistory[newHistory.length - 1] : 'root';
+      loadCloudFiles(cloudProvider, parentFolder);
+    } else {
+      // Already at root
+      loadCloudFiles(cloudProvider, 'root');
+    }
   };
 
-  // Handle cloud file selection
+  // Handle cloud file selection or folder navigation
   const handleCloudFileSelect = async (cloudFile: any) => {
+    // If it's a folder, navigate into it
+    if (cloudFile.type === 'folder') {
+      loadCloudFiles(cloudProvider, cloudFile.id);
+      return;
+    }
+    
+    // Otherwise, it's a file to download
     setCloudLoading(true);
     try {
       // In a real implementation, this would download the file from the cloud provider
@@ -129,9 +229,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Create a mock file based on the selected cloud file
-      const fileType = cloudFile.type === 'pdf' ? 'application/pdf' : 
-                      cloudFile.type === 'document' ? 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' : 
-                      'text/plain';
+      let fileType = 'text/plain';
+      
+      if (cloudFile.type === 'pdf') {
+        fileType = 'application/pdf';
+      } else if (cloudFile.type === 'document') {
+        fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      } else if (cloudFile.type === 'spreadsheet') {
+        fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+      }
       
       // Create a simple blob with mock content
       const mockContent = `This is a mock content for the file ${cloudFile.name}`;
@@ -148,6 +254,10 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         title: "File selected from cloud",
         description: `${cloudFile.name} has been downloaded from ${cloudProvider}.`,
       });
+      
+      // Reset folder navigation history when a file is selected
+      setFolderHistory([]);
+      setCurrentFolder('root');
     } catch (error) {
       console.error("Error selecting cloud file:", error);
       toast({
@@ -158,6 +268,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     } finally {
       setCloudLoading(false);
     }
+  };
+  
+  // Handle file upload to cloud
+  const handleCloudUpload = async () => {
+    // This would be implemented with the cloud provider's API
+    // For now, we'll just show a toast message
+    toast({
+      title: "Upload to Cloud",
+      description: "This feature would upload the current file to your cloud storage.",
+    });
   };
 
   // Get PDF page count without processing the content
@@ -841,10 +961,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                       <Button 
                         variant="outline" 
                         className="flex flex-col items-center justify-center h-24 p-2"
-                        onClick={() => {
-                          setCloudProvider('Google Drive');
-                          setCloudDialogOpen(true);
-                        }}
+                        onClick={() => handleCloudProviderSelect('Google Drive')}
                       >
                         <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mb-2">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-red-600" fill="currentColor">
@@ -858,10 +975,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                       <Button 
                         variant="outline" 
                         className="flex flex-col items-center justify-center h-24 p-2"
-                        onClick={() => {
-                          setCloudProvider('Dropbox');
-                          setCloudDialogOpen(true);
-                        }}
+                        onClick={() => handleCloudProviderSelect('Dropbox')}
                       >
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-blue-600" fill="currentColor">
@@ -877,10 +991,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                       <Button 
                         variant="outline" 
                         className="flex flex-col items-center justify-center h-24 p-2"
-                        onClick={() => {
-                          setCloudProvider('OneDrive');
-                          setCloudDialogOpen(true);
-                        }}
+                        onClick={() => handleCloudProviderSelect('OneDrive')}
                       >
                         <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-blue-500" fill="currentColor">
@@ -976,9 +1087,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Cloud Storage Files Dialog */}
-      <Dialog open={cloudDialogOpen} onOpenChange={setCloudDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+      {/* Cloud Authentication Dialog */}
+      <Dialog open={authDialogOpen} onOpenChange={setAuthDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {cloudProvider === 'Google Drive' && (
@@ -1003,7 +1114,73 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                   <path d="M9 6L5 9L9 11L9 6Z" />
                 </svg>
               )}
-              Select a file from {cloudProvider}
+              Connect to {cloudProvider}
+            </DialogTitle>
+            <DialogDescription>
+              You need to authenticate with {cloudProvider} before accessing your files.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-6 flex flex-col items-center justify-center space-y-4">
+            {cloudLoading ? (
+              <div className="flex flex-col items-center justify-center w-full">
+                <Progress value={45} className="w-full mb-4" />
+                <p className="text-sm text-muted-foreground">Connecting to {cloudProvider}...</p>
+              </div>
+            ) : (
+              <>
+                <div className="p-4 bg-muted rounded-full">
+                  <Lock className="h-6 w-6 text-primary" />
+                </div>
+                <div className="text-center">
+                  <h3 className="font-medium mb-1">Secure Authentication</h3>
+                  <p className="text-sm text-muted-foreground max-w-xs">
+                    TreeText will request read-only access to your {cloudProvider} files. You can revoke access at any time.
+                  </p>
+                </div>
+                <Button onClick={handleCloudAuth} className="mt-2">
+                  <LogIn className="h-4 w-4 mr-2" /> Connect to {cloudProvider}
+                </Button>
+              </>
+            )}
+          </div>
+          
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAuthDialogOpen(false)} disabled={cloudLoading}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Cloud Storage Files Dialog */}
+      <Dialog open={cloudDialogOpen} onOpenChange={setCloudDialogOpen}>
+        <DialogContent className="sm:max-w-[700px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {cloudProvider === 'Google Drive' && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 text-red-600" fill="currentColor">
+                  <path d="M12 14L6.5 20H17.5L12 14Z" />
+                  <path d="M19.77 14.33L16.5 8.5H7.5L4.23 14.33L9.73 14.33L12 17.5L14.27 14.33H19.77Z" />
+                </svg>
+              )}
+              {cloudProvider === 'Dropbox' && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 text-blue-600" fill="currentColor">
+                  <path d="M12 14.5L7.5 10.5L12 6.5L16.5 10.5L12 14.5Z" />
+                  <path d="M7.5 14.5L3 10.5L7.5 6.5L12 10.5L7.5 14.5Z" />
+                  <path d="M16.5 14.5L12 10.5L16.5 6.5L21 10.5L16.5 14.5Z" />
+                  <path d="M12 14.5L7.5 18.5L12 22.5L16.5 18.5L12 14.5Z" />
+                </svg>
+              )}
+              {cloudProvider === 'OneDrive' && (
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-5 w-5 text-blue-500" fill="currentColor">
+                  <path d="M10.5 15L5 12L2 16L9 18L10.5 15Z" />
+                  <path d="M14.5 15L19 12L22 16L15 18L14.5 15Z" />
+                  <path d="M9 6L12.5 5L16 9L12 11L9 6Z" />
+                  <path d="M9 6L5 9L9 11L9 6Z" />
+                </svg>
+              )}
+              Browse {cloudProvider} Files
             </DialogTitle>
           </DialogHeader>
           
@@ -1016,10 +1193,22 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
             ) : (
               <div className="space-y-2">
                 <div className="flex items-center justify-between mb-4">
-                  <Input placeholder="Search files..." className="max-w-xs" />
-                  <Button variant="outline" size="sm">
-                    <FolderOpen className="h-4 w-4 mr-2" /> Browse Folders
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    {currentFolder !== 'root' && (
+                      <Button variant="ghost" size="sm" onClick={navigateToParentFolder}>
+                        <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                      </Button>
+                    )}
+                    <Input placeholder="Search files..." className="max-w-xs" />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button variant="outline" size="sm" onClick={handleCloudUpload}>
+                      <Upload className="h-4 w-4 mr-2" /> Upload
+                    </Button>
+                    <Button variant="outline" size="sm">
+                      <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+                    </Button>
+                  </div>
                 </div>
                 
                 <div className="border rounded-md">
@@ -1029,7 +1218,7 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                     <div className="w-8"></div>
                   </div>
                   
-                  <div className="divide-y">
+                  <div className="divide-y max-h-[400px] overflow-y-auto">
                     {cloudFiles.map((file) => (
                       <div 
                         key={file.id} 
@@ -1037,17 +1226,26 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                         onClick={() => handleCloudFileSelect(file)}
                       >
                         <div className="flex items-center flex-1 min-w-0">
-                          {file.type === 'pdf' ? (
+                          {file.type === 'folder' ? (
+                            <Folder className="h-5 w-5 text-yellow-500 mr-3 flex-shrink-0" />
+                          ) : file.type === 'pdf' ? (
                             <FileIcon className="h-5 w-5 text-red-500 mr-3 flex-shrink-0" />
                           ) : file.type === 'document' ? (
                             <FileText className="h-5 w-5 text-blue-500 mr-3 flex-shrink-0" />
+                          ) : file.type === 'spreadsheet' ? (
+                            <Table className="h-5 w-5 text-green-500 mr-3 flex-shrink-0" />
                           ) : (
                             <FileText className="h-5 w-5 text-gray-500 mr-3 flex-shrink-0" />
                           )}
-                          <span className="truncate">{file.name}</span>
+                          <div className="truncate">
+                            <span className="truncate">{file.name}</span>
+                            {file.type === 'folder' && (
+                              <span className="text-xs text-muted-foreground ml-2">{file.childCount} items</span>
+                            )}
+                          </div>
                         </div>
                         <div className="w-24 text-right text-sm text-muted-foreground">
-                          {formatFileSize(file.size)}
+                          {file.type !== 'folder' ? formatFileSize(file.size) : ''}
                         </div>
                         <div className="w-8 text-right">
                           <Popover>
@@ -1058,11 +1256,26 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                             </PopoverTrigger>
                             <PopoverContent className="w-40 p-0" align="end">
                               <div className="p-1">
-                                <Button variant="ghost" size="sm" className="w-full justify-start text-sm">
-                                  <ExternalLink className="h-4 w-4 mr-2" /> View
-                                </Button>
-                                <Button variant="ghost" size="sm" className="w-full justify-start text-sm">
-                                  <Download className="h-4 w-4 mr-2" /> Download
+                                {file.type !== 'folder' && (
+                                  <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="w-full justify-start text-sm"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleCloudFileSelect(file);
+                                    }}
+                                  >
+                                    <Download className="h-4 w-4 mr-2" /> Select File
+                                  </Button>
+                                )}
+                                <Button 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="w-full justify-start text-sm"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <ExternalLink className="h-4 w-4 mr-2" /> View Details
                                 </Button>
                               </div>
                             </PopoverContent>
