@@ -44,6 +44,16 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
               <p className="text-xl text-muted-foreground">
                 Improve your writing with treeText's open-source alternative to Turnitin and Grammarly.
               </p>
+              <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-2">Sign up for premium features!</h3>
+                <ul className="space-y-2 text-sm text-blue-700 dark:text-blue-200">
+                  <li className="flex items-center"><span className="mr-2 text-blue-500">✓</span> Full AI capabilities with advanced analysis</li>
+                  <li className="flex items-center"><span className="mr-2 text-blue-500">✓</span> Persistent history storage across all devices</li>
+                  <li className="flex items-center"><span className="mr-2 text-blue-500">✓</span> Upload files directly from cloud storage services</li>
+                  <li className="flex items-center"><span className="mr-2 text-blue-500">✓</span> Enhanced analytics and detailed reports</li>
+                </ul>
+                <p className="mt-2 text-xs text-blue-600 dark:text-blue-300">Powered by Supabase authentication and PostgreSQL database for secure, reliable storage.</p>
+              </div>
             </div>
             <div className="flex flex-col sm:flex-row gap-3">
               <Button onClick={handleCheckText} className="bg-primary hover:bg-primary/90 h-11 px-6">
@@ -53,6 +63,12 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
               <Button onClick={handleUploadDocument} variant="secondary" className="h-11 px-6">
                 <Upload className="mr-2 h-5 w-5" />
                 Upload Document
+              </Button>
+              <Button variant="outline" className="h-11 px-6 border-primary/30 text-primary" asChild>
+                <Link to="/signup">
+                  <span className="mr-2">👤</span>
+                  Sign Up
+                </Link>
               </Button>
               <Button variant="outline" className="h-11 px-6 border-2" asChild>
                 <Link to="/features">
@@ -76,6 +92,12 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
                 <span>
                   <strong>40+</strong> students already trust treeText
                 </span>
+              </div>
+              <div className="mt-3 flex items-center text-xs text-muted-foreground">
+                <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-2 py-1 rounded-md mr-2">
+                  New
+                </span>
+                <span>Upload files directly from Google Drive, Dropbox, and OneDrive</span>
               </div>
             </div>
           </div>
