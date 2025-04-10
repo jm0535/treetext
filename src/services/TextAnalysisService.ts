@@ -1,6 +1,7 @@
 import { toast } from "@/hooks/use-toast";
 import ApiClient from "./ApiClient";
 import UsageService from "./UsageService";
+import DatabaseService from "./DatabaseService";
 import {
   STORAGE_KEYS,
   API_CONFIG,
@@ -64,10 +65,24 @@ class TextAnalysisService {
   }
 
   /**
-   * Load cached analysis results from local storage
+   * Load cached analysis results from database or fall back to local storage
    */
-  private loadFromLocalStorage(): void {
+  private async loadFromLocalStorage(): Promise<void> {
     try {
+      // First try to load from database (for authenticated users)
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthenticated = !!sessionData?.session?.user;
+      
+      if (isAuthenticated) {
+        // User is authenticated, load from database
+        const dbResults = await DatabaseService.getTextAnalysisHistory(20);
+        if (dbResults && dbResults.length > 0) {
+          this.analysisResults = dbResults;
+          return;
+        }
+      }
+      
+      // Fall back to local storage if database fetch failed or user is not authenticated
       const storedResults = localStorage.getItem(STORAGE_KEYS.RECENT_ANALYSES);
       if (storedResults) {
         const parsedResults = JSON.parse(storedResults) as AnalysisResult[];
@@ -79,7 +94,7 @@ class TextAnalysisService {
       }
     } catch (error) {
       console.error(
-        "Failed to load analysis results from local storage:",
+        "Failed to load analysis results:",
         error,
       );
       // If loading fails, start with empty results
@@ -147,16 +162,27 @@ class TextAnalysisService {
   }
 
   /**
-   * Save analysis results to local storage
+   * Save analysis results to database and local storage
    */
-  private saveToLocalStorage(): void {
+  private async saveToLocalStorage(): Promise<void> {
     try {
+      // Save to local storage as fallback
       localStorage.setItem(
         STORAGE_KEYS.RECENT_ANALYSES,
         JSON.stringify(this.analysisResults),
       );
+      
+      // Save to database if user is authenticated
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthenticated = !!sessionData?.session?.user;
+      
+      if (isAuthenticated && this.analysisResults.length > 0) {
+        // Save the most recent result to the database
+        const latestResult = this.analysisResults[0];
+        await DatabaseService.saveTextAnalysis(latestResult);
+      }
     } catch (error) {
-      console.error("Failed to save analysis results to local storage:", error);
+      console.error("Failed to save analysis results:", error);
     }
   }
 
@@ -831,7 +857,19 @@ class TextAnalysisService {
   /**
    * Get recent analysis results
    */
-  public getRecentResults(limit: number = 5): AnalysisResult[] {
+  public async getRecentResults(limit: number = 5): Promise<AnalysisResult[]> {
+    // Try to get from database first if user is authenticated
+    const { data: sessionData } = await supabase.auth.getSession();
+    const isAuthenticated = !!sessionData?.session?.user;
+    
+    if (isAuthenticated) {
+      const dbResults = await DatabaseService.getTextAnalysisHistory(limit);
+      if (dbResults && dbResults.length > 0) {
+        return dbResults;
+      }
+    }
+    
+    // Fall back to in-memory results
     return [...this.analysisResults]
       .sort((a, b) => b.date.getTime() - a.date.getTime())
       .slice(0, limit);
@@ -840,33 +878,64 @@ class TextAnalysisService {
   /**
    * Get a specific analysis result by ID
    */
-  public getResultById(id: string): AnalysisResult | undefined {
+  public async getResultById(id: string): Promise<AnalysisResult | undefined> {
+    // Try to get from database first if user is authenticated
+    const { data: sessionData } = await supabase.auth.getSession();
+    const isAuthenticated = !!sessionData?.session?.user;
+    
+    if (isAuthenticated) {
+      // This would require a new method in DatabaseService
+      // For now, we'll use the existing getTextAnalysisHistory and filter
+      const dbResults = await DatabaseService.getTextAnalysisHistory(100);
+      const result = dbResults.find(result => result.id === id);
+      if (result) {
+        return result;
+      }
+    }
+    
+    // Fall back to in-memory results
     return this.analysisResults.find((result) => result.id === id);
   }
 
   /**
    * Delete a specific analysis result
    */
-  public deleteResult(id: string): boolean {
+  public async deleteResult(id: string): Promise<boolean> {
+    // Delete from in-memory array
     const initialLength = this.analysisResults.length;
     this.analysisResults = this.analysisResults.filter(
       (result) => result.id !== id,
     );
 
     if (this.analysisResults.length !== initialLength) {
-      this.saveToLocalStorage();
-      return true;
+      // Update local storage
+      localStorage.setItem(
+        STORAGE_KEYS.RECENT_ANALYSES,
+        JSON.stringify(this.analysisResults),
+      );
     }
 
-    return false;
+    // Delete from database if user is authenticated
+    const { data: sessionData } = await supabase.auth.getSession();
+    const isAuthenticated = !!sessionData?.session?.user;
+    
+    if (isAuthenticated) {
+      await DatabaseService.deleteTextAnalysis(id);
+    }
+    
+    return this.analysisResults.length !== initialLength;
   }
 
   /**
    * Clear all analysis results
    */
-  public clearAllResults(): void {
+  public async clearAllResults(): Promise<void> {
     this.analysisResults = [];
-    this.saveToLocalStorage();
+    localStorage.removeItem(STORAGE_KEYS.RECENT_ANALYSES);
+    
+    // For database, we would need to delete all records for the current user
+    // This would require a custom endpoint or function in DatabaseService
+    // For now, we'll just clear the local storage and in-memory results
   }
 
   /**

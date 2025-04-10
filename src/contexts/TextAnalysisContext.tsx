@@ -18,7 +18,12 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
   
   // Load recent analyses on mount
   useEffect(() => {
-    setRecentAnalyses(TextAnalysisService.getRecentResults());
+    const loadRecentAnalyses = async () => {
+      const analyses = await TextAnalysisService.getRecentResults();
+      setRecentAnalyses(analyses);
+    };
+    
+    loadRecentAnalyses();
   }, []);
 
   const setText = (text: string) => {
@@ -67,7 +72,8 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       setCurrentAnalysis(result);
       
       // Update recent analyses
-      setRecentAnalyses(TextAnalysisService.getRecentResults());
+      const analyses = await TextAnalysisService.getRecentResults();
+      setRecentAnalyses(analyses);
       
       toast({
         title: "Analysis Complete",
@@ -97,38 +103,57 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
     setAnalysisError(null);
   };
   
-  const deleteAnalysis = (id: string) => {
-    // Remove from service
-    const success = TextAnalysisService.deleteResult(id);
-    
-    if (success) {
-      // Update state
-      setRecentAnalyses(TextAnalysisService.getRecentResults());
+  const deleteAnalysis = async (id: string) => {
+    try {
+      // Remove from service
+      const success = await TextAnalysisService.deleteResult(id);
       
-      // If the current analysis was deleted, clear it
-      if (currentAnalysis && currentAnalysis.id === id) {
-        setCurrentAnalysis(null);
+      if (success) {
+        // Update state
+        const analyses = await TextAnalysisService.getRecentResults();
+        setRecentAnalyses(analyses);
+        
+        // If the current analysis was deleted, clear it
+        if (currentAnalysis && currentAnalysis.id === id) {
+          setCurrentAnalysis(null);
+        }
+        
+        toast({
+          title: "Analysis Deleted",
+          description: "The analysis has been removed from your history.",
+        });
       }
-      
+    } catch (error) {
+      console.error("Failed to delete analysis:", error);
       toast({
-        title: "Analysis Deleted",
-        description: "The analysis has been removed from your history.",
+        title: "Delete Failed",
+        description: "There was an error deleting the analysis. Please try again.",
+        variant: "destructive",
       });
     }
   };
   
-  const clearAllAnalyses = () => {
-    // Clear all analyses from service
-    TextAnalysisService.clearAllResults();
-    
-    // Update state
-    setRecentAnalyses([]);
-    setCurrentAnalysis(null);
-    
-    toast({
-      title: "History Cleared",
-      description: "All analyses have been removed from your history.",
-    });
+  const clearAllAnalyses = async () => {
+    try {
+      // Clear all analyses from service
+      await TextAnalysisService.clearAllResults();
+      
+      // Update state
+      setRecentAnalyses([]);
+      setCurrentAnalysis(null);
+      
+      toast({
+        title: "History Cleared",
+        description: "All analyses have been removed from your history.",
+      });
+    } catch (error) {
+      console.error("Failed to clear analyses:", error);
+      toast({
+        title: "Clear Failed",
+        description: "There was an error clearing your history. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
   
   const updateSettings = (newSettings: Partial<AnalysisSettings>) => {

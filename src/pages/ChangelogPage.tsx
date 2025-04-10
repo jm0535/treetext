@@ -14,6 +14,23 @@ const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
       date: 'April 10, 2025',
+      version: '1.2.0',
+      title: 'Administrator Role and Database Storage for Analysis History',
+      description: 'Added administrator role for Jimmy Moses and implemented database storage for analysis history with Row-Level Security',
+      changes: [
+        'Set up Jimmy Moses (jimmy.moses@pnguot.ac.pg) as the administrator for the application',
+        'Implemented Row-Level Security (RLS) for proper data access control',
+        'Created database tables for storing text analysis and file upload history',
+        'Added DatabaseService for persistent storage of analysis results',
+        'Updated TextAnalysisService to use database storage with local storage fallback',
+        'Modified TextAnalysisContext to work with asynchronous database operations',
+        'Improved security with role-based access control for all data',
+        'Enhanced user experience with persistent analysis history across devices'
+      ],
+      commitId: 'j7k9l1m'
+    },
+    {
+      date: 'April 10, 2025',
       version: '1.1.1',
       title: 'Large Document Analysis Improvements and Bug Fixes',
       description: 'Enhanced readability analysis for large documents and fixed critical variable reference issues',
