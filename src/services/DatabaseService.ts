@@ -301,6 +301,92 @@ class DatabaseService {
       return null;
     }
   }
+  
+  /**
+   * Get user dashboard statistics
+   * @returns Promise resolving to user statistics object
+   */
+  public async getUserDashboardStats(): Promise<any> {
+    try {
+      // Get current user
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData?.session?.user?.id;
+      
+      if (!userId) {
+        console.error("Cannot fetch user stats: User not authenticated");
+        return null;
+      }
+      
+      // Get total text analyses count for this user
+      const { count: textCount, error: textError } = await supabase
+        .from('text_analysis_history')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+
+      // Get total file analyses count for this user
+      const { count: fileCount, error: fileError } = await supabase
+        .from('file_upload_history')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId);
+        
+      // Get average scores for this user
+      const { data: textScores, error: scoresError } = await supabase
+        .from('text_analysis_history')
+        .select('plagiarism_score, grammar_score, readability_score')
+        .eq('user_id', userId);
+        
+      // Calculate average scores if data exists
+      let avgPlagiarismScore = 0;
+      let avgGrammarScore = 0;
+      let avgReadabilityScore = 0;
+      let improvementScore = 0;
+      
+      if (textScores && textScores.length > 0) {
+        // Calculate averages
+        avgPlagiarismScore = textScores.reduce((sum, item) => sum + (item.plagiarism_score || 0), 0) / textScores.length;
+        avgGrammarScore = textScores.reduce((sum, item) => sum + (item.grammar_score || 0), 0) / textScores.length;
+        avgReadabilityScore = textScores.reduce((sum, item) => sum + (item.readability_score || 0), 0) / textScores.length;
+        
+        // Calculate improvement score (if there are multiple analyses)
+        if (textScores.length >= 2) {
+          // Sort by created_at (assuming it exists in the data)
+          const sortedScores = [...textScores].sort((a, b) => {
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          });
+          
+          // Compare first and last analysis
+          const firstAnalysis = sortedScores[0];
+          const lastAnalysis = sortedScores[sortedScores.length - 1];
+          
+          // Calculate improvement as percentage change in grammar and readability
+          const grammarImprovement = ((lastAnalysis.grammar_score || 0) - (firstAnalysis.grammar_score || 0)) / (firstAnalysis.grammar_score || 1) * 100;
+          const readabilityImprovement = ((lastAnalysis.readability_score || 0) - (firstAnalysis.readability_score || 0)) / (firstAnalysis.readability_score || 1) * 100;
+          
+          // Average the improvements
+          improvementScore = (grammarImprovement + readabilityImprovement) / 2;
+        }
+      }
+
+      if (textError || fileError || scoresError) {
+        console.error("Error fetching user statistics");
+        return null;
+      }
+
+      return {
+        totalAnalyses: (textCount || 0) + (fileCount || 0),
+        textAnalysesCount: textCount || 0,
+        fileAnalysesCount: fileCount || 0,
+        avgPlagiarismScore,
+        avgGrammarScore,
+        avgReadabilityScore,
+        improvementScore: improvementScore.toFixed(2),
+        lastUpdated: new Date()
+      };
+    } catch (error) {
+      console.error("Failed to fetch user statistics:", error);
+      return null;
+    }
+  }
 }
 
 export default DatabaseService.getInstance();

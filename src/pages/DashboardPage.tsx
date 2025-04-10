@@ -1,15 +1,22 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { FileText, BarChart2, Settings, User, Clock, Star, Home } from 'lucide-react';
+import { FileText, BarChart2, Settings, User, Clock, Star, Home, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/PageHeader';
+import DatabaseService from '@/services/DatabaseService';
+import { AnalysisResult } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const DashboardPage: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState<boolean>(true);
+  const [recentAnalyses, setRecentAnalyses] = useState<AnalysisResult[]>([]);
+  const [recentFileAnalyses, setRecentFileAnalyses] = useState<any[]>([]);
+  const [userStats, setUserStats] = useState<any>(null);
   
   // Format date for last login
   const formatDate = (timestamp: string | null) => {
@@ -22,6 +29,41 @@ const DashboardPage: React.FC = () => {
       minute: '2-digit'
     });
   };
+
+  // Load user data from database
+  useEffect(() => {
+    const loadUserData = async () => {
+      setLoading(true);
+      try {
+        // Fetch recent text analyses
+        const textAnalyses = await DatabaseService.getTextAnalysisHistory(3);
+        setRecentAnalyses(textAnalyses);
+        
+        // Fetch recent file uploads
+        const fileAnalyses = await DatabaseService.getFileAnalysisHistory(3);
+        setRecentFileAnalyses(fileAnalyses);
+        
+        // Fetch user statistics
+        const stats = await DatabaseService.getUserDashboardStats();
+        setUserStats(stats);
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    if (user) {
+      loadUserData();
+    } else {
+      setLoading(false);
+    }
+  }, [user]);
+
+  // Combine text and file analyses for recent activity
+  const combinedRecentActivity = [...recentAnalyses, ...recentFileAnalyses]
+    .sort((a, b) => b.date.getTime() - a.date.getTime())
+    .slice(0, 3);
 
   const lastLoginTime = user?.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'First login';
 
@@ -98,25 +140,64 @@ const DashboardPage: React.FC = () => {
           <Card>
             <CardHeader className="pb-2">
               <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest text analyses</CardDescription>
+              <CardDescription>Your latest analyses</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {[1, 2, 3].map((_, i) => (
-                  <div key={i} className="flex items-center gap-3 p-3 rounded-md hover:bg-muted/50 transition-colors cursor-pointer" onClick={() => navigate('/')}>
-                    <div className="bg-primary/10 p-2 rounded-md">
-                      <FileText className="h-4 w-4 text-primary" />
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center gap-3 p-3">
+                      <Skeleton className="h-10 w-10 rounded-md" />
+                      <div className="space-y-2 flex-1">
+                        <Skeleton className="h-4 w-3/4" />
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm truncate">Sample Text Analysis {i + 1}</p>
-                      <p className="text-xs text-muted-foreground">{new Date(Date.now() - i * 86400000).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : combinedRecentActivity.length > 0 ? (
+                <div className="space-y-4">
+                  {combinedRecentActivity.map((item) => {
+                    const isFileAnalysis = 'fileName' in item;
+                    const title = isFileAnalysis ? item.fileName : (item.title || 'Untitled Analysis');
+                    const path = isFileAnalysis ? `/file-analysis/${item.id}` : `/analysis/${item.id}`;
+                    
+                    return (
+                      <div 
+                        key={item.id} 
+                        className="flex items-center gap-3 p-3 rounded-md hover:bg-muted/50 transition-colors cursor-pointer" 
+                        onClick={() => navigate(path)}
+                      >
+                        <div className="bg-primary/10 p-2 rounded-md">
+                          {isFileAnalysis ? (
+                            <FileText className="h-4 w-4 text-primary" />
+                          ) : (
+                            <FileText className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-sm truncate">{title}</p>
+                          <p className="text-xs text-muted-foreground">{item.date.toLocaleDateString()}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">No recent activity</p>
+                  <p className="text-xs text-muted-foreground mt-1">Start analyzing text to see your activity here</p>
+                </div>
+              )}
             </CardContent>
             <CardFooter>
-              <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/history')}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full" 
+                onClick={() => navigate('/history')}
+                disabled={combinedRecentActivity.length === 0}
+              >
                 View All Activity
               </Button>
             </CardFooter>
@@ -129,30 +210,71 @@ const DashboardPage: React.FC = () => {
               <CardDescription>Text analysis metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-md">
-                      <FileText className="h-4 w-4 text-primary" />
+              {loading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-8 w-8 rounded-md" />
+                        <Skeleton className="h-4 w-24" />
+                      </div>
+                      <Skeleton className="h-4 w-8" />
                     </div>
-                    <span className="text-sm font-medium">Total Analyses</span>
-                  </div>
-                  <span className="font-bold">3</span>
+                  ))}
                 </div>
+              ) : userStats ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-primary/10 p-2 rounded-md">
+                        <FileText className="h-4 w-4 text-primary" />
+                      </div>
+                      <span className="text-sm font-medium">Total Analyses</span>
+                    </div>
+                    <span className="font-bold">{userStats.totalAnalyses}</span>
+                  </div>
 
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-primary/10 p-2 rounded-md">
-                      <BarChart2 className="h-4 w-4 text-primary" />
+                  {userStats.improvementScore !== '0.00' && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-primary/10 p-2 rounded-md">
+                          <BarChart2 className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium">Improvement Score</span>
+                      </div>
+                      <span className={`font-bold ${parseFloat(userStats.improvementScore) > 0 ? 'text-green-600' : parseFloat(userStats.improvementScore) < 0 ? 'text-red-600' : 'text-primary'}`}>
+                        {parseFloat(userStats.improvementScore) > 0 ? '+' : ''}{userStats.improvementScore}%
+                      </span>
                     </div>
-                    <span className="text-sm font-medium">Improvement Score</span>
-                  </div>
-                  <span className="font-bold text-primary">+15%</span>
+                  )}
+                  
+                  {userStats.avgGrammarScore > 0 && (
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="bg-primary/10 p-2 rounded-md">
+                          <Star className="h-4 w-4 text-primary" />
+                        </div>
+                        <span className="text-sm font-medium">Avg. Grammar Score</span>
+                      </div>
+                      <span className="font-bold">{userStats.avgGrammarScore.toFixed(1)}</span>
+                    </div>
+                  )}
                 </div>
-              </div>
+              ) : (
+                <div className="py-8 text-center">
+                  <p className="text-sm text-muted-foreground">No stats available</p>
+                  <p className="text-xs text-muted-foreground mt-1">Start analyzing text to see your statistics</p>
+                </div>
+              )}
             </CardContent>
             <CardFooter>
-              <Button variant="ghost" size="sm" className="w-full" onClick={() => navigate('/analytics')}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="w-full" 
+                onClick={() => navigate('/analytics')}
+                disabled={!userStats || userStats.totalAnalyses === 0}
+              >
                 View Detailed Analytics
               </Button>
             </CardFooter>

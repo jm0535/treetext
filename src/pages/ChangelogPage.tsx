@@ -14,6 +14,24 @@ const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
       date: 'April 10, 2025',
+      version: '1.3.0',
+      title: 'Cloud Storage Integration and Live Dashboard',
+      description: 'Added cloud storage integration for file uploads and implemented live dashboard with real-time database updates',
+      changes: [
+        'Enhanced FileUploader with cloud storage integration (Google Drive, Dropbox, OneDrive)',
+        'Improved dashboard to display real-time data from the database',
+        'Removed dummy/sample data from user dashboard and history pages',
+        'Added loading states with skeleton UI for better user experience',
+        'Implemented comprehensive history page with unified view of text and file analyses',
+        'Added file upload history tracking in the database',
+        'Improved user statistics with calculation of improvement scores',
+        'Enhanced empty states for new users with helpful guidance',
+        'Added delete functionality with confirmation dialog for history items'
+      ],
+      commitId: 'n8p0q2r'
+    },
+    {
+      date: 'April 10, 2025',
       version: '1.2.0',
       title: 'Administrator Role and Database Storage for Analysis History',
       description: 'Added administrator role for Jimmy Moses and implemented database storage for analysis history with Row-Level Security',
