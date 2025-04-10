@@ -1062,9 +1062,11 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>PDF Password Required</DialogTitle>
+            <DialogDescription>
+              This PDF is password protected. Please enter the password to continue.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm">This PDF is password protected. Please enter the password to continue.</p>
             <div className="relative">
               <Input
                 type={showPassword ? "text" : "password"}
@@ -1188,6 +1190,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
               )}
               Browse {cloudProvider} Files
             </DialogTitle>
+            <DialogDescription>
+              Select a file from your {cloudProvider} account to analyze.
+            </DialogDescription>
           </DialogHeader>
           
           <div className="py-4">
