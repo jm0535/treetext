@@ -46,9 +46,9 @@ const ChangelogPage: React.FC = () => {
       date: 'April 10, 2025',
       version: '1.2.0',
       title: 'Administrator Role and Database Storage for Analysis History',
-      description: 'Added administrator role for Jimmy Moses and implemented database storage for analysis history with Row-Level Security',
+      description: 'Added administrator role and implemented database storage for analysis history with Row-Level Security',
       changes: [
-        'Set up Jimmy Moses (jimmy.moses@pnguot.ac.pg) as the administrator for the application',
+        'Set up administrator role for the application',
         'Implemented Row-Level Security (RLS) for proper data access control',
         'Created database tables for storing text analysis and file upload history',
         'Added DatabaseService for persistent storage of analysis results',
