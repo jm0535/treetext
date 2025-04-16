@@ -22,8 +22,14 @@ import {
   FileText,
   X,
   Save,
+  AlertCircle,
+  BookText,
+  MessageSquareText,
+  Brain,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   AnalysisSettings as SettingsType,
   LanguageModelCategory,
@@ -31,6 +37,8 @@ import {
 } from "@/types";
 import { LANGUAGE_MODEL_STRUCTURE } from "@/utils/constants";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface AnalysisSettingsProps {
   className?: string;
@@ -42,6 +50,7 @@ const AnalysisSettings: React.FC<AnalysisSettingsProps> = ({
   onClose,
 }) => {
   const { settings, updateSettings } = useTextAnalysis();
+  const [activeTab, setActiveTab] = useState<string>("features");
 
   const handleToggleChange =
     (key: keyof SettingsType) => (checked: boolean) => {
@@ -107,22 +116,22 @@ const AnalysisSettings: React.FC<AnalysisSettingsProps> = ({
   const getCategoryIcon = (category: LanguageModelCategory) => {
     switch (category) {
       case "academic":
-        return <BookOpen className="h-3.5 w-3.5 text-blue-500" />;
+        return <BookOpen className="h-4 w-4 text-blue-500" />;
       case "business":
-        return <Briefcase className="h-3.5 w-3.5 text-amber-500" />;
+        return <Briefcase className="h-4 w-4 text-amber-500" />;
       case "specialized":
-        return <Microscope className="h-3.5 w-3.5 text-purple-500" />;
+        return <Microscope className="h-4 w-4 text-purple-500" />;
       case "general":
       default:
-        return <FileText className="h-3.5 w-3.5 text-green-500" />;
+        return <FileText className="h-4 w-4 text-green-500" />;
     }
   };
 
   return (
     <Card
-      className={`${className} shadow-lg border-opacity-50 flex flex-col max-h-[85vh]`}
+      className={`${className} shadow-lg border border-primary/10 flex flex-col max-h-[85vh] overflow-hidden`}
     >
-      <CardHeader className="pb-4 border-b bg-muted/10">
+      <CardHeader className="pb-3 border-b bg-gradient-to-r from-primary/5 to-primary/10">
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-xl flex items-center">
@@ -135,358 +144,315 @@ const AnalysisSettings: React.FC<AnalysisSettingsProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="overflow-y-auto flex-grow">
-        <div className="space-y-7">
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium flex items-center text-primary">
-                <Check className="mr-2 h-4 w-4" />
-                Analysis Features
-              </h3>
-              <div className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
-                Core
-              </div>
-            </div>
-            <div className="space-y-4 pl-1">
-              <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:shadow-sm">
-                <Label
-                  htmlFor="check-plagiarism"
-                  className="flex items-center cursor-pointer"
-                >
-                  <div className="h-6 w-6 rounded-full bg-green-100 flex items-center justify-center mr-3">
-                    <Check className="h-3.5 w-3.5 text-green-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Plagiarism Detection</span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+
+      <Tabs defaultValue="features" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="px-6 pt-3 border-b">
+          <TabsList className="grid w-full grid-cols-3 mb-1">
+            <TabsTrigger value="features" className="flex items-center justify-center">
+              <Check className="h-4 w-4 mr-1.5" />
+              <span>Features</span>
+            </TabsTrigger>
+            <TabsTrigger value="model" className="flex items-center justify-center">
+              <Brain className="h-4 w-4 mr-1.5" />
+              <span>Model</span>
+            </TabsTrigger>
+            <TabsTrigger value="advanced" className="flex items-center justify-center">
+              <Zap className="h-4 w-4 mr-1.5" />
+              <span>Advanced</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <CardContent className="p-0 overflow-hidden">
+          <ScrollArea className="h-[350px] md:h-[400px] w-full">
+            <TabsContent value="features" className="p-6 mt-0">
+              <div className="space-y-6">
+                <h3 className="text-base font-medium flex items-center">
+                  <Check className="h-4 w-4 mr-2 text-primary" />
+                  Analysis Features
+                  <Badge variant="outline" className="ml-2 text-xs bg-primary/5">Core</Badge>
+                </h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Plagiarism Detection */}
+                  <div className="flex flex-col p-4 border rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-green-100 to-green-200 dark:from-green-900/30 dark:to-green-800/20 flex items-center justify-center mr-3 shadow-sm">
+                          <FileText className="h-5 w-5 text-green-600" />
+                        </div>
+                        <Label
+                          htmlFor="plagiarism-toggle"
+                          className="font-medium text-base cursor-pointer"
+                        >
+                          Plagiarism Detection
+                        </Label>
+                      </div>
+                      <Switch
+                        id="plagiarism-toggle"
+                        checked={settings.checkPlagiarism}
+                        onCheckedChange={handleToggleChange("checkPlagiarism")}
+                        aria-label="Toggle plagiarism detection"
+                        className="data-[state=checked]:bg-green-600"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground pl-[52px]">
                       Identify matching content from external sources
                     </p>
                   </div>
-                </Label>
-                <div className="relative">
-                  <Switch
-                    id="check-plagiarism"
-                    checked={settings.checkPlagiarism}
-                    onCheckedChange={handleToggleChange("checkPlagiarism")}
-                    className="data-[state=checked]:bg-green-600 data-[state=checked]:shadow-inner transition-all duration-200"
-                  />
-                  {settings.checkPlagiarism && (
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-green-500 rounded-full animate-pulse" />
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:shadow-sm">
-                <Label
-                  htmlFor="check-grammar"
-                  className="flex items-center cursor-pointer"
-                >
-                  <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center mr-3">
-                    <Check className="h-3.5 w-3.5 text-blue-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Grammar Checking</span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+
+                  {/* Grammar Checking */}
+                  <div className="flex flex-col p-4 border rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900/30 dark:to-blue-800/20 flex items-center justify-center mr-3 shadow-sm">
+                          <BookOpen className="h-5 w-5 text-blue-600" />
+                        </div>
+                        <Label
+                          htmlFor="grammar-toggle"
+                          className="font-medium text-base cursor-pointer"
+                        >
+                          Grammar Checking
+                        </Label>
+                      </div>
+                      <Switch
+                        id="grammar-toggle"
+                        checked={settings.checkGrammar}
+                        onCheckedChange={handleToggleChange("checkGrammar")}
+                        aria-label="Toggle grammar checking"
+                        className="data-[state=checked]:bg-blue-600"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground pl-[52px]">
                       Detect grammar and style issues
                     </p>
                   </div>
-                </Label>
-                <div className="relative">
-                  <Switch
-                    id="check-grammar"
-                    checked={settings.checkGrammar}
-                    onCheckedChange={handleToggleChange("checkGrammar")}
-                    className="data-[state=checked]:bg-blue-600 data-[state=checked]:shadow-inner transition-all duration-200"
-                  />
-                  {settings.checkGrammar && (
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-blue-500 rounded-full animate-pulse" />
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:shadow-sm">
-                <Label
-                  htmlFor="check-readability"
-                  className="flex items-center cursor-pointer"
-                >
-                  <div className="h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                    <Check className="h-3.5 w-3.5 text-purple-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Readability Analysis</span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+
+                  {/* Readability Analysis */}
+                  <div className="flex flex-col p-4 border rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/20 flex items-center justify-center mr-3 shadow-sm">
+                          <BookText className="h-5 w-5 text-purple-600" />
+                        </div>
+                        <Label
+                          htmlFor="readability-toggle"
+                          className="font-medium text-base cursor-pointer"
+                        >
+                          Readability Analysis
+                        </Label>
+                      </div>
+                      <Switch
+                        id="readability-toggle"
+                        checked={settings.checkReadability}
+                        onCheckedChange={handleToggleChange("checkReadability")}
+                        aria-label="Toggle readability analysis"
+                        className="data-[state=checked]:bg-purple-600"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground pl-[52px]">
                       Evaluate reading level and complexity
                     </p>
                   </div>
-                </Label>
-                <div className="relative">
-                  <Switch
-                    id="check-readability"
-                    checked={settings.checkReadability}
-                    onCheckedChange={handleToggleChange("checkReadability")}
-                    className="data-[state=checked]:bg-purple-600 data-[state=checked]:shadow-inner transition-all duration-200"
-                  />
-                  {settings.checkReadability && (
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-purple-500 rounded-full animate-pulse" />
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:shadow-sm">
-                <Label
-                  htmlFor="check-sentiment"
-                  className="flex items-center cursor-pointer"
-                >
-                  <div className="h-6 w-6 rounded-full bg-amber-100 flex items-center justify-center mr-3">
-                    <Check className="h-3.5 w-3.5 text-amber-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Sentiment Analysis</span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
+
+                  {/* Sentiment Analysis */}
+                  <div className="flex flex-col p-4 border rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 cursor-pointer group">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/20 flex items-center justify-center mr-3 shadow-sm">
+                          <MessageSquareText className="h-5 w-5 text-amber-600" />
+                        </div>
+                        <Label
+                          htmlFor="sentiment-toggle"
+                          className="font-medium text-base cursor-pointer"
+                        >
+                          Sentiment Analysis
+                        </Label>
+                      </div>
+                      <Switch
+                        id="sentiment-toggle"
+                        checked={settings.checkSentiment}
+                        onCheckedChange={handleToggleChange("checkSentiment")}
+                        aria-label="Toggle sentiment analysis"
+                        className="data-[state=checked]:bg-amber-600"
+                      />
+                    </div>
+                    <p className="text-sm text-muted-foreground pl-[52px]">
                       Evaluate tone and emotional content
                     </p>
                   </div>
-                </Label>
-                <div className="relative">
-                  <Switch
-                    id="check-sentiment"
-                    checked={settings.checkSentiment}
-                    onCheckedChange={handleToggleChange("checkSentiment")}
-                    className="data-[state=checked]:bg-amber-600 data-[state=checked]:shadow-inner transition-all duration-200"
-                  />
-                  {settings.checkSentiment && (
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-amber-500 rounded-full animate-pulse" />
-                  )}
                 </div>
               </div>
-            </div>
-          </div>
+            </TabsContent>
 
-          <Separator className="my-6" />
+            <TabsContent value="model" className="p-6 mt-0">
+              <div className="space-y-6">
+                <h3 className="text-base font-medium flex items-center">
+                  <Brain className="h-4 w-4 mr-2 text-primary" />
+                  Language Model
+                  <Badge variant="outline" className="ml-2 text-xs bg-primary/5">AI-Powered</Badge>
+                </h3>
 
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium flex items-center text-primary">
-                <Zap className="mr-2 h-4 w-4" />
-                Language Model
-              </h3>
-              <div className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
-                AI-Powered
-              </div>
-            </div>
-
-            <div>
-              <div className="flex mb-5 bg-muted/30 p-1 rounded-md overflow-hidden">
-                {Object.entries(LANGUAGE_MODEL_STRUCTURE).map(
-                  ([category, data]) => (
-                    <button
-                      key={category}
-                      type="button"
-                      onClick={() =>
-                        handleCategoryChange(category as LanguageModelCategory)
-                      }
-                      className={`flex-1 h-9 flex items-center justify-center ${selectedCategory === category ? "bg-primary/10 text-primary shadow-sm" : "hover:bg-muted/50"} rounded-sm transition-colors`}
-                    >
-                      <div className="flex items-center">
-                        <span className="w-4 h-4 flex items-center justify-center">
-                          {getCategoryIcon(category as LanguageModelCategory)}
-                        </span>
-                        <span className="ml-1.5 text-xs font-medium">
-                          {data.name}
-                        </span>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
+                    {Object.entries(LANGUAGE_MODEL_STRUCTURE).map(([category, data]) => (
+                      <div 
+                        key={category}
+                        className={`flex items-center justify-center p-3 border rounded-md cursor-pointer transition-all duration-200 ${
+                          selectedCategory === category 
+                            ? "border-primary bg-primary/5 shadow-sm" 
+                            : "border-muted hover:border-primary/30 hover:bg-primary/5"
+                        }`}
+                        onClick={() => handleCategoryChange(category as LanguageModelCategory)}
+                      >
+                        <div className="flex flex-col items-center text-center">
+                          <div className="h-8 w-8 rounded-full bg-muted/50 flex items-center justify-center mb-1">
+                            {getCategoryIcon(category as LanguageModelCategory)}
+                          </div>
+                          <span className="text-sm font-medium capitalize">{category}</span>
+                        </div>
                       </div>
-                    </button>
-                  ),
-                )}
-              </div>
+                    ))}
+                  </div>
 
-              {Object.entries(LANGUAGE_MODEL_STRUCTURE).map(
-                ([category, data]) => (
-                  <div
-                    key={category}
-                    className={`mt-0 ${selectedCategory === category ? "block" : "hidden"}`}
-                  >
-                    <div className="mb-2">
-                      <div className="p-3 bg-gradient-to-r from-muted/20 to-muted/5 border border-muted rounded-lg mb-4 shadow-sm">
-                        <p className="text-sm text-muted-foreground flex items-center">
-                          {getCategoryIcon(category as LanguageModelCategory)}
-                          <span className="ml-2">{data.description}</span>
+                  <div className="border rounded-lg p-4 bg-muted/5">
+                    <h4 className="text-sm font-medium mb-3 capitalize">
+                      {selectedCategory} Models
+                    </h4>
+                    <RadioGroup 
+                      value={settings.languageModel} 
+                      onValueChange={handleLanguageModelChange}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-2"
+                    >
+                      {LANGUAGE_MODEL_STRUCTURE[selectedCategory]?.models.map((model) => (
+                        <div key={model.id} className="flex items-start space-x-2">
+                          <RadioGroupItem value={model.id} id={model.id} />
+                          <div className="grid gap-1.5">
+                            <Label htmlFor={model.id} className="font-medium">
+                              {model.name}
+                              {model.isDefault && (
+                                <Badge className="ml-2 bg-primary/10 text-primary text-[10px]">Default</Badge>
+                              )}
+                            </Label>
+                            <p className="text-xs text-muted-foreground">{model.description}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="advanced" className="p-6 mt-0">
+              <div className="space-y-6">
+                <h3 className="text-base font-medium flex items-center">
+                  <Zap className="h-4 w-4 mr-2 text-primary" />
+                  Advanced Settings
+                  <Badge variant="outline" className="ml-2 text-xs bg-primary/5">Personalization</Badge>
+                </h3>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg hover:border-primary/50 hover:bg-primary/5 transition-all duration-200">
+                    <div>
+                      <h4 className="text-base font-medium flex items-center">
+                        <Zap className="h-4 w-4 mr-2 text-amber-500" />
+                        Adaptive Analysis
+                      </h4>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Learns from your writing style over time
+                      </p>
+                    </div>
+                    <Switch
+                      checked={settings.adaptiveAnalysis}
+                      onCheckedChange={handleAdaptiveAnalysisChange}
+                      aria-label="Toggle adaptive analysis"
+                      className="data-[state=checked]:bg-amber-500"
+                    />
+                  </div>
+
+                  {settings.adaptiveAnalysis && settings.userFeedback && (
+                    <div className="border rounded-lg p-4 bg-muted/5">
+                      <h4 className="text-sm font-medium mb-3 flex items-center">
+                        <Info className="h-4 w-4 mr-2 text-primary" />
+                        Learning Status
+                      </h4>
+                      <div className="space-y-3 text-sm">
+                        <div className="flex">
+                          <div className="w-1/3 font-medium text-muted-foreground">
+                            Document types:
+                          </div>
+                          <div className="w-2/3">
+                            {settings.userFeedback?.documentTypes.length ? (
+                              settings.userFeedback.documentTypes.join(", ")
+                            ) : (
+                              <span className="text-muted-foreground italic">
+                                No data yet
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex">
+                          <div className="w-1/3 font-medium text-muted-foreground">
+                            Style preferences:
+                          </div>
+                          <div className="w-2/3">
+                            {settings.userFeedback?.preferredStyles.length ? (
+                              settings.userFeedback.preferredStyles.join(", ")
+                            ) : (
+                              <span className="text-muted-foreground italic">
+                                No data yet
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex">
+                          <div className="w-1/3 font-medium text-muted-foreground">
+                            Last calibration:
+                          </div>
+                          <div className="w-2/3">
+                            {settings.userFeedback?.lastFeedbackDate ? (
+                              new Date(
+                                settings.userFeedback.lastFeedbackDate,
+                              ).toLocaleDateString()
+                            ) : (
+                              <span className="text-muted-foreground italic">
+                                Never
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg text-sm mt-2 border border-primary/10 shadow-sm">
+                    <div className="flex items-start">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                        <Settings className="h-4 w-4 text-primary" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-medium mb-1 text-primary/80">
+                          About Analysis Settings
+                        </h4>
+                        <p className="text-muted-foreground">
+                          These settings affect how your text is analyzed. Different
+                          language models are optimized for different types of writing.
+                          The AI-assisted calibration helps the system learn from your
+                          specific writing style over time, adjusting analysis weights
+                          based on your document types and preferences.
                         </p>
                       </div>
-                      <RadioGroup
-                        value={settings.languageModel || ""}
-                        onValueChange={handleLanguageModelChange}
-                        className="grid grid-cols-2 gap-3 px-2"
-                      >
-                        {data.models.map((model) => (
-                          <div
-                            key={model.id}
-                            className={`flex items-center p-3 rounded-md transition-all duration-200 border ${settings.languageModel === model.id ? "bg-muted/50 border-muted shadow-sm" : "border-transparent hover:bg-muted/20 hover:shadow-sm"}`}
-                          >
-                            <div className="flex items-center justify-center mr-3 relative">
-                              <RadioGroupItem
-                                value={model.id}
-                                id={model.id}
-                                className="peer sr-only"
-                              />
-                              <div
-                                className={`h-4 w-4 rounded-full border transition-colors duration-200 ${settings.languageModel === model.id ? "border-primary bg-primary shadow-sm" : "border-muted-foreground"} flex items-center justify-center peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary`}
-                              >
-                                {settings.languageModel === model.id && (
-                                  <div className="h-1.5 w-1.5 rounded-full bg-white" />
-                                )}
-                              </div>
-                            </div>
-                            <Label
-                              htmlFor={model.id}
-                              className="flex-1 flex items-center cursor-pointer"
-                            >
-                              <div className="flex flex-col w-full overflow-hidden">
-                                <div className="flex items-center">
-                                  <span className="font-medium">
-                                    {model.name}
-                                  </span>
-                                  {settings.languageModel === model.id && (
-                                    <span className="ml-2 text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-full">
-                                      Selected
-                                    </span>
-                                  )}
-                                </div>
-                                <span className="text-xs text-muted-foreground mt-1 truncate">
-                                  {model.description}
-                                </span>
-                              </div>
-                            </Label>
-                          </div>
-                        ))}
-                      </RadioGroup>
-                    </div>
-                  </div>
-                ),
-              )}
-            </div>
-          </div>
-
-          <Separator className="my-6" />
-
-          {/* AI-Assisted Calibration */}
-          <div className="space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-medium flex items-center text-primary">
-                <FileText className="mr-2 h-4 w-4" />
-                AI-Assisted Calibration
-              </h3>
-              <div className="text-xs text-muted-foreground bg-muted/30 px-2 py-1 rounded-md">
-                Advanced
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex items-center justify-between bg-muted/30 p-3 rounded-lg hover:bg-muted/50 transition-all duration-200 hover:shadow-sm">
-                <Label
-                  htmlFor="adaptive-analysis"
-                  className="flex items-center cursor-pointer"
-                >
-                  <div className="h-6 w-6 rounded-full bg-teal-100 flex items-center justify-center mr-3">
-                    <Check className="h-3.5 w-3.5 text-teal-600" />
-                  </div>
-                  <div>
-                    <span className="font-medium">Adaptive Analysis</span>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Learns from your writing style over time
-                    </p>
-                  </div>
-                </Label>
-                <div className="relative">
-                  <Switch
-                    id="adaptive-analysis"
-                    checked={settings.adaptiveAnalysis || false}
-                    onCheckedChange={handleAdaptiveAnalysisChange}
-                    className="data-[state=checked]:bg-teal-600 data-[state=checked]:shadow-inner transition-all duration-200"
-                  />
-                  {(settings.adaptiveAnalysis || false) && (
-                    <div className="absolute -top-1 -right-1 h-2 w-2 bg-teal-500 rounded-full animate-pulse" />
-                  )}
-                </div>
-              </div>
-
-              {settings.adaptiveAnalysis && (
-                <div className="mt-4 p-4 bg-gradient-to-r from-muted/20 to-muted/5 rounded-lg border border-muted shadow-sm">
-                  <h4 className="text-sm font-medium mb-3 flex items-center">
-                    <div className="h-5 w-5 rounded-full bg-teal-100 flex items-center justify-center mr-2">
-                      <FileText className="h-3 w-3 text-teal-600" />
-                    </div>
-                    Learning Status
-                  </h4>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex">
-                      <div className="w-1/3 font-medium text-muted-foreground">
-                        Document types:
-                      </div>
-                      <div className="w-2/3">
-                        {settings.userFeedback?.documentTypes.length ? (
-                          settings.userFeedback.documentTypes.join(", ")
-                        ) : (
-                          <span className="text-muted-foreground italic">
-                            No data yet
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <div className="w-1/3 font-medium text-muted-foreground">
-                        Style preferences:
-                      </div>
-                      <div className="w-2/3">
-                        {settings.userFeedback?.preferredStyles.length ? (
-                          settings.userFeedback.preferredStyles.join(", ")
-                        ) : (
-                          <span className="text-muted-foreground italic">
-                            No data yet
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex">
-                      <div className="w-1/3 font-medium text-muted-foreground">
-                        Last calibration:
-                      </div>
-                      <div className="w-2/3">
-                        {settings.userFeedback?.lastFeedbackDate ? (
-                          new Date(
-                            settings.userFeedback.lastFeedbackDate,
-                          ).toLocaleDateString()
-                        ) : (
-                          <span className="text-muted-foreground italic">
-                            Never
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
+              </div>
+            </TabsContent>
+          </ScrollArea>
+        </CardContent>
+      </Tabs>
 
-          <div className="bg-gradient-to-r from-primary/5 to-primary/10 p-4 rounded-lg text-sm mt-6 border border-primary/10 shadow-sm">
-            <div className="flex items-start">
-              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center mr-3">
-                <Settings className="h-4 w-4 text-primary" />
-              </div>
-              <div>
-                <h4 className="text-sm font-medium mb-1 text-primary/80">
-                  About Analysis Settings
-                </h4>
-                <p className="text-muted-foreground">
-                  These settings affect how your text is analyzed. Different
-                  language models are optimized for different types of writing.
-                  The AI-assisted calibration helps the system learn from your
-                  specific writing style over time, adjusting analysis weights
-                  based on your document types and preferences.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-between border-t pt-5 pb-3 bg-muted/5 sticky bottom-0 mt-auto">
+      <CardFooter className="flex justify-between border-t pt-4 pb-3 bg-muted/5 sticky bottom-0 mt-auto">
         <Button
           variant="outline"
           onClick={onClose}

@@ -14,6 +14,56 @@ const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
       date: 'April 16, 2025',
+      version: '1.3.4',
+      title: 'Settings UI Redesign & Navigation Improvements',
+      description: 'Completely redesigned settings interface and fixed navigation issues for better user experience',
+      changes: [
+        'Implemented tabbed interface in settings panel for better organization of options',
+        'Enhanced feature toggles with improved visibility and accessibility',
+        'Added color-coded indicators for different analysis features',
+        'Improved visual hierarchy with better spacing and grouping of related settings',
+        'Fixed Upload File button navigation to properly redirect to the file upload tab',
+        'Implemented state-based navigation between components to prevent 404 errors',
+        'Added responsive design to settings panel for better mobile experience',
+        'Improved tooltips and help text for better user guidance'
+      ],
+      commitId: 'j7k8l9m'
+    },
+    {
+      date: 'April 16, 2025',
+      version: '1.3.3',
+      title: 'Dashboard UI Overhaul',
+      description: 'Comprehensive redesign of the user dashboard with enhanced visualizations and personalized insights',
+      changes: [
+        'Implemented activity summary metrics with visual indicators for improvement trends',
+        'Added enhanced recent activity display with filtering capabilities',
+        'Created weekly activity visualization chart for tracking usage patterns',
+        'Added progress visualization with mini-charts for grammar, readability, and originality scores',
+        'Implemented personalized recommendations based on user writing patterns',
+        'Added quick filters for accessing different types of analyses',
+        'Improved visual hierarchy for better usability and information architecture',
+        'Enhanced responsive design for optimal viewing on all devices'
+      ],
+      commitId: 'e4f5g6h'
+    },
+    {
+      date: 'April 16, 2025',
+      version: '1.3.2',
+      title: 'Analytics Dashboard Enhancements',
+      description: 'Improved analytics dashboard with real user activity data and dynamic visualizations',
+      changes: [
+        'Updated Monthly Activity chart to display real analysis counts from database',
+        'Enhanced Improvement Trends section with actual user progress metrics',
+        'Replaced static analytics cards with real-time user statistics',
+        'Added dynamic bar scaling for better visualization of usage patterns',
+        'Implemented loading states and error handling for all analytics components',
+        'Improved date formatting for better readability',
+        'Added current score indicators to improvement metrics'
+      ],
+      commitId: 'a1b2c3d'
+    },
+    {
+      date: 'April 16, 2025',
       version: '1.3.1',
       title: 'User Guide Bug Fix',
       description: 'Fixed a critical bug in the User Guide page that was causing 404 errors',

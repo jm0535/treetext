@@ -11,12 +11,29 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AnalysisResult } from '@/types';
 import { FEATURES } from '@/utils/constants';
 import { Type, Upload, History } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 const Index = () => {
   const { currentAnalysis, setText, analyzeText } = useTextAnalysis();
   const [activeTab, setActiveTab] = useState<string>('editor');
   const [inputMethod, setInputMethod] = useState<string>('text');
-  
+  const location = useLocation();
+
+  // Check for inputMethod in location state on component mount
+  useEffect(() => {
+    // Check if we have state passed from navigation
+    if (location.state && location.state.inputMethod) {
+      setInputMethod(location.state.inputMethod);
+    }
+    
+    // Also check URL parameters for backward compatibility
+    const params = new URLSearchParams(location.search);
+    const modeParam = params.get('mode');
+    if (modeParam === 'file') {
+      setInputMethod('file');
+    }
+  }, [location]);
+
   // Handle selecting an analysis from history
   const handleSelectAnalysis = (analysis: AnalysisResult) => {
     // Set the text to the original text from the analysis
