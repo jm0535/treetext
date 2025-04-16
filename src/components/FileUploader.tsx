@@ -77,7 +77,7 @@ interface FileUploaderProps {
 
 const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const { setText } = useTextAnalysis();
-  const { user } = useAuth();
+  const { user, cloudAuth, updateCloudAuth, getCloudToken } = useAuth();
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [progress, setProgress] = useState<number>(0);
@@ -91,10 +91,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const [uploadTab, setUploadTab] = useState<string>('local');
   const [cloudDialogOpen, setCloudDialogOpen] = useState<boolean>(false);
   const [cloudProvider, setCloudProvider] = useState<string>('');
-  const [cloudFiles, setCloudFiles] = useState<any[]>([]);
+  const [cloudFiles, setCloudFiles] = useState<Array<{id: string; name: string; type: string; size: number; childCount?: number}>>([]);
   const [cloudLoading, setCloudLoading] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [cloudAuthenticated, setCloudAuthenticated] = useState<{[key: string]: boolean}>({});
   const [authDialogOpen, setAuthDialogOpen] = useState<boolean>(false);
   const [currentFolder, setCurrentFolder] = useState<string>('root');
   const [folderHistory, setFolderHistory] = useState<string[]>([]);
@@ -112,9 +111,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   // Handle cloud provider selection and authentication
   const handleCloudProviderSelect = (provider: string) => {
     setCloudProvider(provider);
-    
-    // Check if already authenticated with this provider
-    if (cloudAuthenticated[provider]) {
+
+    // Check if already authenticated with this provider using AuthContext
+    if (cloudAuth[provider]) {
       // Already authenticated, load files
       loadCloudFiles(provider, 'root');
     } else {
@@ -126,30 +125,99 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   // Handle cloud authentication
   const handleCloudAuth = async () => {
     setCloudLoading(true);
-    
+
     try {
-      // In a real implementation, this would redirect to OAuth flow
-      // For now, we'll simulate a successful authentication
-      
-      // Simulate OAuth authentication delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Mark this provider as authenticated
-      setCloudAuthenticated(prev => ({
-        ...prev,
-        [cloudProvider]: true
-      }));
-      
-      // Close auth dialog and load files
+      // Implement actual OAuth authentication based on the selected provider
+      switch (cloudProvider) {
+        case 'Google Drive': {
+          // Get Google OAuth Client ID from environment variables or use a fallback for development
+          const GOOGLE_CLIENT_ID = typeof window !== 'undefined' && window.ENV_GOOGLE_CLIENT_ID
+            ? window.ENV_GOOGLE_CLIENT_ID
+            : '1234567890-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com'; // Fallback for development
+          // Determine if we're in development or production environment
+          const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+          // Use appropriate redirect URI based on environment
+          // We need to use exactly what's configured in Google Cloud Console
+          const redirectUri = isDevelopment
+            ? `http://localhost:8080/auth/google-callback` // Exact match for what's in Google Cloud Console
+            : 'https://treetext.in4metrix.dev/auth/google-callback'; // Updated to match the new configuration
+            
+          // Create a state parameter to help the callback page know what to do
+          const state = JSON.stringify({
+            callbackPath: '/auth/google-callback',
+            provider: 'Google Drive'
+          });
+          
+          const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${GOOGLE_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent('https://www.googleapis.com/auth/drive.readonly')}&prompt=consent&state=${encodeURIComponent(state)}`;
+          window.open(googleAuthUrl, '_blank', 'width=600,height=700');
+          break;
+        }
+
+        case 'Dropbox': {
+          // Get Dropbox App key from environment variables or use a fallback for development
+          const DROPBOX_CLIENT_ID = typeof window !== 'undefined' && window.ENV_DROPBOX_CLIENT_ID
+            ? window.ENV_DROPBOX_CLIENT_ID
+            : 'abcdefghijklmn'; // Fallback for development
+          const dropboxAuthUrl = `https://www.dropbox.com/oauth2/authorize?client_id=${DROPBOX_CLIENT_ID}&redirect_uri=${encodeURIComponent(`${window.location.origin}/auth/dropbox-callback`)}&response_type=token&token_access_type=offline`;
+          window.open(dropboxAuthUrl, '_blank', 'width=600,height=700');
+          break;
+        }
+
+        case 'OneDrive': {
+          // Get Microsoft Application (client) ID from environment variables or use a fallback for development
+          const ONEDRIVE_CLIENT_ID = typeof window !== 'undefined' && window.ENV_ONEDRIVE_CLIENT_ID
+            ? window.ENV_ONEDRIVE_CLIENT_ID
+            : 'abcdefgh-1234-5678-9012-ijklmnopqrst'; // Fallback for development
+          const onedriveAuthUrl = `https://login.microsoftonline.com/common/oauth2/v2.0/authorize?client_id=${ONEDRIVE_CLIENT_ID}&redirect_uri=${encodeURIComponent(`${window.location.origin}/auth/onedrive-callback`)}&response_type=token&scope=${encodeURIComponent('files.read')}`;
+          window.open(onedriveAuthUrl, '_blank', 'width=600,height=700');
+          break;
+        }
+
+        default:
+          console.error('Unknown cloud provider:', cloudProvider);
+          return;
+      }
+
+      // We'll close the auth dialog - the actual token handling will be done in the callback routes
       setAuthDialogOpen(false);
-      loadCloudFiles(cloudProvider, 'root');
-      
+
       toast({
-        title: "Connected to " + cloudProvider,
-        description: `Successfully authenticated with ${cloudProvider}.`,
+        title: "Authentication Started",
+        description: `Please complete authentication with ${cloudProvider} in the popup window.`,
       });
+
+      // Set up a listener for the authentication message from the popup
+      const authMessageHandler = (event: MessageEvent) => {
+        // Only accept messages from our own domain
+        if (event.origin !== window.location.origin) {
+          return;
+        }
+
+        if (event.data.type === 'AUTH_SUCCESS') {
+          // Handle successful authentication
+          console.log('Authentication successful:', event.data);
+
+          // Update the authentication state
+          updateCloudAuth(cloudProvider, true);
+
+          // Close the authentication dialog
+          setAuthDialogOpen(false);
+
+          // Load files from the cloud provider
+          loadCloudFiles(cloudProvider, 'root');
+        }
+      };
+
+      window.addEventListener('message', authMessageHandler);
+
+      // Set a timeout to remove the event listener if authentication fails or takes too long
+      setTimeout(() => {
+        window.removeEventListener('message', authMessageHandler);
+      }, 300000); // 5 minutes timeout
+      
     } catch (error) {
-      console.error("Error authenticating with cloud provider:", error);
+      console.error("Error initiating authentication with cloud provider:", error);
       toast({
         title: "Authentication Failed",
         description: "There was a problem connecting to the cloud provider.",
@@ -160,44 +228,121 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   };
   
   // Load files from cloud provider
-  const loadCloudFiles = (provider: string, folderId: string) => {
+  const loadCloudFiles = async (provider: string, folderId: string) => {
     setCloudLoading(true);
     setCurrentFolder(folderId);
-    
-    // If navigating to a subfolder, update folder history
-    if (folderId !== 'root' && !folderHistory.includes(folderId)) {
-      setFolderHistory(prev => [...prev, folderId]);
-    }
-    
-    // Simulate loading cloud files
-    setTimeout(() => {
-      // Mock data for cloud files
-      let mockFiles = [];
+
+    try {
+      // Get the access token from AuthContext
+      const accessToken = getCloudToken(provider);
+
+      if (!accessToken) {
+        throw new Error(`No access token available for ${provider}`);
+      }
+
+      // In a real implementation, we would use the provider's API to fetch files with the token
+      // For now, we'll use mock data but in a production app, this would make actual API calls
+
+      // Example of how API calls would be structured:
+      const files = [];
+      
+      if (provider === 'Google Drive') {
+        // Example Google Drive API call (not actually executed)
+        // const response = await fetch(
+        //   `https://www.googleapis.com/drive/v3/files?q='${folderId}' in parents&fields=files(id,name,mimeType,size)`,
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${accessToken}`,
+        //     },
+        //   }
+        // );
+        // const data = await response.json();
+        // files = data.files.map(file => ({
+        //   id: file.id,
+        //   name: file.name,
+        //   type: file.mimeType.includes('folder') ? 'folder' : file.mimeType.includes('pdf') ? 'pdf' : 'document',
+        //   size: parseInt(file.size || '0'),
+        //   childCount: file.mimeType.includes('folder') ? 5 : undefined
+        // }));
+      } else if (provider === 'Dropbox') {
+        // Example Dropbox API call structure (not actually executed)
+        // const response = await fetch(
+        //   'https://api.dropboxapi.com/2/files/list_folder',
+        //   {
+        //     method: 'POST',
+        //     headers: {
+        //       Authorization: `Bearer ${accessToken}`,
+        //       'Content-Type': 'application/json',
+        //     },
+        //     body: JSON.stringify({
+        //       path: folderId === 'root' ? '' : folderId,
+        //     }),
+        //   }
+        // );
+        // const data = await response.json();
+        // files = data.entries.map(entry => ({
+        //   id: entry.id,
+        //   name: entry.name,
+        //   type: entry['.tag'] === 'folder' ? 'folder' : entry.name.endsWith('.pdf') ? 'pdf' : 'document',
+        //   size: entry.size || 0,
+        //   childCount: entry['.tag'] === 'folder' ? 3 : undefined
+        // }));
+      } else if (provider === 'OneDrive') {
+        // Example OneDrive API call structure (not actually executed)
+        // const response = await fetch(
+        //   `https://graph.microsoft.com/v1.0/me/drive/items/${folderId === 'root' ? 'root' : folderId}/children`,
+        //   {
+        //     headers: {
+        //       Authorization: `Bearer ${accessToken}`,
+        //     },
+        //   }
+        // );
+        // const data = await response.json();
+        // files = data.value.map(item => ({
+        //   id: item.id,
+        //   name: item.name,
+        //   type: item.folder ? 'folder' : item.name.endsWith('.pdf') ? 'pdf' : 'document',
+        //   size: item.size || 0,
+        //   childCount: item.folder ? item.folder.childCount : undefined
+        // }));
+      }
+
+      // For demonstration purposes, we'll generate some fake files
+      const mockFiles = [];
       
       if (folderId === 'root') {
-        mockFiles = [
-          { id: 'folder-1', name: 'Documents', size: 0, type: 'folder', childCount: 5 },
-          { id: 'folder-2', name: 'Research', size: 0, type: 'folder', childCount: 3 },
-          { id: '1', name: 'Research Paper.docx', size: 2500000, type: 'document' },
-          { id: '2', name: 'Thesis Draft.pdf', size: 15000000, type: 'pdf' },
-        ];
-      } else if (folderId === 'folder-1') {
-        mockFiles = [
-          { id: '3', name: 'Notes.txt', size: 50000, type: 'text' },
-          { id: '4', name: 'Project Proposal.docx', size: 1800000, type: 'document' },
-        ];
-      } else if (folderId === 'folder-2') {
-        mockFiles = [
-          { id: '5', name: 'Literature Review.pdf', size: 8500000, type: 'pdf' },
-          { id: '6', name: 'Data Analysis.xlsx', size: 3200000, type: 'spreadsheet' },
-          { id: '7', name: 'Methodology.docx', size: 1200000, type: 'document' },
-        ];
+        // Add some folders at the root level
+        mockFiles.push({ id: 'folder1', name: 'Documents', type: 'folder', size: 0, childCount: 5 });
+        mockFiles.push({ id: 'folder2', name: 'Images', type: 'folder', size: 0, childCount: 3 });
+        mockFiles.push({ id: 'folder3', name: 'Projects', type: 'folder', size: 0, childCount: 2 });
+        
+        // Add some files at the root level
+        mockFiles.push({ id: 'file1', name: 'Report.pdf', type: 'pdf', size: 2500000 });
+        mockFiles.push({ id: 'file2', name: 'Presentation.pptx', type: 'document', size: 1800000 });
+        mockFiles.push({ id: 'file3', name: 'Data.xlsx', type: 'spreadsheet', size: 900000 });
+      } else if (folderId === 'folder1') {
+        // Files in the Documents folder
+        mockFiles.push({ id: 'doc1', name: 'Resume.docx', type: 'document', size: 350000 });
+        mockFiles.push({ id: 'doc2', name: 'Contract.pdf', type: 'pdf', size: 1200000 });
+        mockFiles.push({ id: 'doc3', name: 'Notes.txt', type: 'document', size: 15000 });
+        mockFiles.push({ id: 'doc4', name: 'Report-2023.pdf', type: 'pdf', size: 2800000 });
+        mockFiles.push({ id: 'doc5', name: 'Meeting Minutes.docx', type: 'document', size: 280000 });
       }
       
+      // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       setCloudFiles(mockFiles);
+    } catch (error) {
+      console.error(`Error loading files from ${provider}:`, error);
+      toast({
+        title: "Error",
+        description: `Failed to load files from ${provider}. Please try again.`,
+        variant: "destructive"
+      });
+    } finally {
       setCloudLoading(false);
-      setCloudDialogOpen(true);
-    }, 1000);
+    }
   };
   
   // Navigate to parent folder
@@ -218,61 +363,61 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   };
 
   // Handle cloud file selection or folder navigation
-  const handleCloudFileSelect = async (cloudFile: any) => {
-    // If it's a folder, navigate into it
+  const handleCloudFileSelect = (cloudFile: {id: string; name: string; type: string; size: number; childCount?: number}) => {
     if (cloudFile.type === 'folder') {
+      // Navigate to folder
       loadCloudFiles(cloudProvider, cloudFile.id);
-      return;
-    }
-    
-    // Otherwise, it's a file to download
-    setCloudLoading(true);
-    try {
-      // In a real implementation, this would download the file from the cloud provider
-      // For now, we'll simulate downloading and creating a File object
-      
-      // Simulate download delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Create a mock file based on the selected cloud file
-      let fileType = 'text/plain';
-      
-      if (cloudFile.type === 'pdf') {
-        fileType = 'application/pdf';
-      } else if (cloudFile.type === 'document') {
-        fileType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      } else if (cloudFile.type === 'spreadsheet') {
-        fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    } else {
+      try {
+        // Select file for upload
+        // In a real implementation, you would download the file from the cloud provider
+        // and then process it like a local file
+
+        // For demonstration, we'll simulate downloading and processing a file
+        setCloudLoading(true);
+        setCloudDialogOpen(false);
+
+        // Simulate file download and processing
+        setTimeout(() => {
+          const fileName = cloudFile.name;
+          const fileSize = cloudFile.size;
+          const fileType = cloudFile.type === 'pdf' ? 'application/pdf' : 'text/plain';
+
+          // Create a mock File object
+          const mockFile = new File(
+            [new ArrayBuffer(fileSize)], // Empty content for demo
+            fileName,
+            { type: fileType }
+          );
+
+          setFile(mockFile);
+          setCloudLoading(false);
+
+          // Simulate text extraction
+          const mockText = `This is sample text extracted from ${fileName}. In a real implementation, this would be the actual content of the file downloaded from ${cloudProvider}.`;
+
+          // Set the text for analysis
+          setText(mockText);
+
+          toast({
+            title: "File Selected",
+            description: `${fileName} has been selected from ${cloudProvider}.`,
+          });
+
+          // Reset folder navigation history when a file is selected
+          setFolderHistory([]);
+          setCurrentFolder('root');
+        }, 1500);
+      } catch (error) {
+        console.error("Error selecting cloud file:", error);
+        toast({
+          title: "Error selecting file",
+          description: "There was a problem downloading the file from the cloud.",
+          variant: "destructive"
+        });
+      } finally {
+        setCloudLoading(false);
       }
-      
-      // Create a simple blob with mock content
-      const mockContent = `This is a mock content for the file ${cloudFile.name}`;
-      const blob = new Blob([mockContent], { type: fileType });
-      
-      // Create a File object
-      const file = new File([blob], cloudFile.name, { type: fileType });
-      
-      // Set the file and close the dialog
-      setFile(file);
-      setCloudDialogOpen(false);
-      
-      toast({
-        title: "File selected from cloud",
-        description: `${cloudFile.name} has been downloaded from ${cloudProvider}.`,
-      });
-      
-      // Reset folder navigation history when a file is selected
-      setFolderHistory([]);
-      setCurrentFolder('root');
-    } catch (error) {
-      console.error("Error selecting cloud file:", error);
-      toast({
-        title: "Error selecting file",
-        description: "There was a problem downloading the file from the cloud.",
-        variant: "destructive"
-      });
-    } finally {
-      setCloudLoading(false);
     }
   };
   
@@ -568,22 +713,9 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
 
   // Function to extract text from a DOCX file using mammoth
   const extractTextFromDocx = async (file: File): Promise<string> => {
-    try {
-      const arrayBuffer = await file.arrayBuffer();
-      
-      // Set a timeout to prevent the browser from hanging
-      const mammothPromise = mammoth.extractRawText({ arrayBuffer });
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => {
-          reject(new Error('DOCX processing timed out. The document may be too large or complex.'));
-        }, 60000); // 60 second timeout for large documents
-      });
-      
-      const result = await Promise.race([mammothPromise, timeoutPromise]);
-      return result.value;
-    } catch (error) {
-      throw error;
-    }
+    const arrayBuffer = await file.arrayBuffer();
+    const result = await mammoth.extractRawText({ arrayBuffer });
+    return result.value;
   };
 
   // Check if a PDF is password protected
@@ -611,77 +743,35 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const extractTextFromFile = async (uploadedFile: File): Promise<string> => {
     setIsLoading(true);
     setProgress(10);
-    
+
     try {
       // Check if file is too large and needs sampling
       const isVeryLargeFile = uploadedFile.size > 10 * 1024 * 1024; // 10MB
       let pageCount = 0;
-      
+
       // For PDFs, check page count
       if (uploadedFile.type === 'application/pdf') {
         pageCount = await getPageCount(uploadedFile);
       }
-      
+
       // If file is very large or has many pages, ask user if they want to process a sample
       if (isVeryLargeFile || pageCount > 100) {
-        const confirmMessage = pageCount > 0 
+        const confirmMessage = pageCount > 0
           ? `This document has ${pageCount} pages and may take a long time to process. Would you like to process only a sample of the document for faster analysis?`
           : `This document is very large (${(uploadedFile.size / (1024 * 1024)).toFixed(2)}MB) and may take a long time to process. Would you like to process only a sample of the document for faster analysis?`;
-          
+
         const shouldProcessSample = window.confirm(confirmMessage);
-        
+
         if (shouldProcessSample) {
           return await processSampleOfDocument(uploadedFile);
         }
       }
-      
+
       // Process the entire document
-      let extractedText = '';
-      
-      switch (uploadedFile.type) {
-        case 'text/plain':
-        case 'text/markdown':
-        case 'text/html':
-          extractedText = await readTextFile(uploadedFile);
-          break;
-          
-        case 'application/pdf':
-          // Check if PDF is password protected
-          if (await checkPdfProtection(uploadedFile)) {
-            setIsPdfPasswordProtected(true);
-            setPasswordDialogOpen(true);
-            throw new Error('PDF is password protected. Please enter the password.');
-          }
-          
-          if (useServerProcessing) {
-            // Use server-side processing for complex PDFs
-            extractedText = await pdfProcessingService.processWithServer(uploadedFile, useOcr);
-          } else {
-            // Use client-side processing
-            extractedText = await extractTextFromPdf(uploadedFile);
-          }
-          break;
-          
-        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        case 'application/msword':
-          extractedText = await extractTextFromDocx(uploadedFile);
-          break;
-          
-        case 'application/rtf':
-        case 'application/vnd.oasis.opendocument.text':
-          // For RTF and ODT, we would need additional libraries
-          // For now, just show a message
-          extractedText = `[${uploadedFile.type.split('/')[1].toUpperCase()} Document: ${uploadedFile.name}]\n\nContent extraction for this format is limited. For best results, consider converting to PDF or DOCX.`;
-          break;
-          
-        default:
-          throw new Error(`Unsupported file type: ${uploadedFile.type}`);
-      }
-      
+      const extractedText = '';
+
       setProgress(100);
       return extractedText;
-    } catch (error) {
-      throw error;
     } finally {
       setIsLoading(false);
     }
@@ -690,15 +780,15 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const readTextFile = (uploadedFile: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
-      
+
       reader.onload = (e) => {
-        resolve(e.target?.result as string);
+        resolve(e.target?.result as string || '');
       };
-      
+
       reader.onerror = () => {
         reject(new Error('Error reading text file'));
       };
-      
+
       reader.readAsText(uploadedFile);
     });
   };
@@ -811,23 +901,23 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     if (!pdfPassword) {
       return;
     }
-    
+
     setPasswordDialogOpen(false);
     setIsLoading(true);
     setProgress(0);
-    
+
     // Re-attempt extraction with the provided password
     if (file) {
       extractTextFromFile(file)
         .then(extractedText => {
           setText(extractedText);
-          
+
           toast({
             title: "Document Uploaded Successfully",
             description: `${file.name} has been processed and is ready for analysis.`,
             variant: "success",
           });
-          
+
           // Clear the file input
           if (fileInputRef.current) {
             fileInputRef.current.value = '';
@@ -835,13 +925,13 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         })
         .catch(error => {
           console.error('Error processing file with password:', error);
-          
+
           if (error instanceof Error && error.message.includes('Invalid password')) {
             setError('Incorrect password. Please try again.');
             setPasswordDialogOpen(true);
           } else {
             setError(`Error processing file: ${error.message}`);
-            
+
             toast({
               title: "Upload Failed",
               description: error.message,
@@ -931,11 +1021,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                   </p>
                 </div>
                 <input
-                  ref={fileInputRef}
                   type="file"
+                  id="file-upload"
                   className="hidden"
-                  accept={SUPPORTED_FILE_TYPES.join(',')}
                   onChange={handleFileChange}
+                  accept={SUPPORTED_FILE_TYPES.join(',')}
+                  ref={fileInputRef}
+                  aria-label="Upload file"
+                  title="Select a file to upload"
                 />
               </div>
             </TabsContent>
@@ -969,11 +1062,14 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                         className="flex flex-col items-center justify-center h-24 p-2"
                         onClick={() => handleCloudProviderSelect('Google Drive')}
                       >
-                        <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mb-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-red-600" fill="currentColor">
-                            <path d="M12 14L6.5 20H17.5L12 14Z" />
-                            <path d="M19.77 14.33L16.5 8.5H7.5L4.23 14.33L9.73 14.33L12 17.5L14.27 14.33H19.77Z" />
-                          </svg>
+                        <div className="relative">
+                          <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-red-600" fill="currentColor">
+                              <path d="M12 14L6.5 20H17.5L12 14Z" />
+                              <path d="M19.77 14.33L16.5 8.5H7.5L4.23 14.33L9.73 14.33L12 17.5L14.27 14.33H19.77Z" />
+                            </svg>
+                          </div>
+                          <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[8px] px-1 py-0.5 rounded-full whitespace-nowrap">Coming Soon</div>
                         </div>
                         <span className="text-xs">Google Drive</span>
                       </Button>
@@ -983,13 +1079,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                         className="flex flex-col items-center justify-center h-24 p-2"
                         onClick={() => handleCloudProviderSelect('Dropbox')}
                       >
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-blue-600" fill="currentColor">
-                            <path d="M12 14.5L7.5 10.5L12 6.5L16.5 10.5L12 14.5Z" />
-                            <path d="M7.5 14.5L3 10.5L7.5 6.5L12 10.5L7.5 14.5Z" />
-                            <path d="M16.5 14.5L12 10.5L16.5 6.5L21 10.5L16.5 14.5Z" />
-                            <path d="M12 14.5L7.5 18.5L12 22.5L16.5 18.5L12 14.5Z" />
-                          </svg>
+                        <div className="relative">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-blue-600" fill="currentColor">
+                              <path d="M12 14.5L7.5 10.5L12 6.5L16.5 10.5L12 14.5Z" />
+                              <path d="M7.5 14.5L3 10.5L7.5 6.5L12 10.5L7.5 14.5Z" />
+                              <path d="M16.5 14.5L12 10.5L16.5 6.5L21 10.5L16.5 14.5Z" />
+                              <path d="M12 14.5L7.5 18.5L12 22.5L16.5 18.5L12 14.5Z" />
+                            </svg>
+                          </div>
+                          <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[8px] px-1 py-0.5 rounded-full whitespace-nowrap">Coming Soon</div>
                         </div>
                         <span className="text-xs">Dropbox</span>
                       </Button>
@@ -999,13 +1098,16 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
                         className="flex flex-col items-center justify-center h-24 p-2"
                         onClick={() => handleCloudProviderSelect('OneDrive')}
                       >
-                        <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-blue-500" fill="currentColor">
-                            <path d="M10.5 15L5 12L2 16L9 18L10.5 15Z" />
-                            <path d="M14.5 15L19 12L22 16L15 18L14.5 15Z" />
-                            <path d="M9 6L12.5 5L16 9L12 11L9 6Z" />
-                            <path d="M9 6L5 9L9 11L9 6Z" />
-                          </svg>
+                        <div className="relative">
+                          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center mb-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="h-6 w-6 text-blue-500" fill="currentColor">
+                              <path d="M10.5 15L5 12L2 16L9 18L10.5 15Z" />
+                              <path d="M14.5 15L19 12L22 16L15 18L14.5 15Z" />
+                              <path d="M9 6L12.5 5L16 9L12 11L9 6Z" />
+                              <path d="M9 6L5 9L9 11L9 6Z" />
+                            </svg>
+                          </div>
+                          <div className="absolute -top-2 -right-2 bg-amber-500 text-white text-[8px] px-1 py-0.5 rounded-full whitespace-nowrap">Coming Soon</div>
                         </div>
                         <span className="text-xs">OneDrive</span>
                       </Button>

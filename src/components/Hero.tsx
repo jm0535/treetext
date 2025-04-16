@@ -42,7 +42,7 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
                 The Free Plagiarism, Grammar & Readability Checker
               </h1>
               <p className="text-xl text-muted-foreground">
-                Improve your writing with treeText's open-source alternative to Turnitin and Grammarly.
+                Improve your writing with treeText's professional open-source platform for academic and professional content.
               </p>
               <div className="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                 <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-2">Sign up for premium features!</h3>
@@ -94,8 +94,8 @@ const Hero: React.FC<HeroProps> = ({ onInputMethodChange }) => {
                 </span>
               </div>
               <div className="mt-3 flex items-center text-xs text-muted-foreground">
-                <span className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-2 py-1 rounded-md mr-2">
-                  New
+                <span className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 px-2 py-1 rounded-md mr-2">
+                  Coming Soon
                 </span>
                 <span>Upload files directly from Google Drive, Dropbox, and OneDrive</span>
               </div>
