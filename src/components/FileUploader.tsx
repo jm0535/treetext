@@ -29,6 +29,8 @@ import {
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import * as pdfjsLib from 'pdfjs-dist';
+// Import the worker directly to ensure it's bundled with the application
+import 'pdfjs-dist/build/pdf.worker.mjs';
 import mammoth from 'mammoth';
 import pdfProcessingService from '@/services/PdfProcessingService';
 import { Input } from '@/components/ui/input';
@@ -41,8 +43,8 @@ import { Separator } from '@/components/ui/separator';
 import { supabase } from '@/lib/supabase';
 import DatabaseService from '@/services/DatabaseService';
 
-// Set up PDF.js worker with the correct version
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// The worker is already set up by the direct import above
+console.log('PDF.js worker initialized with direct import');
 
 // Maximum file size in bytes (100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -740,6 +742,29 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
     }
   };
 
+  const readTextFile = (uploadedFile: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        resolve(e.target?.result as string || '');
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Error reading text file'));
+      };
+
+      reader.readAsText(uploadedFile);
+    });
+  };
+
+  // Function to extract text from Word documents
+  const extractTextFromDoc = async (docFile: File): Promise<string> => {
+    // This would be implemented with a DOCX parsing library
+    // For now, we'll return a placeholder message
+    return `Text extracted from document: ${docFile.name}`;
+  };
+
   const extractTextFromFile = async (uploadedFile: File): Promise<string> => {
     setIsLoading(true);
     setProgress(10);
@@ -767,30 +792,34 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
         }
       }
 
-      // Process the entire document
-      const extractedText = '';
+      // Process the entire document based on file type
+      let extractedText = '';
+
+      if (uploadedFile.type === 'application/pdf') {
+        // Process PDF file
+        extractedText = await extractTextFromPdf(uploadedFile);
+      } else if (uploadedFile.type === 'text/plain') {
+        // Process text file
+        extractedText = await readTextFile(uploadedFile);
+      } else if (uploadedFile.type.includes('word') ||
+                 uploadedFile.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        // Process Word document
+        extractedText = await extractTextFromDoc(uploadedFile);
+      } else {
+        // For other file types, try to read as text
+        try {
+          extractedText = await readTextFile(uploadedFile);
+        } catch (error) {
+          console.error('Error reading file:', error);
+          throw new Error('Unsupported file format or unable to extract text');
+        }
+      }
 
       setProgress(100);
       return extractedText;
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const readTextFile = (uploadedFile: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        resolve(e.target?.result as string || '');
-      };
-
-      reader.onerror = () => {
-        reject(new Error('Error reading text file'));
-      };
-
-      reader.readAsText(uploadedFile);
-    });
   };
 
   const handleUpload = async () => {

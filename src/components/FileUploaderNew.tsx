@@ -17,6 +17,8 @@ import {
 } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import * as pdfjsLib from 'pdfjs-dist';
+// Import the worker directly to ensure it's bundled with the application
+import 'pdfjs-dist/build/pdf.worker.mjs';
 import mammoth from 'mammoth';
 import pdfProcessingService from '@/services/PdfProcessingService';
 import { Input } from '@/components/ui/input';
@@ -24,8 +26,8 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 
-// Set up PDF.js worker with the correct version
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+// The worker is already set up by the direct import above
+console.log('PDF.js worker initialized with direct import');
 
 // Maximum file size in bytes (100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
