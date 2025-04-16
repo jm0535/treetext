@@ -4,7 +4,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Card, CardContent } from '@/components/ui/card';
 import { 
   Type, Upload, FileText, Check, AlertTriangle, BookOpen, 
-  Quote, Bookmark, ArrowRight, Search, Settings, Info
+  Quote, Bookmark, ArrowRight, Search, Settings, Info, Sparkles
 } from 'lucide-react';
 
 const UserGuidePage: React.FC = () => {

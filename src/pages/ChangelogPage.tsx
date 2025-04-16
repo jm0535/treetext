@@ -13,6 +13,18 @@ interface ChangelogItem {
 const ChangelogPage: React.FC = () => {
   const changelog: ChangelogItem[] = [
     {
+      date: 'April 16, 2025',
+      version: '1.3.1',
+      title: 'User Guide Bug Fix',
+      description: 'Fixed a critical bug in the User Guide page that was causing 404 errors',
+      changes: [
+        'Fixed missing Sparkles component import in UserGuidePage.tsx',
+        'Resolved "ReferenceError: Sparkles is not defined" error',
+        'Improved User Guide page stability and accessibility'
+      ],
+      commitId: 'x9y8z7w'
+    },
+    {
       date: 'April 10, 2025',
       version: '1.3.0',
       title: 'Cloud Storage Integration and Live Dashboard',
