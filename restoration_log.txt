@@ -1,0 +1,1147 @@
+SET
+SET
+SET
+ERROR:  role "anon" already exists
+ALTER ROLE
+ERROR:  role "authenticated" already exists
+ALTER ROLE
+ERROR:  role "authenticator" already exists
+ALTER ROLE
+ERROR:  role "dashboard_user" already exists
+ALTER ROLE
+ERROR:  role "pgbouncer" already exists
+ALTER ROLE
+ERROR:  role "postgres" already exists
+ALTER ROLE
+ERROR:  role "service_role" already exists
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+ERROR:  role "supabase_admin" already exists
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+ERROR:  role "supabase_auth_admin" already exists
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+CREATE ROLE
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+CREATE ROLE
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+CREATE ROLE
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+ERROR:  role "supabase_storage_admin" already exists
+ERROR:  must be superuser to alter superuser roles or change superuser attribute
+ALTER ROLE
+ALTER ROLE
+ERROR:  permission denied to set parameter "session_preload_libraries"
+ALTER ROLE
+ALTER ROLE
+ALTER ROLE
+ERROR:  must be superuser to alter superusers
+ERROR:  must be superuser to alter superusers
+ALTER ROLE
+ALTER ROLE
+ERROR:  permission denied to set parameter "log_statement"
+ALTER ROLE
+ERROR:  permission denied to set parameter "log_statement"
+NOTICE:  role "authenticator" is already a member of role "anon"
+GRANT ROLE
+ERROR:  must be superuser to set grantor
+NOTICE:  role "authenticator" is already a member of role "authenticated"
+GRANT ROLE
+ERROR:  must be superuser to set grantor
+ERROR:  must be superuser to set grantor
+ERROR:  must be superuser to set grantor
+ERROR:  must be superuser to set grantor
+GRANT ROLE
+ERROR:  must be superuser to set grantor
+NOTICE:  role "authenticator" is already a member of role "service_role"
+GRANT ROLE
+ERROR:  must be superuser to set grantor
+ERROR:  must be superuser to set grantor
+You are now connected to database "template1" as user "postgres".
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+You are now connected to database "postgres" as user "postgres".
+SET
+SET
+SET
+SET
+SET
+ set_config 
+------------
+ 
+(1 row)
+
+SET
+SET
+SET
+SET
+ERROR:  schema "auth" already exists
+ALTER SCHEMA
+ERROR:  schema "extensions" already exists
+ALTER SCHEMA
+ERROR:  schema "graphql" already exists
+ERROR:  must be member of role "supabase_admin"
+ERROR:  schema "graphql_public" already exists
+ALTER SCHEMA
+ERROR:  schema "pgbouncer" already exists
+ALTER SCHEMA
+ERROR:  schema "realtime" already exists
+ALTER SCHEMA
+ERROR:  schema "storage" already exists
+ALTER SCHEMA
+CREATE SCHEMA
+ERROR:  must be member of role "supabase_admin"
+CREATE EXTENSION
+COMMENT
+CREATE EXTENSION
+COMMENT
+CREATE EXTENSION
+COMMENT
+CREATE EXTENSION
+COMMENT
+ERROR:  could not open extension control file "/usr/share/postgresql/14/extension/supabase_vault.control": No such file or directory
+ERROR:  extension "supabase_vault" does not exist
+CREATE EXTENSION
+COMMENT
+CREATE TYPE
+ALTER TYPE
+CREATE TYPE
+ALTER TYPE
+CREATE TYPE
+ALTER TYPE
+CREATE TYPE
+ALTER TYPE
+CREATE TYPE
+ALTER TYPE
+ERROR:  permission denied for schema realtime
+ALTER TYPE
+ERROR:  permission denied for schema realtime
+ALTER TYPE
+ERROR:  permission denied for schema realtime
+ALTER TYPE
+ERROR:  permission denied for schema realtime
+ALTER TYPE
+ERROR:  permission denied for schema realtime
+ALTER TYPE
+ERROR:  function "email" already exists with same argument types
+ALTER FUNCTION
+COMMENT
+ERROR:  function "jwt" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "role" already exists with same argument types
+ALTER FUNCTION
+COMMENT
+ERROR:  function "uid" already exists with same argument types
+ALTER FUNCTION
+COMMENT
+ERROR:  function "grant_pg_cron_access" already exists with same argument types
+ERROR:  must be member of role "supabase_admin"
+COMMENT
+ERROR:  function "grant_pg_graphql_access" already exists with same argument types
+ALTER FUNCTION
+ERROR:  must be owner of function extensions.grant_pg_graphql_access
+ERROR:  function "grant_pg_net_access" already exists with same argument types
+ERROR:  must be member of role "supabase_admin"
+COMMENT
+ERROR:  function "pgrst_ddl_watch" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "pgrst_drop_watch" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "set_graphql_placeholder" already exists with same argument types
+ALTER FUNCTION
+ERROR:  must be owner of function extensions.set_graphql_placeholder
+ERROR:  permission denied for schema pgbouncer
+ERROR:  permission denied for schema pgbouncer
+CREATE FUNCTION
+ALTER FUNCTION
+CREATE FUNCTION
+ALTER FUNCTION
+CREATE FUNCTION
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ERROR:  function realtime.broadcast_changes(text, text, text, text, text, record, record, text) does not exist
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ERROR:  function realtime.send(jsonb, text, text, boolean) does not exist
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ALTER FUNCTION
+ERROR:  permission denied for schema realtime
+ERROR:  function realtime.topic() does not exist
+CREATE FUNCTION
+ALTER FUNCTION
+ERROR:  function "extension" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "filename" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "foldername" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "get_size_by_bucket" already exists with same argument types
+ALTER FUNCTION
+CREATE FUNCTION
+ALTER FUNCTION
+CREATE FUNCTION
+ALTER FUNCTION
+CREATE FUNCTION
+ALTER FUNCTION
+ERROR:  function "search" already exists with same argument types
+ALTER FUNCTION
+ERROR:  function "update_updated_at_column" already exists with same argument types
+ALTER FUNCTION
+SET
+SET
+ERROR:  relation "audit_log_entries" already exists
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+COMMENT
+ERROR:  relation "identities" already exists
+ALTER TABLE
+COMMENT
+ERROR:  column "email" of relation "auth.identities" does not exist
+ERROR:  relation "instances" already exists
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+ERROR:  relation "refresh_tokens" already exists
+ALTER TABLE
+COMMENT
+ERROR:  relation "refresh_tokens_id_seq" already exists
+ALTER TABLE
+ALTER SEQUENCE
+CREATE TABLE
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+COMMENT
+ERROR:  relation "schema_migrations" already exists
+ALTER TABLE
+COMMENT
+ERROR:  relation "sessions" already exists
+ALTER TABLE
+COMMENT
+ERROR:  column "not_after" of relation "auth.sessions" does not exist
+CREATE TABLE
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+COMMENT
+COMMENT
+ERROR:  relation "users" already exists
+ALTER TABLE
+COMMENT
+ERROR:  column "is_sso_user" of relation "auth.users" does not exist
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  permission denied for schema realtime
+LINE 1: CREATE TABLE realtime.messages (
+                     ^
+ERROR:  relation "realtime.messages" does not exist
+ERROR:  permission denied for schema realtime
+LINE 1: CREATE TABLE realtime.schema_migrations (
+                     ^
+ERROR:  must be owner of table schema_migrations
+ERROR:  permission denied for schema realtime
+LINE 1: CREATE TABLE realtime.subscription (
+                     ^
+ERROR:  must be owner of table subscription
+ERROR:  must be owner of table subscription
+ERROR:  relation "buckets" already exists
+ALTER TABLE
+COMMENT
+ERROR:  relation "migrations" already exists
+ALTER TABLE
+ERROR:  relation "objects" already exists
+ALTER TABLE
+COMMENT
+CREATE TABLE
+ALTER TABLE
+CREATE TABLE
+ALTER TABLE
+ALTER TABLE
+COPY 329
+COPY 0
+ERROR:  column "provider_id" of relation "identities" does not exist
+invalid command \.
+ERROR:  syntax error at or near "59529"
+LINE 1: 59529d0b-28e5-4345-85c1-e73e7e7bf49e 59529d0b-28e5-4345-85c1...
+        ^
+invalid command \.
+COPY 9
+COPY 0
+COPY 0
+COPY 2
+ERROR:  insert or update on table "refresh_tokens" violates foreign key constraint "refresh_tokens_session_id_fkey"
+DETAIL:  Key (session_id)=(2e98faed-7947-4178-a560-883cd020f00f) is not present in table "sessions".
+COPY 0
+COPY 0
+ERROR:  duplicate key value violates unique constraint "schema_migrations_pkey"
+DETAIL:  Key (version)=(20171026211738) already exists.
+CONTEXT:  COPY schema_migrations, line 1
+ERROR:  column "factor_id" of relation "sessions" does not exist
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \.
+ERROR:  syntax error at or near "84310508"
+LINE 1: 84310508-54f4-474b-97f6-d9510df1abd2 4b9e539a-12e1-4f6b-916c...
+        ^
+invalid command \.
+COPY 0
+ERROR:  column "is_sso_user" of relation "users" does not exist
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \.
+ERROR:  syntax error at or near "00000000"
+LINE 1: 00000000-0000-0000-0000-000000000000 be947d25-ac59-4ab9-bda8...
+        ^
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \N
+invalid command \.
+ERROR:  syntax error at or near "a66a2c72"
+LINE 1: a66a2c72-872c-424e-a729-9a7e7cae7983 59529d0b-28e5-4345-85c1...
+        ^
+invalid command \.
+COPY 0
+ERROR:  duplicate key value violates unique constraint "schema_migrations_pkey"
+DETAIL:  Key (version)=(20211116024918) already exists.
+CONTEXT:  COPY schema_migrations, line 1
+COPY 0
+ERROR:  column "avif_autodetection" of relation "buckets" does not exist
+invalid command \.
+ERROR:  duplicate key value violates unique constraint "migrations_name_key"
+DETAIL:  Key (name)=(create-migrations-table) already exists.
+CONTEXT:  COPY migrations, line 1
+ERROR:  column "version" of relation "objects" does not exist
+invalid command \.
+COPY 0
+COPY 0
+ERROR:  relation "vault.secrets" does not exist
+invalid command \.
+ setval 
+--------
+    168
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ setval 
+--------
+      1
+(1 row)
+
+ALTER TABLE
+ERROR:  multiple primary keys for table "audit_log_entries" are not allowed
+ALTER TABLE
+ERROR:  multiple primary keys for table "identities" are not allowed
+ERROR:  column "provider_id" named in key does not exist
+ERROR:  multiple primary keys for table "instances" are not allowed
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  multiple primary keys for table "refresh_tokens" are not allowed
+ERROR:  relation "refresh_tokens_token_unique" already exists
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  multiple primary keys for table "schema_migrations" are not allowed
+ERROR:  multiple primary keys for table "sessions" are not allowed
+ALTER TABLE
+ALTER TABLE
+ERROR:  relation "users_phone_key" already exists
+ERROR:  multiple primary keys for table "users" are not allowed
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  relation "realtime.messages" does not exist
+ERROR:  must be owner of table subscription
+ERROR:  must be owner of table schema_migrations
+ERROR:  multiple primary keys for table "buckets" are not allowed
+ERROR:  relation "migrations_name_key" already exists
+ERROR:  multiple primary keys for table "migrations" are not allowed
+ERROR:  multiple primary keys for table "objects" are not allowed
+ALTER TABLE
+ALTER TABLE
+ERROR:  relation "audit_logs_instance_id_idx" already exists
+ERROR:  relation "confirmation_token_idx" already exists
+ERROR:  relation "email_change_token_current_idx" already exists
+ERROR:  relation "email_change_token_new_idx" already exists
+CREATE INDEX
+CREATE INDEX
+ERROR:  column "email" does not exist
+ERROR:  relation "auth.identities_email_idx" does not exist
+ERROR:  relation "identities_user_id_idx" already exists
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ERROR:  relation "reauthentication_token_idx" already exists
+ERROR:  relation "recovery_token_idx" already exists
+ERROR:  relation "refresh_tokens_instance_id_idx" already exists
+ERROR:  relation "refresh_tokens_instance_id_user_id_idx" already exists
+ERROR:  relation "refresh_tokens_parent_idx" already exists
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ERROR:  column "not_after" does not exist
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+ERROR:  column "is_sso_user" does not exist
+LINE 1: ...tial_key ON auth.users USING btree (email) WHERE (is_sso_use...
+                                                             ^
+ERROR:  relation "auth.users_email_partial_key" does not exist
+ERROR:  relation "users_instance_id_email_idx" already exists
+ERROR:  relation "users_instance_id_idx" already exists
+ERROR:  column "is_anonymous" does not exist
+CREATE INDEX
+CREATE INDEX
+ERROR:  must be owner of table subscription
+ERROR:  must be owner of table subscription
+ERROR:  relation "bname" already exists
+ERROR:  relation "bucketid_objname" already exists
+CREATE INDEX
+CREATE INDEX
+ERROR:  relation "name_prefix_search" already exists
+CREATE TRIGGER
+ERROR:  trigger "tr_check_filters" for relation "subscription" already exists
+ERROR:  trigger "update_objects_updated_at" for relation "objects" already exists
+ERROR:  constraint "identities_user_id_fkey" for relation "identities" already exists
+ERROR:  insert or update on table "mfa_amr_claims" violates foreign key constraint "mfa_amr_claims_session_id_fkey"
+DETAIL:  Key (session_id)=(ad8ebe27-668e-4bd5-a91c-1c8ab8a84f42) is not present in table "sessions".
+ALTER TABLE
+ALTER TABLE
+ERROR:  insert or update on table "one_time_tokens" violates foreign key constraint "one_time_tokens_user_id_fkey"
+DETAIL:  Key (user_id)=(20e583cb-c528-40c1-a13f-ed5a06037eb1) is not present in table "users".
+ERROR:  constraint "refresh_tokens_session_id_fkey" for relation "refresh_tokens" already exists
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  constraint "sessions_user_id_fkey" for relation "sessions" already exists
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  constraint "objects_bucketId_fkey" for relation "objects" already exists
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+CREATE POLICY
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  relation "realtime.messages" does not exist
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ERROR:  publication "supabase_realtime" already exists
+ALTER PUBLICATION
+ALTER PUBLICATION
+WARNING:  no privileges were granted for "auth"
+GRANT
+WARNING:  no privileges were granted for "auth"
+GRANT
+WARNING:  no privileges were granted for "auth"
+GRANT
+WARNING:  no privileges were granted for "auth"
+GRANT
+WARNING:  no privileges were granted for "auth"
+GRANT
+WARNING:  no privileges were granted for "auth"
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+WARNING:  no privileges were granted for "realtime"
+GRANT
+WARNING:  no privileges were granted for "realtime"
+GRANT
+WARNING:  no privileges were granted for "realtime"
+GRANT
+WARNING:  no privileges were granted for "realtime"
+GRANT
+WARNING:  no privileges were granted for "realtime"
+GRANT
+WARNING:  no privileges were granted for "storage"
+GRANT
+WARNING:  no privileges were granted for "storage"
+GRANT
+WARNING:  no privileges were granted for "storage"
+GRANT
+WARNING:  no privileges were granted for "storage"
+GRANT
+WARNING:  no privileges were granted for "storage"
+GRANT
+WARNING:  no privileges were granted for "storage"
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+REVOKE
+GRANT
+GRANT
+GRANT
+WARNING:  no privileges were granted for "grant_pg_graphql_access"
+GRANT
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+WARNING:  no privileges were granted for "pgrst_ddl_watch"
+GRANT
+WARNING:  no privileges were granted for "pgrst_drop_watch"
+GRANT
+WARNING:  no privileges were granted for "set_graphql_placeholder"
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+ERROR:  permission denied for schema pgbouncer
+ERROR:  permission denied for schema pgbouncer
+ERROR:  permission denied for schema pgbouncer
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+WARNING:  no privileges were granted for "apply_rls"
+GRANT
+WARNING:  no privileges were granted for "apply_rls"
+GRANT
+WARNING:  no privileges were granted for "apply_rls"
+GRANT
+WARNING:  no privileges were granted for "apply_rls"
+GRANT
+WARNING:  no privileges were granted for "apply_rls"
+GRANT
+WARNING:  no privileges were granted for "apply_rls"
+GRANT
+ERROR:  function realtime.broadcast_changes(text, text, text, text, text, record, record, text) does not exist
+ERROR:  function realtime.broadcast_changes(text, text, text, text, text, record, record, text) does not exist
+WARNING:  no privileges were granted for "build_prepared_statement_sql"
+GRANT
+WARNING:  no privileges were granted for "build_prepared_statement_sql"
+GRANT
+WARNING:  no privileges were granted for "build_prepared_statement_sql"
+GRANT
+WARNING:  no privileges were granted for "build_prepared_statement_sql"
+GRANT
+WARNING:  no privileges were granted for "build_prepared_statement_sql"
+GRANT
+WARNING:  no privileges were granted for "build_prepared_statement_sql"
+GRANT
+WARNING:  no privileges were granted for "cast"
+GRANT
+WARNING:  no privileges were granted for "cast"
+GRANT
+WARNING:  no privileges were granted for "cast"
+GRANT
+WARNING:  no privileges were granted for "cast"
+GRANT
+WARNING:  no privileges were granted for "cast"
+GRANT
+WARNING:  no privileges were granted for "cast"
+GRANT
+WARNING:  no privileges were granted for "check_equality_op"
+GRANT
+WARNING:  no privileges were granted for "check_equality_op"
+GRANT
+WARNING:  no privileges were granted for "check_equality_op"
+GRANT
+WARNING:  no privileges were granted for "check_equality_op"
+GRANT
+WARNING:  no privileges were granted for "check_equality_op"
+GRANT
+WARNING:  no privileges were granted for "check_equality_op"
+GRANT
+WARNING:  no privileges were granted for "is_visible_through_filters"
+GRANT
+WARNING:  no privileges were granted for "is_visible_through_filters"
+GRANT
+WARNING:  no privileges were granted for "is_visible_through_filters"
+GRANT
+WARNING:  no privileges were granted for "is_visible_through_filters"
+GRANT
+WARNING:  no privileges were granted for "is_visible_through_filters"
+GRANT
+WARNING:  no privileges were granted for "is_visible_through_filters"
+GRANT
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+ERROR:  function realtime.list_changes(name, name, integer, integer) does not exist
+WARNING:  no privileges were granted for "quote_wal2json"
+GRANT
+WARNING:  no privileges were granted for "quote_wal2json"
+GRANT
+WARNING:  no privileges were granted for "quote_wal2json"
+GRANT
+WARNING:  no privileges were granted for "quote_wal2json"
+GRANT
+WARNING:  no privileges were granted for "quote_wal2json"
+GRANT
+WARNING:  no privileges were granted for "quote_wal2json"
+GRANT
+ERROR:  function realtime.send(jsonb, text, text, boolean) does not exist
+ERROR:  function realtime.send(jsonb, text, text, boolean) does not exist
+WARNING:  no privileges were granted for "subscription_check_filters"
+GRANT
+WARNING:  no privileges were granted for "subscription_check_filters"
+GRANT
+WARNING:  no privileges were granted for "subscription_check_filters"
+GRANT
+WARNING:  no privileges were granted for "subscription_check_filters"
+GRANT
+WARNING:  no privileges were granted for "subscription_check_filters"
+GRANT
+WARNING:  no privileges were granted for "subscription_check_filters"
+GRANT
+WARNING:  no privileges were granted for "to_regrole"
+GRANT
+WARNING:  no privileges were granted for "to_regrole"
+GRANT
+WARNING:  no privileges were granted for "to_regrole"
+GRANT
+WARNING:  no privileges were granted for "to_regrole"
+GRANT
+WARNING:  no privileges were granted for "to_regrole"
+GRANT
+WARNING:  no privileges were granted for "to_regrole"
+GRANT
+ERROR:  function realtime.topic() does not exist
+ERROR:  function realtime.topic() does not exist
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+ERROR:  function vault._crypto_aead_det_decrypt(bytea, bytea, bigint, bytea, bytea) does not exist
+ERROR:  function vault._crypto_aead_det_decrypt(bytea, bytea, bigint, bytea, bytea) does not exist
+ERROR:  function vault.create_secret(text, text, text, uuid) does not exist
+ERROR:  function vault.create_secret(text, text, text, uuid) does not exist
+ERROR:  function vault.update_secret(uuid, text, text, text, uuid) does not exist
+ERROR:  function vault.update_secret(uuid, text, text, text, uuid) does not exist
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+ERROR:  relation "realtime.messages" does not exist
+ERROR:  relation "realtime.messages" does not exist
+ERROR:  relation "realtime.messages" does not exist
+ERROR:  relation "realtime.messages" does not exist
+ERROR:  relation "realtime.messages" does not exist
+WARNING:  no privileges were granted for "schema_migrations"
+GRANT
+WARNING:  no privileges were granted for "schema_migrations"
+GRANT
+WARNING:  no privileges were granted for "schema_migrations"
+GRANT
+WARNING:  no privileges were granted for "schema_migrations"
+GRANT
+WARNING:  no privileges were granted for "schema_migrations"
+GRANT
+WARNING:  no privileges were granted for "schema_migrations"
+GRANT
+WARNING:  no privileges were granted for "subscription"
+GRANT
+WARNING:  no privileges were granted for "subscription"
+GRANT
+WARNING:  no privileges were granted for "subscription"
+GRANT
+WARNING:  no privileges were granted for "subscription"
+GRANT
+WARNING:  no privileges were granted for "subscription"
+GRANT
+WARNING:  no privileges were granted for "subscription"
+GRANT
+WARNING:  no privileges were granted for "subscription_id_seq"
+GRANT
+WARNING:  no privileges were granted for "subscription_id_seq"
+GRANT
+WARNING:  no privileges were granted for "subscription_id_seq"
+GRANT
+WARNING:  no privileges were granted for "subscription_id_seq"
+GRANT
+WARNING:  no privileges were granted for "subscription_id_seq"
+GRANT
+WARNING:  no privileges were granted for "subscription_id_seq"
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+ERROR:  relation "vault.secrets" does not exist
+ERROR:  relation "vault.secrets" does not exist
+ERROR:  relation "vault.decrypted_secrets" does not exist
+ERROR:  relation "vault.decrypted_secrets" does not exist
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ERROR:  must be member of role "supabase_admin"
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ERROR:  permission denied to create event trigger "issue_graphql_placeholder"
+HINT:  Must be superuser to create an event trigger.
+ALTER EVENT TRIGGER
+ERROR:  permission denied to create event trigger "issue_pg_cron_access"
+HINT:  Must be superuser to create an event trigger.
+ALTER EVENT TRIGGER
+ERROR:  permission denied to create event trigger "issue_pg_graphql_access"
+HINT:  Must be superuser to create an event trigger.
+ALTER EVENT TRIGGER
+ERROR:  permission denied to create event trigger "issue_pg_net_access"
+HINT:  Must be superuser to create an event trigger.
+ALTER EVENT TRIGGER
+ERROR:  permission denied to create event trigger "pgrst_ddl_watch"
+HINT:  Must be superuser to create an event trigger.
+ALTER EVENT TRIGGER
+ERROR:  permission denied to create event trigger "pgrst_drop_watch"
+HINT:  Must be superuser to create an event trigger.
+ALTER EVENT TRIGGER

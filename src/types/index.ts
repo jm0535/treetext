@@ -8,12 +8,33 @@
 export interface AnalysisResult {
   id: string;
   originalText: string;
+  text?: string; // Legacy/Compat
+  title?: string;
   plagiarismScore: number;
   grammarScore: number;
   readabilityScore: number;
   plagiarismInstances: PlagiarismInstance[];
   grammarIssues: GrammarIssue[];
   readabilityMetrics: ReadabilityMetrics;
+  suggestions?: string[];
+  settings?: AnalysisSettings;
+  date: Date;
+}
+
+/**
+ * File analysis result interface
+ */
+export interface FileAnalysisResult {
+  id: string;
+  fileName: string;
+  fileType: string;
+  fileSize: number;
+  fileUrl?: string;
+  plagiarismScore?: number;
+  grammarScore?: number;
+  readabilityScore?: number;
+  analysisSettings?: AnalysisSettings;
+  results?: any; // JSON structure depending on analysis
   date: Date;
 }
 
@@ -61,7 +82,7 @@ export interface ReadabilityMetrics {
   smogIndex?: number;
   automatedReadabilityIndex?: number;
   overallReadabilityScore?: number;
-  
+
   // Text statistics
   avgSentenceLength: number;
   avgWordLength: number;
@@ -72,7 +93,7 @@ export interface ReadabilityMetrics {
   totalSyllables?: number;
   totalParagraphs: number;
   readingTime: number; // in minutes
-  
+
   // Enhanced analysis
   audienceLevel?: string; // Target audience education level
   complexityLevel?: string; // Text complexity categorization
@@ -86,7 +107,7 @@ export interface ReadabilityMetrics {
 export type LanguageModelCategory = 'general' | 'academic' | 'business' | 'specialized';
 
 // Language model types
-export type LanguageModelType = 
+export type LanguageModelType =
   // General models
   'standard' | 'creative' |
   // Academic models
@@ -131,13 +152,13 @@ export interface UsageLimit {
   dailyAnalysisCount: number;       // Current count of analyses today
   dailyTokenLimit: number;          // Maximum number of tokens per day
   dailyTokenCount: number;          // Current count of tokens used today
-  
+
   // Monthly limits
   monthlyAnalysisLimit: number;     // Maximum number of analyses per month
   monthlyAnalysisCount: number;     // Current count of analyses this month
   monthlyTokenLimit: number;        // Maximum number of tokens per month
   monthlyTokenCount: number;        // Current count of tokens used this month
-  
+
   // Last reset timestamps
   lastDailyReset: string;           // ISO date string of last daily reset
   lastMonthlyReset: string;         // ISO date string of last monthly reset
@@ -171,7 +192,7 @@ export interface ApiResponse<T> {
  */
 export class ApiError extends Error {
   statusCode: number;
-  
+
   constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;

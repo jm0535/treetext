@@ -1,75 +1,54 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import { User, useAuth0 } from '@auth0/auth0-react';
 
 type CloudAuthStatus = {
   [provider: string]: boolean;
 };
 
 type AuthContextType = {
-  session: Session | null;
-  user: User | null;
+  user: User | undefined;
   isLoading: boolean;
+  isAuthenticated: boolean;
   cloudAuth: CloudAuthStatus;
-  setUser: React.Dispatch<React.SetStateAction<User | null>>;
-  signIn: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: { user: User | null; session: Session | null } | null;
-  }>;
-  signUp: (email: string, password: string) => Promise<{
-    error: Error | null;
-    data: { user: User | null; session: Session | null } | null;
-  }>;
-  signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error: Error | null }>;
+  loginWithRedirect: () => Promise<void>;
+  logout: () => void;
+  getAccessToken: () => Promise<string>;
   updateCloudAuth: (provider: string, status: boolean) => void;
   getCloudToken: (provider: string) => string | null;
+  // Legacy compatibility (stubbed)
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  resetPassword: (email: string) => Promise<{ error?: Error }>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [session, setSession] = useState<Session | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    logout: auth0Logout,
+    getAccessTokenSilently
+  } = useAuth0();
+
   const [cloudAuth, setCloudAuth] = useState<CloudAuthStatus>({});
 
-  useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-
-  const signIn = (email: string, password: string) => {
-    return supabase.auth.signInWithPassword({ email, password });
+  // Wrapper for logout
+  const logout = () => {
+    auth0Logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
-  const signUp = (email: string, password: string) => {
-    return supabase.auth.signUp({ email, password });
-  };
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-  };
-
-  const resetPassword = async (email: string) => {
-    return supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
+  // Wrapper to get access token for API calls
+  const getAccessToken = async (): Promise<string> => {
+    try {
+      return await getAccessTokenSilently();
+    } catch (error) {
+      console.error("Error getting access token", error);
+      return "";
+    }
   };
 
   // Load cloud authentication status from localStorage on mount
@@ -93,7 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Verify origin for security
       if (event.origin !== window.location.origin) return;
 
-      const { type, provider, accessToken } = event.data;
+      const { type, provider } = event.data;
 
       // Handle the new standardized AUTH_SUCCESS message type
       if (type === 'AUTH_SUCCESS' && provider) {
@@ -139,18 +118,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Stubs for legacy support during refactor
+  const signIn = async () => { await loginWithRedirect(); };
+  const signUp = async () => { await loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } }); };
+  const signOut = async () => { logout(); };
+  const resetPassword = async () => { return { error: new Error("Use Auth0 dashboard") }; };
+
   const value = {
-    session,
     user,
+    isAuthenticated,
     isLoading,
     cloudAuth,
-    setUser,
+    loginWithRedirect,
+    logout,
+    getAccessToken,
+    updateCloudAuth,
+    getCloudToken,
     signIn,
     signUp,
     signOut,
-    resetPassword,
-    updateCloudAuth,
-    getCloudToken
+    resetPassword
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

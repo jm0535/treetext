@@ -7,7 +7,7 @@ import { FileText, BarChart2, Settings, User, Clock, Star, Home, Loader2, Trendi
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/PageHeader';
 import DatabaseService from '@/services/DatabaseService';
-import { AnalysisResult } from '@/types';
+import { AnalysisResult, FileAnalysisResult } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -52,16 +52,16 @@ interface RecommendationItem {
 }
 
 const DashboardPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, getAccessToken, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [recentAnalyses, setRecentAnalyses] = useState<AnalysisResult[]>([]);
-  const [recentFileAnalyses, setRecentFileAnalyses] = useState<any[]>([]);
+  const [recentFileAnalyses, setRecentFileAnalyses] = useState<FileAnalysisResult[]>([]);
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [activeFilter, setActiveFilter] = useState<'all' | 'text' | 'file'>('all');
   const [weeklyActivity, setWeeklyActivity] = useState<WeeklyActivity[]>([]);
   const [recommendations, setRecommendations] = useState<RecommendationItem[]>([]);
-  
+
   // Format date for last login
   const formatDate = (timestamp: string | null) => {
     if (!timestamp) return 'N/A';
@@ -75,7 +75,7 @@ const DashboardPage: React.FC = () => {
   };
 
   // Helper function to format activity items
-  const formatActivityItem = (item: any, type: 'text' | 'file'): ActivityItem => {
+  const formatActivityItem = (item: AnalysisResult | FileAnalysisResult, type: 'text' | 'file'): ActivityItem => {
     return {
       id: item.id,
       title: type === 'text' ? (item.title || 'Untitled Analysis') : (item.fileName || 'Untitled File'),
@@ -84,17 +84,17 @@ const DashboardPage: React.FC = () => {
       grammarScore: item.grammarScore,
       readabilityScore: item.readabilityScore,
       plagiarismScore: item.plagiarismScore,
-      fileType: type === 'file' ? item.fileType : undefined,
-      fileName: type === 'file' ? item.fileName : undefined
+      fileType: type === 'file' ? (item as FileAnalysisResult).fileType : undefined,
+      fileName: type === 'file' ? (item as FileAnalysisResult).fileName : undefined
     };
   };
 
   // Calculate weekly activity data
-  const calculateWeeklyActivity = (textAnalyses: AnalysisResult[], fileAnalyses: any[]) => {
+  const calculateWeeklyActivity = (textAnalyses: AnalysisResult[], fileAnalyses: FileAnalysisResult[]) => {
     const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
     const today = new Date();
     const weeklyData: WeeklyActivity[] = [];
-    
+
     // Initialize with zero counts for the past 7 days
     for (let i = 6; i >= 0; i--) {
       const date = new Date();
@@ -104,27 +104,27 @@ const DashboardPage: React.FC = () => {
         count: 0
       });
     }
-    
+
     // Count analyses for each day
     const allAnalyses = [...textAnalyses, ...fileAnalyses];
     allAnalyses.forEach(analysis => {
       const analysisDate = new Date(analysis.date);
       const daysDiff = Math.floor((today.getTime() - analysisDate.getTime()) / (1000 * 60 * 60 * 24));
-      
+
       if (daysDiff >= 0 && daysDiff < 7) {
         weeklyData[6 - daysDiff].count += 1;
       }
     });
-    
+
     return weeklyData;
   };
 
   // Generate personalized recommendations based on user stats
   const generateRecommendations = (stats: UserStats | null): RecommendationItem[] => {
     const recommendations: RecommendationItem[] = [];
-    
+
     if (!stats) return recommendations;
-    
+
     // Recommendation for low grammar score
     if (stats.avgGrammarScore < 70) {
       recommendations.push({
@@ -136,7 +136,7 @@ const DashboardPage: React.FC = () => {
         type: 'tip'
       });
     }
-    
+
     // Recommendation for infrequent usage
     if (stats.totalAnalyses < 5) {
       recommendations.push({
@@ -148,7 +148,7 @@ const DashboardPage: React.FC = () => {
         type: 'info'
       });
     }
-    
+
     // Recommendation for readability improvement
     if (stats.avgReadabilityScore < 65) {
       recommendations.push({
@@ -160,7 +160,7 @@ const DashboardPage: React.FC = () => {
         type: 'tip'
       });
     }
-    
+
     // Always add at least one recommendation
     if (recommendations.length === 0) {
       recommendations.push({
@@ -172,31 +172,45 @@ const DashboardPage: React.FC = () => {
         type: 'info'
       });
     }
-    
+
     return recommendations.slice(0, 2); // Limit to 2 recommendations
   };
+
+
+  // ... (leaving others)
+
+  // ...
 
   // Load user data from database
   useEffect(() => {
     const loadUserData = async () => {
+
+      if (!isAuthenticated || !user) {
+         setLoading(false);
+         return;
+      }
+
       setLoading(true);
       try {
+        const token = await getAccessToken();
+        if (!token) throw new Error("No access token");
+
         // Fetch recent text analyses
-        const textAnalyses = await DatabaseService.getTextAnalysisHistory(10); // Get more for weekly activity
+        const textAnalyses = await DatabaseService.getTextAnalysisHistory(token, 10);
         setRecentAnalyses(textAnalyses);
-        
+
         // Fetch recent file uploads
-        const fileAnalyses = await DatabaseService.getFileAnalysisHistory(10); // Get more for weekly activity
+        const fileAnalyses = await DatabaseService.getFileAnalysisHistory(token, 10);
         setRecentFileAnalyses(fileAnalyses);
-        
+
         // Fetch user statistics
-        const stats = await DatabaseService.getUserDashboardStats();
+        const stats = await DatabaseService.getUserDashboardStats(token);
         setUserStats(stats);
-        
+
         // Calculate weekly activity
         const weeklyData = calculateWeeklyActivity(textAnalyses, fileAnalyses);
         setWeeklyActivity(weeklyData);
-        
+
         // Generate personalized recommendations
         const recs = generateRecommendations(stats);
         setRecommendations(recs);
@@ -206,13 +220,9 @@ const DashboardPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
-    if (user) {
-      loadUserData();
-    } else {
-      setLoading(false);
-    }
-  }, [user]);
+
+    loadUserData();
+  }, [user, isAuthenticated, getAccessToken, setRecentFileAnalyses]);
 
   // Combine text and file analyses for recent activity
   const combinedRecentActivity = [...recentAnalyses, ...recentFileAnalyses]
@@ -220,16 +230,16 @@ const DashboardPage: React.FC = () => {
     .slice(0, 5);
 
   const lastLoginTime = user?.last_sign_in_at ? formatDate(user.last_sign_in_at) : 'First login';
-  
+
   // Helper function to render activity item
-  const renderActivityItem = (item: AnalysisResult | Record<string, any>, type: 'text' | 'file') => {
+  const renderActivityItem = (item: AnalysisResult | FileAnalysisResult, type: 'text' | 'file') => {
     const isFileAnalysis = type === 'file';
     const title = isFileAnalysis ? item.fileName || 'Untitled File' : item.title || 'Untitled Analysis';
     const path = isFileAnalysis ? `/file-analysis/${item.id}` : `/analysis/${item.id}`;
-    
+
     return (
-      <div 
-        key={item.id} 
+      <div
+        key={item.id}
         className="flex items-start space-x-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
         onClick={() => navigate(path)}
       >
@@ -299,8 +309,8 @@ const DashboardPage: React.FC = () => {
         ]}
         showBackButton={false}
         actions={
-          <Button 
-            onClick={() => navigate('/')} 
+          <Button
+            onClick={() => navigate('/')}
             className="bg-primary hover:bg-primary/90"
           >
             <FileText className="mr-2 h-4 w-4" />
@@ -347,7 +357,7 @@ const DashboardPage: React.FC = () => {
               formatDate(user?.last_sign_in_at || "").split(' at')[0]
             )}
           </div>
-          
+
           {/* Main Dashboard Content */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Activity & Progress Section */}
@@ -370,9 +380,9 @@ const DashboardPage: React.FC = () => {
                     {weeklyActivity.map((day, index) => (
                       <div key={index} className="flex flex-col items-center flex-1">
                         <div className="w-full flex-1 flex flex-col-reverse">
-                          <div 
-                            className="w-full bg-primary/80 rounded-t-sm" 
-                            style={{ 
+                          <div
+                            className="w-full bg-primary/80 rounded-t-sm"
+                            style={{
                               height: `${Math.max(15, (day.count / Math.max(...weeklyActivity.map(d => d.count), 1)) * 120)}px`,
                               minHeight: day.count > 0 ? '15px' : '4px',
                               backgroundColor: day.count > 0 ? undefined : 'var(--muted)'
@@ -386,35 +396,35 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Recent Activity with Filters */}
               <Card>
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-lg">Recent Activity</CardTitle>
                     <div className="flex items-center space-x-2">
-                      <Button 
-                        variant={activeFilter === 'all' ? 'default' : 'ghost'} 
-                        size="sm" 
-                        className="h-8 gap-1" 
+                      <Button
+                        variant={activeFilter === 'all' ? 'default' : 'ghost'}
+                        size="sm"
+                        className="h-8 gap-1"
                         onClick={() => setActiveFilter('all')}
                       >
                         <Filter className="h-4 w-4" />
                         <span>All</span>
                       </Button>
-                      <Button 
-                        variant={activeFilter === 'text' ? 'default' : 'ghost'} 
-                        size="sm" 
-                        className="h-8 gap-1" 
+                      <Button
+                        variant={activeFilter === 'text' ? 'default' : 'ghost'}
+                        size="sm"
+                        className="h-8 gap-1"
                         onClick={() => setActiveFilter('text')}
                       >
                         <Type className="h-4 w-4" />
                         <span>Text</span>
                       </Button>
-                      <Button 
-                        variant={activeFilter === 'file' ? 'default' : 'ghost'} 
-                        size="sm" 
-                        className="h-8 gap-1" 
+                      <Button
+                        variant={activeFilter === 'file' ? 'default' : 'ghost'}
+                        size="sm"
+                        className="h-8 gap-1"
                         onClick={() => setActiveFilter('file')}
                       >
                         <FileText className="h-4 w-4" />
@@ -436,12 +446,12 @@ const DashboardPage: React.FC = () => {
                     ) : (
                       <div className="divide-y">
                         {/* Text analyses */}
-                        {activeFilter !== 'file' && recentAnalyses.map(analysis => 
+                        {activeFilter !== 'file' && recentAnalyses.map(analysis =>
                           renderActivityItem(analysis, 'text')
                         )}
-                        
+
                         {/* File analyses */}
-                        {activeFilter !== 'text' && recentFileAnalyses.map(file => 
+                        {activeFilter !== 'text' && recentFileAnalyses.map(file =>
                           renderActivityItem(file, 'file')
                         )}
                       </div>
@@ -455,7 +465,7 @@ const DashboardPage: React.FC = () => {
                 </CardFooter>
               </Card>
             </div>
-            
+
             {/* Right Sidebar */}
             <div className="space-y-6">
               {/* User Profile Card */}
@@ -483,18 +493,18 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </CardContent>
                 <CardFooter className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => navigate('/profile')}
                   >
                     <User className="mr-2 h-4 w-4" />
                     Profile
                   </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex-1"
                     onClick={() => navigate('/settings')}
                   >
@@ -503,7 +513,7 @@ const DashboardPage: React.FC = () => {
                   </Button>
                 </CardFooter>
               </Card>
-              
+
               {/* Progress Summary */}
               <Card>
                 <CardHeader>
@@ -519,7 +529,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <Progress value={userStats?.avgGrammarScore || 0} className="h-2" />
                   </div>
-                  
+
                   {/* Readability Score */}
                   <div className="space-y-2">
                     <div className="flex justify-between">
@@ -528,7 +538,7 @@ const DashboardPage: React.FC = () => {
                     </div>
                     <Progress value={userStats?.avgReadabilityScore || 0} className="h-2" />
                   </div>
-                  
+
                   {/* Plagiarism Score */}
                   <div className="space-y-2">
                     <div className="flex justify-between">
@@ -539,7 +549,7 @@ const DashboardPage: React.FC = () => {
                   </div>
                 </CardContent>
               </Card>
-              
+
               {/* Personalized Recommendations */}
               <Card className="border-primary/20">
                 <CardHeader className="pb-2">
@@ -557,9 +567,9 @@ const DashboardPage: React.FC = () => {
                           <div className="space-y-1">
                             <p className="font-medium text-sm">{rec.title}</p>
                             <p className="text-xs text-muted-foreground">{rec.description}</p>
-                            <Button 
-                              variant="link" 
-                              className="h-auto p-0 text-xs" 
+                            <Button
+                              variant="link"
+                              className="h-auto p-0 text-xs"
                               onClick={() => navigate(rec.actionLink)}
                             >
                               {rec.actionText}
@@ -575,7 +585,7 @@ const DashboardPage: React.FC = () => {
                   )}
                 </CardContent>
               </Card>
-              
+
               {/* Quick Actions */}
               <Card>
                 <CardHeader className="pb-2">

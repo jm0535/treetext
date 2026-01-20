@@ -1,0 +1,86 @@
+
+> treetext@1.0.0 lint
+> eslint .
+
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/.history/public/env_20250416212902.js
+  5:31  error  Parsing error: Unterminated string constant
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/AnalysisSettings.tsx
+  112:5  error  Expected an assignment or function call and instead saw an expression  @typescript-eslint/no-unused-expressions
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/FileUploaderNew.tsx
+  233:0  error  Parsing error: '}' expected
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ThemeProvider.tsx
+  44:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/auth/ResetPasswordForm.tsx
+  26:21  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/badge.tsx
+  36:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/button.tsx
+  56:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/command.tsx
+  24:11  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/form.tsx
+  168:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/navigation-menu.tsx
+  119:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/sidebar.tsx
+  760:3  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/textarea.tsx
+  5:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/components/ui/toggle.tsx
+  43:18  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/contexts/AuthContext.tsx
+  159:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/pages/DashboardPage.tsx
+   59:64  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   78:37  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   93:82  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  225:69  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/services/DatabaseService.ts
+  231:95  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  333:46  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  372:70  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  472:94  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/src/services/TextAnalysisService.ts
+  1478:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  1572:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  1572:38  error  Unnecessary escape character: \)                     no-useless-escape
+  1572:49  error  Unnecessary escape character: \)                     no-useless-escape
+  1573:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  1580:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  1581:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  1609:66  error  Unnecessary escape character: \.                     no-useless-escape
+  1631:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  1704:9   error  Unexpected lexical declaration in case block         no-case-declarations
+  3232:15  error  'severity' is never reassigned. Use 'const' instead  prefer-const
+  3326:41  error  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  3379:36  error  Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  3634:23  error  Unnecessary escape character: \.                     no-useless-escape
+  3634:32  error  Unnecessary escape character: \.                     no-useless-escape
+  3634:37  error  Unnecessary escape character: \.                     no-useless-escape
+  3634:43  error  Unnecessary escape character: \.                     no-useless-escape
+  3634:52  error  Unnecessary escape character: \.                     no-useless-escape
+  3634:57  error  Unnecessary escape character: \.                     no-useless-escape
+
+/home/savi/workspace/projects/github/web_apps/app_tests/in4metrix/treetext/tailwind.config.ts
+  103:12  error  A `require()` style import is forbidden  @typescript-eslint/no-require-imports
+
+✖ 42 problems (34 errors, 8 warnings)
+  1 error and 0 warnings potentially fixable with the `--fix` option.
+

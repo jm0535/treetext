@@ -29,7 +29,7 @@ interface HistoryItem {
 }
 
 const HistoryPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, getAccessToken, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -38,19 +38,22 @@ const HistoryPage: React.FC = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<HistoryItem | null>(null);
   const [deleting, setDeleting] = useState(false);
-  
+
   // Load history data from database
   useEffect(() => {
     const loadHistoryData = async () => {
-      if (!user) {
+      if (!user || !isAuthenticated) {
         setLoading(false);
         return;
       }
-      
+
       setLoading(true);
       try {
+        const token = await getAccessToken();
+        if (!token) throw new Error("No access token");
+
         // Fetch text analyses
-        const textAnalyses = await DatabaseService.getTextAnalysisHistory(100);
+        const textAnalyses = await DatabaseService.getTextAnalysisHistory(token, 100);
         const textHistoryItems: HistoryItem[] = textAnalyses.map(item => ({
           id: item.id,
           title: item.title || 'Untitled Analysis',
@@ -60,9 +63,9 @@ const HistoryPage: React.FC = () => {
           score: Math.round((item.grammarScore || 0) * 100),
           isFileAnalysis: false
         }));
-        
+
         // Fetch file analyses
-        const fileAnalyses = await DatabaseService.getFileAnalysisHistory(100);
+        const fileAnalyses = await DatabaseService.getFileAnalysisHistory(token, 100);
         const fileHistoryItems: HistoryItem[] = fileAnalyses.map(item => ({
           id: item.id,
           title: item.fileName || 'Untitled File',
@@ -75,12 +78,12 @@ const HistoryPage: React.FC = () => {
           fileType: item.fileType,
           fileSize: item.fileSize
         }));
-        
+
         // Combine and sort by date
         const combinedHistory = [...textHistoryItems, ...fileHistoryItems].sort(
           (a, b) => b.date.getTime() - a.date.getTime()
         );
-        
+
         setHistoryData(combinedHistory);
       } catch (error) {
         console.error('Error loading history data:', error);
@@ -93,43 +96,45 @@ const HistoryPage: React.FC = () => {
         setLoading(false);
       }
     };
-    
+
     loadHistoryData();
-  }, [user]);
-  
+  }, [user, isAuthenticated]);
+
   // Helper function to get file type category
   const getFileType = (mimeType: string): string => {
     if (!mimeType) return 'unknown';
-    
+
     if (mimeType.includes('pdf')) return 'pdf';
     if (mimeType.includes('word') || mimeType.includes('document')) return 'document';
     if (mimeType.includes('text')) return 'text';
     if (mimeType.includes('html')) return 'html';
     if (mimeType.includes('markdown')) return 'markdown';
-    
+
     return 'other';
   };
-  
+
   // Handle delete confirmation
   const confirmDelete = (item: HistoryItem) => {
     setItemToDelete(item);
     setDeleteDialogOpen(true);
   };
-  
+
   // Handle actual deletion
   const handleDelete = async () => {
     if (!itemToDelete) return;
-    
+
     setDeleting(true);
     try {
       let success = false;
-      
+      const token = await getAccessToken();
+      if (!token) throw new Error("No access token");
+
       if (itemToDelete.isFileAnalysis) {
-        success = await DatabaseService.deleteFileAnalysis(itemToDelete.id);
+        success = await DatabaseService.deleteFileAnalysis(itemToDelete.id, token);
       } else {
-        success = await DatabaseService.deleteTextAnalysis(itemToDelete.id);
+        success = await DatabaseService.deleteTextAnalysis(itemToDelete.id, token);
       }
-      
+
       if (success) {
         // Remove from local state
         setHistoryData(prev => prev.filter(item => item.id !== itemToDelete.id));
@@ -157,7 +162,7 @@ const HistoryPage: React.FC = () => {
   // Filter and search functionality
   const filteredHistory = historyData
     .filter(item => filterType === 'all' || item.type === filterType)
-    .filter(item => 
+    .filter(item =>
       item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       item.type.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -284,25 +289,25 @@ const HistoryPage: React.FC = () => {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               title="View"
                               onClick={() => navigate(item.isFileAnalysis ? `/file-analysis/${item.id}` : `/analysis/${item.id}`)}
                             >
                               <Eye className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               title="Download"
                               disabled={true} // Implement download functionality later
                             >
                               <Download className="h-4 w-4" />
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
+                            <Button
+                              variant="ghost"
+                              size="icon"
                               title="Delete"
                               onClick={() => confirmDelete(item)}
                             >
@@ -324,9 +329,9 @@ const HistoryPage: React.FC = () => {
                           <>
                             <p>You don't have any analysis history yet</p>
                             <p className="text-sm mt-1">Start analyzing text to see your history here</p>
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
+                            <Button
+                              variant="outline"
+                              size="sm"
                               className="mt-4"
                               onClick={() => navigate('/')}
                             >
@@ -345,8 +350,8 @@ const HistoryPage: React.FC = () => {
             <Button variant="outline" onClick={() => navigate('/dashboard')}>
               Back to Dashboard
             </Button>
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => navigate('/analytics')}
               disabled={historyData.length === 0}
             >
@@ -354,20 +359,20 @@ const HistoryPage: React.FC = () => {
             </Button>
           </CardFooter>
         </Card>
-        
+
         {/* Delete Confirmation Dialog */}
         <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete the analysis "{itemToDelete?.title}". 
+                This will permanently delete the analysis "{itemToDelete?.title}".
                 This action cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
-              <AlertDialogAction 
+              <AlertDialogAction
                 onClick={(e) => {
                   e.preventDefault();
                   handleDelete();
@@ -381,7 +386,7 @@ const HistoryPage: React.FC = () => {
                     Deleting...
                   </>
                 ) : (
-                  <>Delete</>  
+                  <>Delete</>
                 )}
               </AlertDialogAction>
             </AlertDialogFooter>
@@ -390,7 +395,7 @@ const HistoryPage: React.FC = () => {
       </div>
     </div>
   );
-  
+
   // Helper function to determine badge variant based on type
   function getBadgeVariant(type: string): "default" | "secondary" | "outline" | "destructive" {
     switch (type.toLowerCase()) {

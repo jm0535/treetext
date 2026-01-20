@@ -8,36 +8,36 @@ import PageHeader from '@/components/PageHeader';
 import DatabaseService from '@/services/DatabaseService';
 
 const AnalyticsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, getAccessToken, isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  
+
   // Analytics overview cards (will be populated with real data)
   const [analyticsData, setAnalyticsData] = React.useState([
-    { 
-      title: 'Text Complexity', 
-      value: '0/100', 
-      change: '0%', 
+    {
+      title: 'Text Complexity',
+      value: '0/100',
+      change: '0%',
       trend: 'up',
       description: 'Average complexity score of your text analyses'
     },
-    { 
-      title: 'Grammar Score', 
-      value: '0/100', 
-      change: '0%', 
+    {
+      title: 'Grammar Score',
+      value: '0/100',
+      change: '0%',
       trend: 'up',
       description: 'Average grammar score of your text analyses'
     },
-    { 
-      title: 'Readability', 
-      value: '0/100', 
-      change: '0%', 
+    {
+      title: 'Readability',
+      value: '0/100',
+      change: '0%',
       trend: 'up',
       description: 'Average readability score of your text analyses'
     },
-    { 
-      title: 'Vocabulary Diversity', 
-      value: '0/100', 
-      change: '0%', 
+    {
+      title: 'Vocabulary Diversity',
+      value: '0/100',
+      change: '0%',
       trend: 'up',
       description: 'Unique words used across all analyses'
     }
@@ -53,7 +53,7 @@ const AnalyticsPage: React.FC = () => {
     structureImprovement: number;
     avgGrammarScore: number;
     avgReadabilityScore: number;
-  }>({ 
+  }>({
     grammarImprovement: 0,
     readabilityImprovement: 0,
     structureImprovement: 0,
@@ -88,11 +88,19 @@ const AnalyticsPage: React.FC = () => {
     }
 
     async function fetchAnalyticsData() {
+      if (!isAuthenticated || !user) {
+         setLoading(false);
+         return;
+      }
+
       setIsLoading(true);
       setError(null);
       try {
+        const token = await getAccessToken();
+        if (!token) throw new Error("No access token");
+
         // Fetch monthly activity data
-        const allDates = await DatabaseService.getAllAnalysesSince(deploymentDate);
+        const allDates = await DatabaseService.getAllAnalysesSince(token, deploymentDate);
         const months = getMonthLabels(deploymentDate, now);
         // Count per month
         const counts: Record<string, number> = {};
@@ -103,14 +111,14 @@ const AnalyticsPage: React.FC = () => {
           if (counts[key] !== undefined) counts[key]++;
         });
         setMonthlyActivity(months.map(m => ({ month: m.label, count: counts[m.key] })));
-        
+
         // Fetch user improvement stats
-        const stats = await DatabaseService.getUserDashboardStats();
+        const stats = await DatabaseService.getUserDashboardStats(token);
         if (stats) {
           // Calculate improvements from the stats
           // The improvementScore from getUserDashboardStats is the average of grammar and readability improvements
           const overallImprovement = parseFloat(stats.improvementScore) || 0;
-          
+
           // We'll distribute the improvement across our three categories with some variation
           // for a more interesting visualization
           // Update user stats for improvement trends
@@ -121,34 +129,34 @@ const AnalyticsPage: React.FC = () => {
             avgGrammarScore: stats.avgGrammarScore || 0,
             avgReadabilityScore: stats.avgReadabilityScore || 0
           });
-          
+
           // Update analytics overview cards with real data
           setAnalyticsData([
-            { 
-              title: 'Text Complexity', 
-              value: `${Math.round(stats.avgPlagiarismScore || 0)}/100`, 
-              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 1.05).toFixed(1))}%`, 
+            {
+              title: 'Text Complexity',
+              value: `${Math.round(stats.avgPlagiarismScore || 0)}/100`,
+              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 1.05).toFixed(1))}%`,
               trend: stats.improvementScore >= 0 ? 'up' : 'down',
               description: 'Average complexity score of your text analyses'
             },
-            { 
-              title: 'Grammar Score', 
-              value: `${Math.round(stats.avgGrammarScore || 0)}/100`, 
-              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 1.2).toFixed(1))}%`, 
+            {
+              title: 'Grammar Score',
+              value: `${Math.round(stats.avgGrammarScore || 0)}/100`,
+              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 1.2).toFixed(1))}%`,
               trend: stats.improvementScore >= 0 ? 'up' : 'down',
               description: 'Average grammar score of your text analyses'
             },
-            { 
-              title: 'Readability', 
-              value: `${Math.round(stats.avgReadabilityScore || 0)}/100`, 
-              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 0.8).toFixed(1))}%`, 
+            {
+              title: 'Readability',
+              value: `${Math.round(stats.avgReadabilityScore || 0)}/100`,
+              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 0.8).toFixed(1))}%`,
               trend: stats.improvementScore >= 0 ? 'up' : 'down',
               description: 'Average readability score of your text analyses'
             },
-            { 
-              title: 'Vocabulary Diversity', 
-              value: `${Math.round((stats.avgGrammarScore + stats.avgReadabilityScore) / 2)}/100`, 
-              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 0.9).toFixed(1))}%`, 
+            {
+              title: 'Vocabulary Diversity',
+              value: `${Math.round((stats.avgGrammarScore + stats.avgReadabilityScore) / 2)}/100`,
+              change: `${stats.improvementScore > 0 ? '+' : ''}${parseFloat((stats.improvementScore * 0.9).toFixed(1))}%`,
               trend: stats.improvementScore >= 0 ? 'up' : 'down',
               description: 'Unique words used across all analyses'
             }
@@ -162,7 +170,7 @@ const AnalyticsPage: React.FC = () => {
       }
     }
     fetchAnalyticsData();
-  }, []);
+  }, [isAuthenticated, user]);
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
@@ -188,8 +196,8 @@ const AnalyticsPage: React.FC = () => {
                   </div>
                   <div className={`flex items-center ${item.trend === 'up' ? 'text-green-500' : 'text-red-500'}`}>
                     <span className="text-sm font-medium">{item.change}</span>
-                    {item.trend === 'up' ? 
-                      <TrendingUp className="h-4 w-4 ml-1" /> : 
+                    {item.trend === 'up' ?
+                      <TrendingUp className="h-4 w-4 ml-1" /> :
                       <TrendingUp className="h-4 w-4 ml-1 transform rotate-180" />
                     }
                   </div>
@@ -229,13 +237,13 @@ const AnalyticsPage: React.FC = () => {
                     // Calculate dynamic height with a minimum of 5px for bars with count > 0
                     // Find max count to scale properly
                     const maxCount = Math.max(...monthlyActivity.map(m => m.count), 1);
-                    const heightPercentage = month.count > 0 
-                      ? Math.max(5, (month.count / maxCount) * 150) 
+                    const heightPercentage = month.count > 0
+                      ? Math.max(5, (month.count / maxCount) * 150)
                       : 0;
-                    
+
                     return (
                       <div key={i} className="flex flex-col items-center gap-2">
-                        <div 
+                        <div
                           className={`rounded-t-sm w-10 ${month.count > 0 ? 'bg-primary/80' : 'bg-muted'}`}
                           style={{ height: `${heightPercentage}px` }}
                         ></div>
@@ -309,8 +317,8 @@ const AnalyticsPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${userStats.grammarImprovement >= 0 ? 'bg-primary' : 'bg-red-500'} rounded-full`} 
+                    <div
+                      className={`h-full ${userStats.grammarImprovement >= 0 ? 'bg-primary' : 'bg-red-500'} rounded-full`}
                       style={{ width: `${Math.min(100, Math.abs(userStats.grammarImprovement))}%` }}
                     ></div>
                   </div>
@@ -318,7 +326,7 @@ const AnalyticsPage: React.FC = () => {
                     <span className="text-xs text-muted-foreground">Current score: {userStats.avgGrammarScore.toFixed(1)}/100</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Readability</span>
@@ -327,8 +335,8 @@ const AnalyticsPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${userStats.readabilityImprovement >= 0 ? 'bg-primary' : 'bg-red-500'} rounded-full`} 
+                    <div
+                      className={`h-full ${userStats.readabilityImprovement >= 0 ? 'bg-primary' : 'bg-red-500'} rounded-full`}
                       style={{ width: `${Math.min(100, Math.abs(userStats.readabilityImprovement))}%` }}
                     ></div>
                   </div>
@@ -336,7 +344,7 @@ const AnalyticsPage: React.FC = () => {
                     <span className="text-xs text-muted-foreground">Current score: {userStats.avgReadabilityScore.toFixed(1)}/100</span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">Structure</span>
@@ -345,8 +353,8 @@ const AnalyticsPage: React.FC = () => {
                     </span>
                   </div>
                   <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div 
-                      className={`h-full ${userStats.structureImprovement >= 0 ? 'bg-primary' : 'bg-red-500'} rounded-full`} 
+                    <div
+                      className={`h-full ${userStats.structureImprovement >= 0 ? 'bg-primary' : 'bg-red-500'} rounded-full`}
                       style={{ width: `${Math.min(100, Math.abs(userStats.structureImprovement))}%` }}
                     ></div>
                   </div>
