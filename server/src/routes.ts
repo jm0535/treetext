@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 
 const router = express.Router();
 // Cast to any to bypass Prisma 7 type strictness on datasources
-const prisma = new PrismaClient({ log: ['warn', 'error'] });
+const prisma = new PrismaClient();
 
 // Extended Request type to include Auth0 payload
 interface AuthRequest extends express.Request {
