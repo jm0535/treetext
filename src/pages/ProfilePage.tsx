@@ -7,15 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '@/lib/supabase';
+
 import { Home, User } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 
 const ProfilePage: React.FC = () => {
-  const { user, setUser } = useAuth();
+  const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  
+
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: user?.user_metadata?.full_name || '',
@@ -30,44 +30,20 @@ const ProfilePage: React.FC = () => {
     }));
   };
 
+  // Placeholder for profile update logic - typically handled via Auth0 Dashboard
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    try {
-      const { error } = await supabase.auth.updateUser({
-        data: { full_name: formData.fullName }
-      });
-      
-      if (error) throw error;
-      
-      // Update the local user state
-      if (user) {
-        const updatedUser = {
-          ...user,
-          user_metadata: {
-            ...user.user_metadata,
-            full_name: formData.fullName
-          }
-        };
-        setUser(updatedUser);
-      }
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been successfully updated.",
-        variant: "default",
-      });
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "There was an error updating your profile.";
-      toast({
-        title: "Error updating profile",
-        description: errorMessage,
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+
+    // Simulation
+    setTimeout(() => {
+        setIsLoading(false);
+        toast({
+            title: "Managed by Auth0",
+            description: "Please update your profile details in the Auth0 Dashboard.",
+            variant: "default",
+        });
+    }, 500);
   };
 
   return (
@@ -102,7 +78,7 @@ const ProfilePage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <div className="grid gap-2">
                   <Label htmlFor="fullName">Full Name</Label>
@@ -114,7 +90,7 @@ const ProfilePage: React.FC = () => {
                     onChange={handleInputChange}
                   />
                 </div>
-                
+
                 <div className="grid gap-2">
                   <Label htmlFor="email">Email</Label>
                   <Input
@@ -132,14 +108,14 @@ const ProfilePage: React.FC = () => {
               </div>
             </CardContent>
             <CardFooter className="flex justify-between">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 type="button"
                 onClick={() => navigate('/dashboard')}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 disabled={isLoading}
                 className="bg-primary hover:bg-primary/90"
@@ -159,7 +135,7 @@ const ProfilePage: React.FC = () => {
             <p className="text-sm text-muted-foreground mb-4">
               Once you delete your account, there is no going back. Please be certain.
             </p>
-            <Button 
+            <Button
               variant="destructive"
               onClick={() => {
                 toast({

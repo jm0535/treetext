@@ -40,7 +40,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { supabase } from '@/lib/supabase';
+
 import DatabaseService from '@/services/DatabaseService';
 
 // The worker is already set up by the direct import above
@@ -77,6 +77,7 @@ interface FileUploaderProps {
   className?: string;
 }
 
+const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
   const { setText } = useTextAnalysis();
   const { user, cloudAuth, updateCloudAuth, getCloudToken, getAccessToken, isAuthenticated } = useAuth();
   const [file, setFile] = useState<File | null>(null);
