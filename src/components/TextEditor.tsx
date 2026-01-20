@@ -31,7 +31,7 @@ const TextEditor: React.FC = () => {
     }
 
     setLoading(true);
-    
+
     // Simulate analysis delay
     setTimeout(() => {
       checkText(text);
@@ -77,12 +77,12 @@ const TextEditor: React.FC = () => {
                 <TabsTrigger value="input">Input Text</TabsTrigger>
                 <TabsTrigger value="upload">Upload File</TabsTrigger>
               </TabsList>
-              
+
               <TabsContent value="input" className="space-y-4">
                 <div className="flex items-center justify-end gap-2 mb-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     className="flex items-center gap-2"
                     onClick={handlePaste}
                   >
@@ -90,27 +90,30 @@ const TextEditor: React.FC = () => {
                     Paste
                   </Button>
                 </div>
-                
-                <Textarea 
-                  placeholder="Enter or paste your text here to check for plagiarism and grammar issues..." 
+
+                <Textarea
+                  id="text-input"
+                  name="text-input"
+                  autoComplete="off"
+                  placeholder="Enter or paste your text here to check for plagiarism and grammar issues..."
                   className="min-h-[300px] text-base p-4"
                   value={text}
                   onChange={handleTextChange}
                 />
-                
+
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <AlertCircle className="h-4 w-4" />
                     <span>
-                      {text.length > 0 
-                        ? `${text.length} characters, ~${Math.ceil(text.length / 6)} words` 
+                      {text.length > 0
+                        ? `${text.length} characters, ~${Math.ceil(text.length / 6)} words`
                         : "Enter text to analyze"}
                     </span>
                   </div>
                   <span>Recommended: 300+ words for best results</span>
                 </div>
               </TabsContent>
-              
+
               <TabsContent value="upload" className="min-h-[400px]">
                 <div className="h-80 border-2 border-dashed border-muted rounded-lg flex flex-col items-center justify-center p-6">
                   <FileUp className="h-12 w-12 text-muted-foreground mb-4" />
@@ -130,7 +133,7 @@ const TextEditor: React.FC = () => {
             </Tabs>
           </CardContent>
           <CardFooter className="flex justify-end">
-            <Button 
+            <Button
               className="bg-kopitree-blue hover:bg-kopitree-blue/90 px-8"
               disabled={text.trim().length < 50 || loading}
               onClick={handleCheck}
