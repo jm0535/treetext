@@ -21,46 +21,24 @@ const SignUpForm: React.FC = () => {
     e.preventDefault();
     setError(null);
     setSuccessMessage(null);
-    
+
     // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-    
+
     // Validate password strength
     if (password.length < 8) {
       setError('Password must be at least 8 characters long');
       return;
     }
-    
+
     setIsLoading(true);
 
     try {
-      const { error, data } = await signUp(email, password);
-      if (error) throw error;
-      
-      // Check if email confirmation is required
-      if (data?.user && !data.user.confirmed_at) {
-        setSuccessMessage('Registration successful! Please check your email to confirm your account.');
-
-        // Show success toast
-        toast({
-          title: "Account created",
-          description: "Please check your email to confirm your account.",
-          variant: "default"
-        });
-      } else if (data?.user) {
-        // Account was created and auto-confirmed
-        toast({
-          title: "Account created successfully",
-          description: "Welcome to TreeText!",
-          variant: "default"
-        });
-
-        // Redirect to dashboard
-        navigate('/dashboard');
-      }
+      await signUp(email, password);
+      // User will be redirected to Auth0 Universal Login
     } catch (error: Error | unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
       setError(errorMessage);
