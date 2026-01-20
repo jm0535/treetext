@@ -20,7 +20,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^25.0.9",
     "nodemon": "^3.1.11",
-    "prisma": "^5.22.0",
+
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
@@ -30,6 +30,7 @@
     "dotenv": "^17.2.3",
     "express": "^5.2.1",
     "express-oauth2-jwt-bearer": "^1.7.3",
+    "prisma": "^5.22.0",
     "helmet": "^8.1.0"
   }
 }
