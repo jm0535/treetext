@@ -5,6 +5,7 @@
   "description": "TreeText - An advanced text analysis tool for checking plagiarism, grammar, and readability",
   "type": "module",
   "scripts": {
+    "start": "node serve.js",
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
