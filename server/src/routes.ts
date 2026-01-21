@@ -227,11 +227,17 @@ router.delete('/history/:id', async (req: express.Request, res: express.Response
 
     if (type === 'file') {
       await prisma.fileUploadHistory.deleteMany({
-        where: { id, userId }
+        where: {
+          id: id as string,
+          userId: userId as string
+        }
       });
     } else {
       await prisma.textAnalysisHistory.deleteMany({
-        where: { id, userId }
+        where: {
+          id: id as string,
+          userId: userId as string
+        }
       });
     }
 
