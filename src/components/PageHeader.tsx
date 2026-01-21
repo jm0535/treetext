@@ -18,9 +18,9 @@ interface BreadcrumbItem {
 }
 
 interface PageHeaderProps {
-  title: string;
+  title: string | React.ReactNode;
   description?: string;
-  breadcrumbs: BreadcrumbItem[];
+  breadcrumbs?: BreadcrumbItem[];
   actions?: React.ReactNode;
   showBackButton?: boolean;
   backPath?: string;
@@ -42,31 +42,33 @@ const PageHeader: React.FC<PageHeaderProps> = ({
   return (
     <div className="flex flex-col space-y-4 mb-8">
       {/* Breadcrumb navigation */}
-      <Breadcrumb>
-        <BreadcrumbList className="text-sm">
-          {breadcrumbs.map((item, index) => (
-            <React.Fragment key={item.label}>
-              <BreadcrumbItem>
-                {isLastItem(index) ? (
-                  <BreadcrumbPage className="flex items-center text-foreground font-medium">
-                    {item.icon}
-                    <span className="ml-1">{item.label}</span>
-                  </BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink asChild className="flex items-center hover:text-primary transition-colors">
-                    <Link to={item.path || '#'}>
+      {breadcrumbs && breadcrumbs.length > 0 && (
+        <Breadcrumb>
+          <BreadcrumbList className="text-sm">
+            {breadcrumbs.map((item, index) => (
+              <React.Fragment key={item.label}>
+                <BreadcrumbItem>
+                  {isLastItem(index) ? (
+                    <BreadcrumbPage className="flex items-center text-foreground font-medium">
                       {item.icon}
                       <span className="ml-1">{item.label}</span>
-                    </Link>
-                  </BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-              {!isLastItem(index) && <BreadcrumbSeparator />}
-            </React.Fragment>
-          ))}
-        </BreadcrumbList>
-      </Breadcrumb>
-      
+                    </BreadcrumbPage>
+                  ) : (
+                    <BreadcrumbLink asChild className="flex items-center hover:text-primary transition-colors">
+                      <Link to={item.path || '#'}>
+                        {item.icon}
+                        <span className="ml-1">{item.label}</span>
+                      </Link>
+                    </BreadcrumbLink>
+                  )}
+                </BreadcrumbItem>
+                {!isLastItem(index) && <BreadcrumbSeparator />}
+              </React.Fragment>
+            ))}
+          </BreadcrumbList>
+        </Breadcrumb>
+      )}
+
       {/* Header with title and actions */}
       <div className="flex items-center justify-between">
         <div>

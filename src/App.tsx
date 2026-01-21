@@ -44,6 +44,7 @@ const SettingsPage = lazy(() => import("./pages/SettingsPage"));
 const AnalyticsPage = lazy(() => import("./pages/AnalyticsPage"));
 const HistoryPage = lazy(() => import("./pages/HistoryPage"));
 const ActivityPage = lazy(() => import("./pages/ActivityPage"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 
 // Error Boundary component
 const ErrorBoundary = ({ children }: { children: React.ReactNode }) => {
@@ -134,7 +135,11 @@ const App = () => (
                         <Route path="/contribute" element={<ContributePage />} />
                         {/* Sponsor route redirected to maintenance page */}
                         <Route path="/sponsor" element={<SponsorMaintenancePage />} />
-                        {/* Add more protected routes here */}
+                      </Route>
+
+                      {/* Admin restricted routes */}
+                      <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+                        <Route path="/admin" element={<AdminDashboard />} />
                       </Route>
 
                       {/* Catch-all route */}

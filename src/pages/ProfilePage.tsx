@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-import { Home, User, Shield, Hash } from 'lucide-react';
+import { Home, User, Shield, Hash, CreditCard, CheckCircle2 } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
 import { Badge } from '@/components/ui/badge';
 
@@ -108,11 +108,14 @@ const ProfilePage: React.FC = () => {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label>Account Role</Label>
+                  <Label>Account Tier</Label>
                   <div className="flex items-center gap-2">
-                    <Badge variant={dbUser?.role === 'admin' ? 'default' : 'secondary'} className="capitalize py-1 px-3">
+                    <Badge variant={dbUser?.role === 'admin' ? 'default' : 'secondary'} className={cn(
+                      "capitalize py-1 px-3 border-none",
+                      dbUser?.role === 'admin' ? "bg-primary text-primary-foreground" : "bg-green-600 text-white"
+                    )}>
                       {dbUser?.role === 'admin' && <Shield className="h-3 w-3 mr-1" />}
-                      {dbUser?.role || 'User'}
+                      {dbUser?.role === 'admin' ? 'Enterprise Admin' : 'Professional Pro'}
                     </Badge>
                   </div>
                 </div>
@@ -143,6 +146,59 @@ const ProfilePage: React.FC = () => {
               </Button>
             </CardFooter>
           </form>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CreditCard className="h-5 w-5 text-primary" />
+              Subscription Plan
+            </CardTitle>
+            <CardDescription>Your current TreeText service tier</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg border border-primary/10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-lg">
+                    {dbUser?.role === 'admin' ? 'Enterprise' : 'Professional'}
+                  </span>
+                  <Badge className="bg-primary/20 text-primary border-none">ACTIVE</Badge>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {dbUser?.role === 'admin'
+                    ? 'Full global system access and management controls.'
+                    : 'Unlimited text analysis and file uploads.'}
+                </p>
+              </div>
+              <div className="text-right">
+                <div className="text-2xl font-bold">$0<span className="text-sm font-normal text-muted-foreground">/mo</span></div>
+                <p className="text-xs text-muted-foreground">Beta Phase Pricing</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Unlimited Plagiarism Checks</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Advanced Grammar Correction</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Bulk File Processing</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <CheckCircle2 className="h-4 w-4 text-green-500" />
+                <span>Priority UI Support</span>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter>
+            <Button variant="outline" className="w-full">Manage Subscription</Button>
+          </CardFooter>
         </Card>
 
         <Card className="border-destructive/20">

@@ -30,6 +30,10 @@ type AuthContextType = {
   getCloudToken: (provider: string) => string | null;
   syncUser: () => Promise<void>;
   dbUser: DbUser | null;
+  isAdmin: boolean;
+  isUser: boolean;
+  isGuest: boolean;
+  role: string | null;
   // Auth0 redirect-based auth (email/password params kept for form compatibility but unused)
   signIn: (email?: string, password?: string) => Promise<AuthResult>;
   signUp: (email?: string, password?: string) => Promise<AuthResult>;
@@ -227,7 +231,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     signIn,
     signUp,
     signOut,
-    resetPassword
+    resetPassword,
+    isAdmin: dbUser?.role === 'admin',
+    isUser: isAuthenticated && !!dbUser,
+    isGuest: !isAuthenticated,
+    role: dbUser?.role || null
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

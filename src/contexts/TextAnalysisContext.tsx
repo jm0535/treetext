@@ -13,29 +13,31 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
   const [currentAnalysis, setCurrentAnalysis] = useState<AnalysisResult | null>(null);
   const [recentAnalyses, setRecentAnalyses] = useState<AnalysisResult[]>([]);
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
+  const [analysisProgress, setAnalysisProgress] = useState<number>(0);
+  const [analysisETA, setAnalysisETA] = useState<number | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const [settings, setSettings] = useState<AnalysisSettings>(TextAnalysisService.getSettings());
-  
+
   // Load recent analyses on mount
   useEffect(() => {
     const loadRecentAnalyses = async () => {
       const analyses = await TextAnalysisService.getRecentResults();
       setRecentAnalyses(analyses);
     };
-    
+
     loadRecentAnalyses();
   }, []);
 
   const setText = (text: string) => {
     setCurrentText(text);
     setAnalysisError(null);
-    
+
     // If real-time analysis is enabled, analyze text after a delay
     if (FEATURES.REAL_TIME_ANALYSIS && text.trim().length > 50) {
       const timeoutId = setTimeout(() => {
         analyzeText();
       }, 1500);
-      
+
       return () => clearTimeout(timeoutId);
     }
   };
@@ -50,31 +52,36 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       return;
     }
 
-    try {
-      setIsAnalyzing(true);
-      setAnalysisError(null);
-      
-      // Ensure settings are properly initialized before analysis
-      const currentSettings = TextAnalysisService.getSettings();
-      const needsUpdate = !currentSettings.languageModel || !currentSettings.languageModelCategory;
+      try {
+        setIsAnalyzing(true);
+        setAnalysisProgress(0);
+        setAnalysisETA(null);
+        setAnalysisError(null);
 
-      if (needsUpdate) {
-        // If either language model field is not defined, update with default settings
-        TextAnalysisService.updateSettings({
-          languageModel: currentSettings.languageModel || 'standard',
-          languageModelCategory: currentSettings.languageModelCategory || 'general'
+        // Ensure settings are properly initialized before analysis
+        const currentSettings = TextAnalysisService.getSettings();
+        const needsUpdate = !currentSettings.languageModel || !currentSettings.languageModelCategory;
+
+        if (needsUpdate) {
+          // If either language model field is not defined, update with default settings
+          TextAnalysisService.updateSettings({
+            languageModel: currentSettings.languageModel || 'standard',
+            languageModelCategory: currentSettings.languageModelCategory || 'general'
+          });
+          // Update local state with the new settings
+          setSettings(TextAnalysisService.getSettings());
+        }
+
+        const result = await TextAnalysisService.analyzeText(currentText, undefined, (progress, eta) => {
+          setAnalysisProgress(progress);
+          if (eta !== undefined) setAnalysisETA(eta);
         });
-        // Update local state with the new settings
-        setSettings(TextAnalysisService.getSettings());
-      }
-      
-      const result = await TextAnalysisService.analyzeText(currentText);
-      setCurrentAnalysis(result);
-      
+        setCurrentAnalysis(result);
+
       // Update recent analyses
       const analyses = await TextAnalysisService.getRecentResults();
       setRecentAnalyses(analyses);
-      
+
       toast({
         title: "Analysis Complete",
         description: "Your text has been analyzed successfully.",
@@ -82,12 +89,12 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
     } catch (error) {
       console.error("Failed to analyze text:", error);
 
-      const errorMessage = error instanceof Error 
-        ? error.message 
+      const errorMessage = error instanceof Error
+        ? error.message
         : "There was an error analyzing your text. Please try again.";
-      
+
       setAnalysisError(errorMessage);
-      
+
       toast({
         title: "Analysis Failed",
         description: errorMessage,
@@ -95,6 +102,8 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       });
     } finally {
       setIsAnalyzing(false);
+      setAnalysisProgress(0);
+      setAnalysisETA(null);
     }
   };
 
@@ -102,22 +111,22 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
     setCurrentAnalysis(null);
     setAnalysisError(null);
   };
-  
+
   const deleteAnalysis = async (id: string) => {
     try {
       // Remove from service
       const success = await TextAnalysisService.deleteResult(id);
-      
+
       if (success) {
         // Update state
         const analyses = await TextAnalysisService.getRecentResults();
         setRecentAnalyses(analyses);
-        
+
         // If the current analysis was deleted, clear it
         if (currentAnalysis && currentAnalysis.id === id) {
           setCurrentAnalysis(null);
         }
-        
+
         toast({
           title: "Analysis Deleted",
           description: "The analysis has been removed from your history.",
@@ -132,16 +141,16 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       });
     }
   };
-  
+
   const clearAllAnalyses = async () => {
     try {
       // Clear all analyses from service
       await TextAnalysisService.clearAllResults();
-      
+
       // Update state
       setRecentAnalyses([]);
       setCurrentAnalysis(null);
-      
+
       toast({
         title: "History Cleared",
         description: "All analyses have been removed from your history.",
@@ -155,20 +164,20 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       });
     }
   };
-  
+
   const updateSettings = (newSettings: Partial<AnalysisSettings>) => {
     // Update settings in service
     TextAnalysisService.updateSettings(newSettings);
-    
+
     // Update state
     setSettings(TextAnalysisService.getSettings());
-    
+
     toast({
       title: "Settings Updated",
       description: "Your analysis settings have been updated.",
     });
   };
-  
+
   const exportAnalysisAsPDF = async (analysis: AnalysisResult) => {
     try {
       // In a real implementation, this would use a PDF generation library
@@ -186,7 +195,7 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       });
     }
   };
-  
+
   const exportAnalysisAsText = (analysis: AnalysisResult) => {
     try {
       // Create a text representation of the analysis
@@ -201,7 +210,7 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
         `- Total Words: ${analysis.readabilityMetrics.totalWords}`,
         `- Reading Time: ${analysis.readabilityMetrics.readingTime} minutes`,
       ].join('\n');
-      
+
       // Create a download link
       const element = document.createElement('a');
       const file = new Blob([text], {type: 'text/plain'});
@@ -210,7 +219,7 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
       document.body.appendChild(element);
       element.click();
       document.body.removeChild(element);
-      
+
       toast({
         title: "Export Complete",
         description: "Your analysis has been exported as a text file.",
@@ -230,6 +239,8 @@ export const TextAnalysisProvider: React.FC<{ children: ReactNode }> = ({ childr
     currentAnalysis,
     recentAnalyses,
     isAnalyzing,
+    analysisProgress,
+    analysisETA,
     analysisError,
     settings,
     setText,

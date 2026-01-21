@@ -4,12 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 
 interface ProtectedRouteProps {
   redirectPath?: string;
+  allowedRoles?: string[];
 }
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  redirectPath = '/signin'
+  redirectPath = '/signin',
+  allowedRoles
 }) => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, dbUser } = useAuth();
 
   // Show loading state while checking authentication
   if (isLoading) {
@@ -23,6 +25,12 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return <Navigate to={redirectPath} replace />;
+  }
+
+  // Check for allowed roles if specified
+  if (allowedRoles && dbUser && !allowedRoles.includes(dbUser.role)) {
+    // If user doesn't have the required role, redirect to dashboard
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Render the protected content

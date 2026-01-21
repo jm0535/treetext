@@ -24,7 +24,8 @@ import {
   ArrowLeft,
   RefreshCw,
   Lock,
-  Table
+  Table,
+  Shield
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -43,8 +44,11 @@ import { Separator } from '@/components/ui/separator';
 
 import DatabaseService from '@/services/DatabaseService';
 
-// The worker is already set up by the direct import above
-console.log('PDF.js worker initialized with direct import');
+// Set worker source for PDF.js - Use a consistent CDN URL matched to the version
+const pdfjsVersion = pdfjsLib.version;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsVersion}/pdf.worker.min.mjs`;
+
+console.log(`PDF.js initialized with version: ${pdfjsVersion}`);
 
 // Maximum file size in bytes (100MB)
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
@@ -702,26 +706,31 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
 
         // Create a batch of page processing promises
         for (let j = i; j <= Math.min(i + BATCH_SIZE - 1, numPages); j++) {
-          pagePromises.push(pdf.getPage(j).then(async (page) => {
-            const textContent = await page.getTextContent();
-            return {
-              pageNum: j,
-              text: textContent.items.map(item => 'str' in item ? item.str : '').join(' ')
-            };
-          }));
+          pagePromises.push((async (pageNum: number) => {
+            try {
+              const page = await pdf.getPage(pageNum);
+              const textContent = await page.getTextContent();
+              return {
+                pageNum,
+                text: textContent.items.map(item => 'str' in item ? item.str : '').join(' ')
+              };
+            } catch (err) {
+              console.error(`Error processing PDF page ${pageNum}:`, err);
+              return { pageNum, text: '' }; // Continuous extraction even if one page fails
+            }
+          })(j));
         }
 
         // Process the current batch
         const pageResults = await Promise.all(pagePromises);
-        pageResults.sort((a, b) => a.pageNum - b.pageNum);
 
         // Add the text from each page to the result
         for (const result of pageResults) {
-          extractedText += `Page ${result.pageNum}:\n${result.text}\n\n`;
+          extractedText += result.text + '\n';
         }
 
         // Update progress
-        setProgress(Math.min(Math.floor((i / numPages) * 100), 95));
+        setProgress(Math.min(Math.floor((Math.min(i + BATCH_SIZE - 1, numPages) / numPages) * 100), 95));
 
         // Small delay to allow UI to update
         await new Promise(resolve => setTimeout(resolve, 10));
@@ -1068,33 +1077,53 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
             </TabsList>
 
             <TabsContent value="local" className="mt-0">
-              <div
-                className="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer hover:bg-muted/50 transition-colors"
-                onDrop={handleDrop}
-                onDragOver={handleDragOver}
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <div className="flex flex-col items-center justify-center space-y-3">
-                  <Upload className="h-8 w-8 text-muted-foreground" />
-                  <div>
-                    <p className="font-medium">Drag & drop your file here</p>
-                    <p className="text-sm text-muted-foreground">or click to browse</p>
+              {!isAuthenticated ? (
+                <Card className="border-dashed border-2 p-8 text-center bg-muted/30">
+                  <div className="flex flex-col items-center justify-center space-y-4">
+                    <div className="p-3 bg-primary/10 rounded-full">
+                      <Lock className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                      <h4 className="font-semibold px-4">Sign in to Upload Documents</h4>
+                      <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+                        Document analysis requires a TreeText account for processing and secure history tracking.
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" onClick={() => navigate('/signin')}>Sign In</Button>
+                      <Button size="sm" variant="outline" onClick={() => navigate('/signup')}>Create Account</Button>
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Supported formats: PDF, DOCX, TXT, HTML, MD, RTF, ODT (Max 100MB)
-                  </p>
+                </Card>
+              ) : (
+                <div
+                  className="border-2 border-dashed rounded-lg p-12 text-center cursor-pointer hover:bg-muted/50 transition-colors"
+                  onDrop={handleDrop}
+                  onDragOver={handleDragOver}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <Upload className="h-8 w-8 text-muted-foreground" />
+                    <div>
+                      <p className="font-medium">Drag & drop your file here</p>
+                      <p className="text-sm text-muted-foreground">or click to browse</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      Supported formats: PDF, DOCX, TXT, HTML, MD, RTF, ODT (Max 100MB)
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    id="file-upload"
+                    className="hidden"
+                    onChange={handleFileChange}
+                    accept={SUPPORTED_FILE_TYPES.join(',')}
+                    ref={fileInputRef}
+                    aria-label="Upload file"
+                    title="Select a file to upload"
+                  />
                 </div>
-                <input
-                  type="file"
-                  id="file-upload"
-                  className="hidden"
-                  onChange={handleFileChange}
-                  accept={SUPPORTED_FILE_TYPES.join(',')}
-                  ref={fileInputRef}
-                  aria-label="Upload file"
-                  title="Select a file to upload"
-                />
-              </div>
+              )}
             </TabsContent>
 
             <TabsContent value="cloud" className="mt-0">

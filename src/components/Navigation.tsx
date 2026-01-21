@@ -20,7 +20,8 @@ import {
   User,
   Settings,
   Heart,
-  History
+  History,
+  Shield
 } from "lucide-react";
 import { useTheme } from './ThemeProvider';
 import { Toggle } from "@/components/ui/toggle";
@@ -173,6 +174,23 @@ const Navigation: React.FC = () => {
                 <span className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
                 <BarChart2 className="h-4 w-4 mr-2 transition-transform group-hover:scale-110 duration-300 text-primary" />
                 <span className="relative">Dashboard</span>
+              </Link>
+            </Button>
+          )}
+          {dbUser?.role === 'admin' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "font-medium transition-all duration-300 hover:bg-muted/80 relative overflow-hidden group",
+                location.pathname === "/admin" && "bg-muted"
+              )}
+              asChild
+            >
+              <Link to="/admin">
+                <span className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></span>
+                <Shield className="h-4 w-4 mr-2 transition-transform group-hover:scale-110 duration-300 text-primary" />
+                <span className="relative font-bold">Admin Center</span>
               </Link>
             </Button>
           )}
@@ -333,6 +351,12 @@ const Navigation: React.FC = () => {
                       <Settings className="mr-2 h-4 w-4 text-primary/70" />
                       <span>Account Settings</span>
                     </DropdownMenuItem>
+                    {dbUser?.role === 'admin' && (
+                      <DropdownMenuItem onClick={() => navigate('/admin')} className="text-primary font-bold">
+                        <Shield className="mr-2 h-4 w-4" />
+                        <span>Admin Center</span>
+                      </DropdownMenuItem>
+                    )}
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-destructive focus:text-destructive">
@@ -414,6 +438,22 @@ const Navigation: React.FC = () => {
               <Link to="/dashboard">
                 <BarChart2 className="h-4 w-4 mr-2 text-primary" />
                 My Dashboard
+              </Link>
+            </Button>
+          )}
+          {dbUser?.role === 'admin' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "font-medium justify-start transition-all duration-300 hover:translate-x-1",
+                location.pathname === "/admin" && "bg-muted text-primary"
+              )}
+              asChild
+            >
+              <Link to="/admin">
+                <Shield className="h-4 w-4 mr-2" />
+                Admin Center
               </Link>
             </Button>
           )}

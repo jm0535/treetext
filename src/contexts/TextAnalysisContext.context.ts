@@ -9,6 +9,8 @@ export interface TextAnalysisContextType {
   currentAnalysis: AnalysisResult | null;
   recentAnalyses: AnalysisResult[];
   isAnalyzing: boolean;
+  analysisProgress: number;
+  analysisETA: number | null;
   analysisError: string | null;
   settings: AnalysisSettings;
   setText: (text: string) => void;
