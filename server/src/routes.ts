@@ -33,11 +33,14 @@ async function ensureUser(authPayload: AuthRequest['auth']): Promise<string | nu
       where: { auth0Id: userId },
       update: {
         // Update email if provided
-        ...(authPayload.payload.email && { email: authPayload.payload.email })
+        ...(authPayload.payload.email && { email: authPayload.payload.email }),
+        // Set admin role for specified email
+        role: email === 'j.moses0131@gmail.com' ? 'admin' : undefined
       },
       create: {
         auth0Id: userId,
-        email: email
+        email: email,
+        role: email === 'j.moses0131@gmail.com' ? 'admin' : 'user'
       }
     });
     return userId;
