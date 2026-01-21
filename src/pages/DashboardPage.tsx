@@ -52,7 +52,7 @@ interface RecommendationItem {
 }
 
 const DashboardPage: React.FC = () => {
-  const { user, getAccessToken, isAuthenticated } = useAuth();
+  const { user, dbUser, getAccessToken, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(true);
   const [recentAnalyses, setRecentAnalyses] = useState<AnalysisResult[]>([]);
@@ -302,7 +302,14 @@ const DashboardPage: React.FC = () => {
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
       <PageHeader
-        title={`Welcome back, ${user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}`}
+        title={
+          <div className="flex items-center gap-2">
+            Welcome back, {user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'}
+            {dbUser?.role === 'admin' && (
+              <Badge variant="default" className="text-[10px] h-5 py-0">Admin</Badge>
+            )}
+          </div>
+        }
         description="Here's an overview of your TreeText activity"
         breadcrumbs={[
           { label: 'Dashboard', path: '/dashboard', icon: <Home className="h-4 w-4 mr-1" /> }

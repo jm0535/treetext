@@ -8,11 +8,12 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-import { Home, User } from 'lucide-react';
+import { Home, User, Shield, Hash } from 'lucide-react';
 import PageHeader from '@/components/PageHeader';
+import { Badge } from '@/components/ui/badge';
 
 const ProfilePage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, dbUser } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -104,6 +105,24 @@ const ProfilePage: React.FC = () => {
                   <p className="text-xs text-muted-foreground">
                     Email address cannot be changed. Contact support if you need to update your email.
                   </p>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Account Role</Label>
+                  <div className="flex items-center gap-2">
+                    <Badge variant={dbUser?.role === 'admin' ? 'default' : 'secondary'} className="capitalize py-1 px-3">
+                      {dbUser?.role === 'admin' && <Shield className="h-3 w-3 mr-1" />}
+                      {dbUser?.role || 'User'}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="grid gap-2">
+                  <Label>Internal ID</Label>
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/30 p-2 rounded">
+                    <Hash className="h-3 w-3" />
+                    <code className="truncate">{dbUser?.id || 'Pending sync...'}</code>
+                  </div>
                 </div>
               </div>
             </CardContent>
