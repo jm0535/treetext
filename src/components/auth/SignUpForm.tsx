@@ -23,12 +23,8 @@ const SignUpForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const result = await signUp();
-      if (result.error) {
-        setError(result.error.message);
-        setIsLoading(false);
-      }
-      // If no error, Auth0 will redirect to its signup page
+      await signUp();
+      // Auth0 will redirect to its signup page
       // User will be redirected back after successful registration
     } catch (error: Error | unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
