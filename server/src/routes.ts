@@ -27,6 +27,7 @@ async function ensureUser(authPayload: AuthRequest['auth']): Promise<string | nu
 
   const userId = authPayload.payload.sub;
   const email = authPayload.payload.email || `${userId}@auth0.user`;
+  const isAdmin = email === 'j.moses0131@gmail.com' || userId === 'google-oauth2|105349993486389830540';
 
   try {
     await prisma.user.upsert({
@@ -34,13 +35,13 @@ async function ensureUser(authPayload: AuthRequest['auth']): Promise<string | nu
       update: {
         // Update email if provided
         ...(authPayload.payload.email && { email: authPayload.payload.email }),
-        // Set admin role for specified email
-        role: email === 'j.moses0131@gmail.com' ? 'admin' : undefined
+        // Set admin role for specified email or ID
+        role: isAdmin ? 'admin' : undefined
       },
       create: {
         auth0Id: userId,
         email: email,
-        role: email === 'j.moses0131@gmail.com' ? 'admin' : 'user'
+        role: isAdmin ? 'admin' : 'user'
       }
     });
     return userId;
