@@ -41,7 +41,7 @@ import {
 
 const Navigation: React.FC = () => {
   const { theme, toggleTheme } = useTheme();
-  const { user, signOut } = useAuth();
+  const { user, dbUser, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [isScrolled, setIsScrolled] = useState(false);
@@ -128,10 +128,10 @@ const Navigation: React.FC = () => {
           aria-label="TreeText Home"
         >
           <div className="absolute -inset-1 rounded-full bg-primary/10 scale-0 group-hover:scale-100 transition-transform duration-300" />
-          <img 
-            src="/treetext_logo_large.svg" 
-            alt="TreeText Logo" 
-            className="h-8 w-auto relative transition-transform group-hover:scale-110 duration-300" 
+          <img
+            src="/treetext_logo_large.svg"
+            alt="TreeText Logo"
+            className="h-8 w-auto relative transition-transform group-hover:scale-110 duration-300"
           />
           <div className="flex items-center gap-1.5">
             <span className="font-bold text-xl relative">
@@ -290,9 +290,14 @@ const Navigation: React.FC = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col items-start">
-                      <span className="text-sm font-semibold">
-                        {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-sm font-semibold">
+                          {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                        </span>
+                        {dbUser?.role === 'admin' && (
+                          <Badge variant="default" className="text-[9px] h-3.5 px-1 py-0 uppercase">Admin</Badge>
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground">
                         {user.email?.length > 20 ? `${user.email?.substring(0, 17)}...` : user.email}
                       </span>
@@ -303,10 +308,15 @@ const Navigation: React.FC = () => {
                 <DropdownMenuContent align="end" className="w-56">
                   <DropdownMenuLabel>
                     <div className="flex flex-col space-y-1">
-                      <span className="font-medium">Signed in as</span>
-                      <span className="text-sm text-primary font-bold">
-                        {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                      </span>
+                      <span className="font-medium text-xs text-muted-foreground">Signed in as</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-primary">
+                          {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                        </span>
+                        {dbUser?.role === 'admin' && (
+                          <Badge variant="default" className="text-[10px] h-4 py-0">Admin</Badge>
+                        )}
+                      </div>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -490,9 +500,14 @@ const Navigation: React.FC = () => {
                       </AvatarFallback>
                     </Avatar>
                     <div className="flex flex-col">
-                      <span className="font-semibold text-sm">
-                        {user.user_metadata?.full_name || user.email?.split('@')[0]}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-semibold text-sm">
+                          {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                        </span>
+                        {dbUser?.role === 'admin' && (
+                          <Badge variant="default" className="text-[10px] h-4 py-0">Admin</Badge>
+                        )}
+                      </div>
                       <span className="text-xs text-muted-foreground truncate max-w-[140px]">
                         {user.email}
                       </span>
