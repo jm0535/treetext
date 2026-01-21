@@ -9,6 +9,14 @@ type AuthResult = {
   error?: Error;
 };
 
+interface DbUser {
+  id: string;
+  auth0Id: string;
+  email: string;
+  role: string;
+  createdAt: string;
+}
+
 type AuthContextType = {
   user: User | undefined;
   isLoading: boolean;
@@ -21,6 +29,7 @@ type AuthContextType = {
   updateCloudAuth: (provider: string, status: boolean) => void;
   getCloudToken: (provider: string) => string | null;
   syncUser: () => Promise<void>;
+  dbUser: DbUser | null;
   // Auth0 redirect-based auth (email/password params kept for form compatibility but unused)
   signIn: (email?: string, password?: string) => Promise<AuthResult>;
   signUp: (email?: string, password?: string) => Promise<AuthResult>;
@@ -42,6 +51,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const [cloudAuth, setCloudAuth] = useState<CloudAuthStatus>({});
   const [isSynced, setIsSynced] = useState(false);
+  const [dbUser, setDbUser] = useState<DbUser | null>(null);
 
   // API base URL for user sync
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -77,6 +87,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (response.ok) {
+        const data = await response.json();
+        setDbUser(data.user);
         setIsSynced(true);
       } else {
         console.error('User sync failed:', response.status);
@@ -201,6 +213,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const value = {
     user,
+    dbUser,
     isAuthenticated,
     isLoading,
     isSynced,
