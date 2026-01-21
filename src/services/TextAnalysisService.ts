@@ -1804,18 +1804,15 @@ class TextAnalysisService {
 
   /**
    * Detect plagiarism using real APIs (OpenAI for embeddings, Copyleaks for content matching)
+   * Note: Authentication should be handled at API call level with proper tokens
    */
   private async detectPlagiarismWithApis(
     text: string,
   ): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
 
-    // Check if user is authenticated
-    const { data } = await supabase.auth.getSession();
-    const isAuthenticated = !!data.session;
-
-    // Use OpenAI embeddings API if available AND user is authenticated
-    if (ENV.API.OPENAI_API_KEY && isAuthenticated) {
+    // Use OpenAI embeddings API if available
+    if (ENV.API.OPENAI_API_KEY) {
       try {
         console.log("Using OpenAI embeddings for plagiarism detection");
         const openaiResults = await this.detectPlagiarismWithOpenAI(text);
@@ -1835,19 +1832,9 @@ class TextAnalysisService {
         });
       }
     } else {
-      if (!isAuthenticated && ENV.API.OPENAI_API_KEY) {
-        console.log("User not authenticated. OpenAI API access restricted.");
-        toast({
-          title: "Authentication Required",
-          description:
-            "Please log in to use advanced plagiarism detection with OpenAI.",
-          variant: "destructive",
-        });
-      } else if (!ENV.API.OPENAI_API_KEY) {
-        console.log(
-          "OpenAI API key not available. Skipping embeddings-based plagiarism detection.",
-        );
-      }
+      console.log(
+        "OpenAI API key not available. Skipping embeddings-based plagiarism detection.",
+      );
     }
 
     // Try Cohere as first fallback if OpenAI failed

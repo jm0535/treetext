@@ -1,57 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
 
 const SignUpForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const { signUp } = useAuth();
+  const { signUp, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    setSuccessMessage(null);
-
-    // Validate passwords match
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    // Validate password strength
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters long');
-      return;
-    }
-
     setIsLoading(true);
 
     try {
-      await signUp(email, password);
-      // User will be redirected to Auth0 Universal Login
+      const result = await signUp();
+      if (result.error) {
+        setError(result.error.message);
+        setIsLoading(false);
+      }
+      // If no error, Auth0 will redirect to its signup page
+      // User will be redirected back after successful registration
     } catch (error: Error | unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign up';
       setError(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Create an Account</h1>
-        <p className="text-muted-foreground">Enter your details to create a new account</p>
+        <p className="text-muted-foreground">Sign up to start using TreeText</p>
       </div>
 
       {error && (
@@ -60,49 +59,12 @@ const SignUpForm: React.FC = () => {
         </Alert>
       )}
 
-      {successMessage && (
-        <Alert>
-          <AlertDescription>{successMessage}</AlertDescription>
-        </Alert>
-      )}
-
       <form onSubmit={handleSignUp} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-          <p className="text-xs text-muted-foreground">
-            Password must be at least 8 characters long
-          </p>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="confirmPassword">Confirm Password</Label>
-          <Input
-            id="confirmPassword"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-        </div>
+        <p className="text-sm text-muted-foreground text-center">
+          Click below to create your account with email or a social provider
+        </p>
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Sign Up'}
+          {isLoading ? 'Redirecting...' : 'Continue to Sign Up'}
         </Button>
       </form>
 
