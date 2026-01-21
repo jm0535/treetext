@@ -6,9 +6,5 @@
   "rewrites": [
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "VITE_SUPABASE_URL": "https://zsronpdhtzzasrwawjto.supabase.co",
-    "VITE_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpzcm9ucGRodHp6YXNyd2F3anRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQwODU0NDAsImV4cCI6MjA1OTY2MTQ0MH0.0XQUR7QHbZP0p10a4uZ4o0Tuk4YPPBJrcUu-qVAVpBM"
-  }
+  ]
 }

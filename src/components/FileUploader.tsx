@@ -872,9 +872,6 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
       setProgress(80);
 
       // Save to database if user is authenticated
-      const { data: sessionData } = await supabase.auth.getSession();
-      const isAuthenticated = !!sessionData?.session?.user;
-
       if (isAuthenticated) {
         setProgress(90);
         // Create a basic analysis result object to store with the file
@@ -893,15 +890,24 @@ const FileUploader: React.FC<FileUploaderProps> = ({ className }) => {
           settings: {}
         };
 
-        // Save file analysis to database
-        await DatabaseService.saveFileAnalysis(
-          file.name,
-          file.type,
-          file.size,
-          null, // Don't store full content in DB for space reasons
-          null, // No file URL since we're not uploading to cloud storage yet
-          initialAnalysisResult
-        );
+        // Get access token and save file analysis to database
+        try {
+          const token = await getAccessToken();
+          if (token) {
+            await DatabaseService.saveFileAnalysis(
+              file.name,
+              file.type,
+              file.size,
+              null, // Don't store full content in DB for space reasons
+              null, // No file URL since we're not uploading to cloud storage yet
+              initialAnalysisResult,
+              token
+            );
+          }
+        } catch (saveError) {
+          console.error('Error saving file analysis:', saveError);
+          // Don't fail the upload, just log the error
+        }
       }
       setProgress(100);
 

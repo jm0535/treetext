@@ -1,19 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Link, useNavigate } from 'react-router-dom';
-import { toast } from '@/hooks/use-toast';
 
 const SignInForm: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const { signIn } = useAuth();
+  const { signIn, isAuthenticated, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+
+  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, authLoading, navigate]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,31 +23,34 @@ const SignInForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const { error } = await signIn(email, password);
-      if (error) throw error;
-
-      // Show success toast
-      toast({
-        title: "Sign in successful",
-        description: "Welcome back to TreeText!",
-        variant: "default"
-      });
-
-      // Redirect to dashboard
-      navigate('/dashboard');
+      const result = await signIn();
+      if (result.error) {
+        setError(result.error.message);
+        setIsLoading(false);
+      }
+      // If no error, Auth0 will redirect to its login page
+      // User will be redirected back after successful authentication
     } catch (error: Error | unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
       setError(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
+
+  // Show loading while checking auth state
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
       <div className="space-y-2 text-center">
         <h1 className="text-3xl font-bold">Sign In</h1>
-        <p className="text-muted-foreground">Enter your credentials to access your account</p>
+        <p className="text-muted-foreground">Sign in to access your TreeText account</p>
       </div>
 
       {error && (
@@ -55,34 +60,11 @@ const SignInForm: React.FC = () => {
       )}
 
       <form onSubmit={handleSignIn} className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            type="email"
-            placeholder="name@example.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <Link to="/reset-password" className="text-sm text-primary hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
-        </div>
+        <p className="text-sm text-muted-foreground text-center">
+          Click below to sign in with your email or social account
+        </p>
         <Button type="submit" className="w-full" disabled={isLoading}>
-          {isLoading ? 'Signing in...' : 'Sign In'}
+          {isLoading ? 'Redirecting...' : 'Continue to Sign In'}
         </Button>
       </form>
 

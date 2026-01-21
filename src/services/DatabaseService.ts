@@ -5,9 +5,13 @@ import { AnalysisResult } from "@/types";
  */
 class DatabaseService {
   private static instance: DatabaseService;
-  private API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+  private API_URL: string;
 
-  private constructor() {}
+  private constructor() {
+    // Use VITE_API_BASE_URL and append /api if it doesn't include it
+    const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    this.API_URL = baseUrl.endsWith('/api') ? baseUrl : `${baseUrl}/api`;
+  }
 
   /**
    * Check if the current user is an administrator

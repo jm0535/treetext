@@ -1,25 +1,31 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { User, useAuth0 } from '@auth0/auth0-react';
 
 type CloudAuthStatus = {
   [provider: string]: boolean;
 };
 
+type AuthResult = {
+  error?: Error;
+};
+
 type AuthContextType = {
   user: User | undefined;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isSynced: boolean;
   cloudAuth: CloudAuthStatus;
-  loginWithRedirect: () => Promise<void>;
+  loginWithRedirect: (options?: { authorizationParams?: { screen_hint?: string } }) => Promise<void>;
   logout: () => void;
   getAccessToken: () => Promise<string>;
   updateCloudAuth: (provider: string, status: boolean) => void;
   getCloudToken: (provider: string) => string | null;
-  // Legacy compatibility (stubbed)
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  syncUser: () => Promise<void>;
+  // Auth0 redirect-based auth (email/password params kept for form compatibility but unused)
+  signIn: (email?: string, password?: string) => Promise<AuthResult>;
+  signUp: (email?: string, password?: string) => Promise<AuthResult>;
   signOut: () => Promise<void>;
-  resetPassword: (email: string) => Promise<{ error?: Error }>;
+  resetPassword: (email: string) => Promise<AuthResult>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -35,9 +41,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   } = useAuth0();
 
   const [cloudAuth, setCloudAuth] = useState<CloudAuthStatus>({});
+  const [isSynced, setIsSynced] = useState(false);
+
+  // API base URL for user sync
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
   // Wrapper for logout
   const logout = () => {
+    setIsSynced(false);
     auth0Logout({ logoutParams: { returnTo: window.location.origin } });
   };
 
@@ -50,6 +61,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return "";
     }
   };
+
+  // Sync user with backend database
+  const syncUser = useCallback(async (): Promise<void> => {
+    if (!isAuthenticated || !API_BASE_URL) return;
+
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch(`${API_BASE_URL}/api/user/sync`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setIsSynced(true);
+      } else {
+        console.error('User sync failed:', response.status);
+      }
+    } catch (error) {
+      console.error('Error syncing user:', error);
+    }
+  }, [isAuthenticated, getAccessTokenSilently, API_BASE_URL]);
+
+  // Auto-sync user when authenticated
+  useEffect(() => {
+    if (isAuthenticated && !isLoading && !isSynced && API_BASE_URL) {
+      syncUser();
+    }
+  }, [isAuthenticated, isLoading, isSynced, syncUser, API_BASE_URL]);
 
   // Load cloud authentication status from localStorage on mount
   useEffect(() => {
@@ -118,22 +160,57 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Stubs for legacy support during refactor
-  const signIn = async () => { await loginWithRedirect(); };
-  const signUp = async () => { await loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } }); };
-  const signOut = async () => { logout(); };
-  const resetPassword = async () => { return { error: new Error("Use Auth0 dashboard") }; };
+  // Auth0 redirect-based authentication
+  // Note: email/password params are accepted for form compatibility but Auth0 handles actual credentials
+  const signIn = async (_email?: string, _password?: string): Promise<AuthResult> => {
+    try {
+      await loginWithRedirect();
+      return {};
+    } catch (error) {
+      return { error: error instanceof Error ? error : new Error('Sign in failed') };
+    }
+  };
+
+  const signUp = async (_email?: string, _password?: string): Promise<AuthResult> => {
+    try {
+      await loginWithRedirect({ authorizationParams: { screen_hint: 'signup' } });
+      return {};
+    } catch (error) {
+      return { error: error instanceof Error ? error : new Error('Sign up failed') };
+    }
+  };
+
+  const signOut = async (): Promise<void> => {
+    logout();
+  };
+
+  const resetPassword = async (_email: string): Promise<AuthResult> => {
+    // Auth0 handles password reset through its Universal Login page
+    // Users can click "Forgot password?" on the Auth0 login screen
+    try {
+      await loginWithRedirect({
+        authorizationParams: {
+          screen_hint: 'signup' // Redirect to Auth0 where they can use "Forgot password"
+        }
+      });
+      return {};
+    } catch (error) {
+      return { error: error instanceof Error ? error : new Error('Password reset request failed') };
+    }
+  };
 
   const value = {
     user,
     isAuthenticated,
     isLoading,
+    isSynced,
     cloudAuth,
     loginWithRedirect,
     logout,
     getAccessToken,
     updateCloudAuth,
     getCloudToken,
+    syncUser,
     signIn,
     signUp,
     signOut,
