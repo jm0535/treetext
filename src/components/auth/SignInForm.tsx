@@ -23,13 +23,8 @@ const SignInForm: React.FC = () => {
     setIsLoading(true);
 
     try {
-      const result = await signIn();
-      if (result.error) {
-        setError(result.error.message);
-        setIsLoading(false);
-      }
-      // If no error, Auth0 will redirect to its login page
-      // User will be redirected back after successful authentication
+      await signIn();
+      // Auth0 will redirect to login page
     } catch (error: Error | unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to sign in';
       setError(errorMessage);
