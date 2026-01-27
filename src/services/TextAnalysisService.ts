@@ -1912,7 +1912,8 @@ class TextAnalysisService {
 
     try {
       // Try to use real APIs if keys are available
-      if (ENV.API.OPENAI_API_KEY || ENV.API.COPYLEAKS_API_KEY) {
+      // Try to use real APIs if keys are available or backend is connected
+      if (ENV.API.BASE_URL || ENV.API.COPYLEAKS_API_KEY) {
         const apiResults = await this.detectPlagiarismWithApis(text);
         if (apiResults.length > 0) {
           return apiResults;
