@@ -4,6 +4,8 @@ import { PrismaClient } from '@prisma/client';
 const router = express.Router();
 const prisma = new PrismaClient();
 
+import OpenAIService from './services/openai.service';
+
 // Extended Request type to include Auth0 payload
 interface AuthRequest extends express.Request {
   auth?: {
@@ -174,6 +176,38 @@ router.post('/analysis/file', async (req: express.Request, res: express.Response
   } catch (error) {
     console.error('Save file analysis error:', error);
     res.status(500).json({ error: 'Failed to save file analysis' });
+  }
+});
+
+// Get embeddings
+router.post('/analyze/embeddings', async (req: express.Request, res: express.Response) => {
+  try {
+    const authReq = req as AuthRequest;
+    // We can optionally enforce auth here if strictly needed, but for now we'll allow it
+    // to be consistent with how the frontend was working (though frontend had the key directly).
+    // Better to ensure user is authenticated to prevent abuse.
+
+    // Check if user is authenticated
+    if (!authReq.auth?.payload.sub) {
+        return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required' });
+    }
+
+    const embedding = await OpenAIService.getEmbeddings(text);
+
+    if (!embedding) {
+      return res.status(502).json({ error: 'Failed to generate embedding' });
+    }
+
+    res.json({ embedding });
+  } catch (error) {
+    console.error('Embeddings error:', error);
+    res.status(500).json({ error: 'Failed to process embeddings' });
   }
 });
 

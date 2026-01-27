@@ -1941,8 +1941,9 @@ class TextAnalysisService {
   ): Promise<PlagiarismInstance[]> {
     const results: PlagiarismInstance[] = [];
 
-    // Use OpenAI embeddings API if available
-    if (ENV.API.OPENAI_API_KEY) {
+    // Use OpenAI embeddings API if available (via backend)
+    // We assume backend is configured if we are running
+    if (ENV.API.BASE_URL) {
       try {
         console.log("Using OpenAI embeddings for plagiarism detection");
         const openaiResults = await this.detectPlagiarismWithOpenAI(text);
@@ -2047,38 +2048,28 @@ class TextAnalysisService {
         // Skip short chunks
         if (chunk.text.length < 100) continue;
 
-        // Call OpenAI API to get embeddings
-        const response = await axios.post(
-          "https://api.openai.com/v1/embeddings",
+        // Call Backend API to get embeddings
+        const response = await ApiClient.post<{ embedding: number[] }>(
+          "/api/analyze/embeddings",
           {
-            input: chunk.text,
-            model: "text-embedding-3-small", // Using the newer, more accurate model
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${ENV.API.OPENAI_API_KEY}`,
-              "Content-Type": "application/json",
-            },
-          },
+            text: chunk.text,
+          }
         );
 
         // Track token usage from API response if available
-        if (response.data?.usage?.total_tokens) {
-          totalTokensUsed += response.data.usage.total_tokens;
-        } else {
-          // Estimate if not provided
+          // Estimate since backend handles it
           totalTokensUsed += Math.ceil((chunk.text.length / 5) * 1.5);
-        }
 
-        if (response.data?.data?.[0]?.embedding) {
+
+        if (response?.embedding) {
           // Store the embedding vector
-          const embedding = response.data.data[0].embedding;
+          const embedding = response.embedding;
 
           // In a production system, we would now query a vector database
           // For this implementation, we'll use a simulated check against academic sources
           const similarityResults = await this.checkEmbeddingSimilarity(
             chunk.text,
-            embedding,
+            response.embedding,
           );
 
           if (similarityResults.length > 0) {

@@ -7,16 +7,16 @@
 export const ENV = {
   // Current environment
   NODE_ENV: import.meta.env.MODE || 'development',
-  
+
   // API configuration
   API: {
     USE_API: import.meta.env.VITE_USE_API === 'true' || false,
     BASE_URL: import.meta.env.VITE_API_BASE_URL || '',
     TIMEOUT: Number(import.meta.env.VITE_API_TIMEOUT) || 30000,
     RETRY_ATTEMPTS: Number(import.meta.env.VITE_API_RETRY_ATTEMPTS) || 3,
-    
+
     // External API keys
-    OPENAI_API_KEY: import.meta.env.VITE_OPENAI_API_KEY || '',
+    // OPENAI_API_KEY removed for security - handled by backend
     COPYLEAKS_API_KEY: import.meta.env.VITE_COPYLEAKS_API_KEY || '',
     COPYLEAKS_EMAIL: import.meta.env.VITE_COPYLEAKS_EMAIL || '',
     COHERE_API_KEY: import.meta.env.VITE_COHERE_API_KEY || '',
@@ -25,7 +25,7 @@ export const ENV = {
     LANGUAGETOOL_URL: import.meta.env.VITE_LANGUAGETOOL_URL || 'https://api.languagetoolplus.com/v2',
     TEXTGEARS_API_KEY: import.meta.env.VITE_TEXTGEARS_API_KEY || '',
   },
-  
+
   // Feature flags
   FEATURES: {
     EXPORT_RESULTS: import.meta.env.VITE_FEATURE_EXPORT === 'true' || true,
@@ -33,7 +33,7 @@ export const ENV = {
     USER_AUTHENTICATION: import.meta.env.VITE_FEATURE_AUTH === 'true' || false,
     HISTORY_TRACKING: import.meta.env.VITE_FEATURE_HISTORY === 'true' || true,
   },
-  
+
   // Application metadata
   APP: {
     NAME: 'TreeText',
