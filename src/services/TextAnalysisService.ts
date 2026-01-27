@@ -1911,7 +1911,6 @@ class TextAnalysisService {
     const instances: PlagiarismInstance[] = [];
 
     try {
-      // Try to use real APIs if keys are available
       // Try to use real APIs if keys are available or backend is connected
       if (ENV.API.BASE_URL || ENV.API.COPYLEAKS_API_KEY) {
         const apiResults = await this.detectPlagiarismWithApis(text);
@@ -1946,7 +1945,7 @@ class TextAnalysisService {
     // We assume backend is configured if we are running
     if (ENV.API.BASE_URL) {
       try {
-        console.log("Using OpenAI embeddings for plagiarism detection");
+
         const openaiResults = await this.detectPlagiarismWithOpenAI(text);
         results.push(...openaiResults);
 
@@ -1963,16 +1962,12 @@ class TextAnalysisService {
           variant: "default",
         });
       }
-    } else {
-      console.log(
-        "OpenAI API key not available. Skipping embeddings-based plagiarism detection.",
-      );
     }
 
     // Try Cohere as first fallback if OpenAI failed
     if (results.length === 0 && ENV.API.COHERE_API_KEY) {
       try {
-        console.log("Using Cohere embeddings for plagiarism detection");
+
         const cohereResults = await this.detectPlagiarismWithCohere(text);
         results.push(...cohereResults);
 
@@ -1994,7 +1989,7 @@ class TextAnalysisService {
     // Try HuggingFace as second fallback
     if (results.length === 0 && ENV.API.HUGGINGFACE_API_KEY) {
       try {
-        console.log("Using HuggingFace embeddings for plagiarism detection");
+
         const huggingfaceResults =
           await this.detectPlagiarismWithHuggingFace(text);
         results.push(...huggingfaceResults);
@@ -2093,7 +2088,7 @@ class TextAnalysisService {
       if (totalTokensUsed > 0) {
         // Update the token count with actual usage
         UsageService.recordUsage(0, totalTokensUsed);
-        console.log(`OpenAI API usage: ${totalTokensUsed} tokens`);
+
       }
     } catch (error) {
       console.error("Error using OpenAI embeddings:", error);
